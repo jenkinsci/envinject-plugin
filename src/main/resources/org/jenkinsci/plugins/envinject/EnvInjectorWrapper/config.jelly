@@ -1,0 +1,35 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+	<f:entry title="${%Environment Properties File Path}">
+		<f:textbox name="info.propertiesFilePath" value="${instance.info.propertiesFilePath}"/>
+	</f:entry>
+
+	<f:entry title="${%Environment Properties Content}">
+		<f:textarea name="info.propertiesContent" value="${instance.info.propertiesContent}"/>
+	</f:entry>
+
+	<f:entry title="${%Add Node Environment Variables}">
+         <f:checkbox
+              name="info.addNodeEnvironmentVariables"
+              checked="${instance.info.addNodeEnvironmentVariables}" default="${true}" />
+	</f:entry>
+
+	<f:entry title="${%Add Jenkins Environment Variables}">
+         <f:checkbox
+              name="info.addJenkinsEnvironmentVariables"
+              checked="${instance.info.addJenkinsEnvironmentVariables}" default="${true}" />
+	</f:entry>
+
+	<f:entry title="${%Add Contributing Plugin Variables}">
+         <f:checkbox
+              name="info.addPluginsEnvironmentVariables"
+              checked="${instance.info.addPluginsEnvironmentVariables}" default="${true}" />
+	</f:entry>
+
+	<f:entry title="${%Keep Job Parameters}">
+         <f:checkbox
+              name="info.keepJobParameters"
+              checked="${instance.info.keepJobParameters}" default="${true}" />
+	</f:entry>
+
+</j:jelly>

@@ -1,0 +1,6 @@
+<div>
+    <p>
+      Inject your environment variables by a properties script or configuration field. <br/>
+      The plugin tries to replace inherited variables by the environment variables computed by the plugin.
+    </p>
+</div>
