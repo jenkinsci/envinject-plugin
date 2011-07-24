@@ -79,7 +79,6 @@ public class EnvInjectLoadEnv implements Callable<Map<String, String>, Throwable
             result.putAll(fillMapFromPropertiesContent(info.getPropertiesContent()));
         }
 
-
         return result;
     }
 }

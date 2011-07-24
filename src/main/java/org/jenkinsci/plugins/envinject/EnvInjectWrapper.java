@@ -172,12 +172,17 @@ public class EnvInjectWrapper extends BuildWrapper implements Serializable {
 
         @Override
         public String getDisplayName() {
-            return "[Environment Inject] - Inject your environment variables";
+            return Messages.envinject_displayName();
         }
 
         @Override
         public boolean isApplicable(AbstractProject item) {
             return true;
+        }
+
+        @Override
+        public String getHelpFile() {
+            return "/plugin/envinject/help.html";
         }
 
         @Override

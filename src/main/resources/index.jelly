@@ -1,6 +1,5 @@
 <div>
     <p>
-      Inject your environment variables by a properties script or configuration field. <br/>
-      The plugin tries to replace inherited variables by the environment variables computed by the plugin.
+        This plug-in tries to replace inherited variables provided by the Jenkins process by defining a clean environment. It makes it possible to inject project environment variables.
     </p>
 </div>
