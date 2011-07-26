@@ -12,6 +12,7 @@
 		      value="${instance.info.propertiesContent}"/>
 	</f:entry>
 
+<!--
 	<f:entry field="addNodeEnvironmentVariables" title="${%Add Node Environment Variables}">
          <f:checkbox
               name="info.addNodeEnvironmentVariables"
@@ -35,5 +36,6 @@
               name="info.keepJobParameters"
               checked="${instance.info.keepJobParameters}" default="${true}" />
 	</f:entry>
+-->
 
 </j:jelly>
