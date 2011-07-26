@@ -6,36 +6,32 @@
 		      value="${instance.info.propertiesFilePath}"/>
 	</f:entry>
 
-	<f:entry field="propertiesContent" title="${%Environment Properties Content}">
-		<f:textarea
-		      name="info.propertiesContent"
-		      value="${instance.info.propertiesContent}"/>
+    <f:advanced>
+        <f:entry field="propertiesContent" title="${%Environment Properties Content}">
+            <f:textarea
+                  name="info.propertiesContent"
+                  value="${instance.info.propertiesContent}"/>
+        </f:entry>
+    </f:advanced>
+
+	<f:entry field="scriptFilePath" title="${%Environment Script File Path}">
+		<f:textbox
+		      name="info.scriptFilePath"
+		      value="${instance.info.scriptFilePath}"/>
 	</f:entry>
 
-<!--
-	<f:entry field="addNodeEnvironmentVariables" title="${%Add Node Environment Variables}">
-         <f:checkbox
-              name="info.addNodeEnvironmentVariables"
-              checked="${instance.info.addNodeEnvironmentVariables}" default="${true}" />
-	</f:entry>
+    <f:advanced>
+        <f:entry field="scriptContent" title="${%Environment Script Content}">
+            <f:textarea
+                  name="info.scriptContent"
+                  value="${instance.info.scriptContent}"/>
+        </f:entry>
+    </f:advanced>
 
-	<f:entry field="addJenkinsEnvironmentVariables" title="${%Add Jenkins Environment Variables}">
+	<f:entry field="keepSystemVariables" title="${%Keep Environment Variables}">
          <f:checkbox
-              name="info.addJenkinsEnvironmentVariables"
-              checked="${instance.info.addJenkinsEnvironmentVariables}" default="${true}" />
+              name="info.keepSystemVariables"
+              checked="${instance.info.keepSystemVariables}" default="${false}" />
 	</f:entry>
-
-	<f:entry field="addPluginsEnvironmentVariables" title="${%Add Contributing Plugin Variables}">
-         <f:checkbox
-              name="info.addPluginsEnvironmentVariables"
-              checked="${instance.info.addPluginsEnvironmentVariables}" default="${true}" />
-	</f:entry>
-
-	<f:entry field="keepJobParameters" title="${%Keep Job Parameters}">
-         <f:checkbox
-              name="info.keepJobParameters"
-              checked="${instance.info.keepJobParameters}" default="${true}" />
-	</f:entry>
--->
 
 </j:jelly>

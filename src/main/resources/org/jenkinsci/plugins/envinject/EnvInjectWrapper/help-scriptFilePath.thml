@@ -1,0 +1,8 @@
+<div>
+    <p>
+        Executes a script file aimed at inject set environment variables.<br/>
+        Gives the script file path. <br />
+        You can use properties variables. <br/>
+        We suggest not overriding variables defined by the properties fields.
+    </p>
+</div>

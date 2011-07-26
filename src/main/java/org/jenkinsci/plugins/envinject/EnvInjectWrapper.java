@@ -1,15 +1,14 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.Launcher;
+import hudson.*;
 import hudson.model.*;
+import hudson.model.listeners.RunListener;
 import hudson.remoting.Callable;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.*;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -32,113 +31,74 @@ public class EnvInjectWrapper extends BuildWrapper implements Serializable {
         this.info = info;
     }
 
-    /**
-     * Similar to Run.getEnvironment(TaskListener log)} without
-     * env = c.getEnvironment().overrideAll(env)
-     */
-//    private Map<String, String> addJenkinsVariable(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
-//        Map<String, String> result = new HashMap<String, String>();
-//
-//        result.putAll(build.getCharacteristicEnvVars());
-//
-//        String rootUrl = Hudson.getInstance().getRootUrl();
-//        if (rootUrl != null) {
-//            result.put("JENKINS_URL", rootUrl);
-//            result.put("HUDSON_URL", rootUrl); // Legacy compatibility
-//            result.put("BUILD_URL", rootUrl + build.getUrl());
-//            result.put("JOB_URL", rootUrl + build.getParent().getUrl());
-//        }
-//        result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
-//        result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
-//        Thread t = Thread.currentThread();
-//        if (t instanceof Executor) {
-//            Executor e = (Executor) t;
-//            result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
-//            result.put("NODE_NAME", e.getOwner().getName());
-//            Node n = e.getOwner().getNode();
-//            if (n != null)
-//                result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
-//        }
-//        return result;
-//
-//    }
+
     @Override
-    public Launcher decorateLauncher(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
-
-//        Computer computer = Computer.currentComputer();
-//        EnvInjectLoadEnv envInjectLoadEnv = new EnvInjectLoadEnv(info, listener);
-//        final Map<String, String> envMap = new HashMap<String, String>();
-//
-//        try {
-//            envMap.putAll(computer.getNode().getRootPath().act(envInjectLoadEnv));
-
-//            if (info.isAddJenkinsEnvironmentVariables()) {
-//                envMap.putAll(addJenkinsVariable(build, listener));
-//            }
-//
-//            if (info.isAddNodeEnvironmentVariables()) {
-//
-//                //Process Global node properties
-//                for (NodeProperty nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-//                    Map<String, String> result = new HashMap<String, String>();
-//                    hudson.model.Environment environment = nodeProperty.setUp(build, launcher, listener);
-//                    if (environment != null) {
-//                        environment.buildEnvVars(result);
-//                        envMap.putAll(result);
-//                    }
-//                }
-//
-//                //Process Node Properties
-//                for (NodeProperty nodeProperty : Computer.currentComputer().getNode().getNodeProperties()) {
-//                    Map<String, String> result = new HashMap<String, String>();
-//                    hudson.model.Environment environment = nodeProperty.setUp(build, launcher, listener);
-//                    if (environment != null) {
-//                        environment.buildEnvVars(result);
-//                        envMap.putAll(result);
-//                    }
-//                }
-//            }
-//
-//            //Process Plugins Contribution
-//            if (info.isAddPluginsEnvironmentVariables()) {
-//                EnvVars envVars = new EnvVars();
-//                for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-//                    ec.buildEnvironmentFor(build, envVars, listener);
-//                }
-//                envMap.putAll(envVars);
-//            }
-//
-//            //Process Job Parameters
-//            if (info.isKeepJobParameters()) {
-//
-//                EnvVars envVars = new EnvVars();
-//                List<ParametersAction> parametersActions = build.getActions(ParametersAction.class);
-//                for (ParametersAction parametersAction : parametersActions) {
-//                    List<ParameterValue> parameterValueList = parametersAction.getParameters();
-//                    for (ParameterValue parameterValue : parameterValueList) {
-//                        parameterValue.buildEnvVars(build, envVars);
-//                    }
-//                }
-//                envMap.putAll(envVars);
-//            }
-
-//            EnvVars.resolve(envMap);
-//
-//        } catch (Throwable throwable) {
-//            build.setResult(Result.FAILURE);
-//        }
+    public Launcher decorateLauncher(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
 
         Computer computer = Computer.currentComputer();
+        FilePath rootPath = computer.getNode().getRootPath();
 
-        //Compute new Map
-        EnvInjectLoadEnv envInjectLoadEnv = new EnvInjectLoadEnv(info, listener);
+        //Compute new environment map
+        EnvInjectLoadPropertiesVariables propertiesVariablesProcess = new EnvInjectLoadPropertiesVariables(info, listener);
         final Map<String, String> envMap = new HashMap<String, String>();
         try {
-            envMap.putAll(computer.getNode().getRootPath().act(envInjectLoadEnv));
+
+            //Process properties
+            envMap.putAll(computer.getNode().getRootPath().act(propertiesVariablesProcess));
+
+            //Process the script file path
+            if (info.getScriptFilePath() != null) {
+                boolean isFileExist = rootPath.act(new Callable<Boolean, Throwable>() {
+                    public Boolean call() throws Throwable {
+                        File f = new File(info.getScriptFilePath());
+                        if (!f.exists()) {
+                            listener.getLogger().print(String.format("Can't load the file '%s'. It doesn't exist.", f.getPath()));
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+
+                if (isFileExist) {
+                    listener.getLogger().print(String.format("Executing '%s' script.", info.getScriptFilePath()));
+                    int cmdCode = launcher.launch().cmds(new File(info.getScriptFilePath())).stdout(listener).pwd(rootPath).join();
+                    if (cmdCode != 0) {
+                        build.setResult(Result.FAILURE);
+                    }
+                }
+            }
+
+            //Process the script content
+            if (info.getScriptContent() != null) {
+                CommandInterpreter batchRunner;
+                String script = info.getPropertiesContent();
+                if (launcher.isUnix()) {
+                    batchRunner = new Shell(script);
+                } else {
+                    batchRunner = new BatchFile(script);
+                }
+
+                FilePath runScriptPath = new FilePath(rootPath, "tmp");
+                runScriptPath.mkdirs();
+
+                FilePath tmpFile = batchRunner.createScriptFile(runScriptPath);
+                listener.getLogger().print(String.format("Executing the script: \n %s", script));
+                int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(listener).pwd(runScriptPath).join();
+                if (cmdCode != 0) {
+                    build.setResult(Result.FAILURE);
+                }
+            }
+
+            //Process if keep System is needed
+            if (info.isKeepSystemVariables()) {
+                envMap.putAll(System.getenv());
+            }
+
         } catch (Throwable e) {
             throw new Run.RunnerAbortedException();
         }
         EnvVars.resolve(envMap);
+
 
         //Reset the computer variables
         try {
@@ -158,136 +118,52 @@ public class EnvInjectWrapper extends BuildWrapper implements Serializable {
             throw new Run.RunnerAbortedException();
         }
 
-        //Add an action with an attached listener for complete the build
-        build.addAction(new EnvInjectAction());
+        //Add an environment action
+        build.addAction(new EnvInjectAction(envMap));
 
         return launcher;
     }
 
 
-//    class MyLocalLauncher extends Launcher.LocalLauncher {
-//
-//        public MyLocalLauncher(TaskListener listener) {
-//            super(listener);
-//        }
-//
-//        public MyLocalLauncher(TaskListener listener, VirtualChannel channel) {
-//            super(listener, channel);
-//        }
-//
-//                @Override
-//        public Proc launch(ProcStarter ps) throws IOException {
-//            maskedPrintCommandLine(ps.commands, ps.masks, ps.pwd);
-//
-//            EnvVars jobEnv = inherit(ps.envs);
-//
-//            // replace variables in command line
-//            String[] jobCmd = new String[ps.commands.size()];
-//            for ( int idx = 0 ; idx < jobCmd.length; idx++ )
-//            	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
-//
-//            return new Proc.LocalProc(jobCmd, Util.mapToEnv(jobEnv),
-//                    ps.reverseStdin ? Proc.LocalProc.SELFPUMP_INPUT:ps.stdin,
-//                    ps.reverseStdout? Proc.LocalProc.SELFPUMP_OUTPUT:ps.stdout,
-//                    ps.reverseStderr? Proc.LocalProc.SELFPUMP_OUTPUT:ps.stderr,
-//                    toFile(ps.pwd));
-//        }
-//    }
+    @Extension
+    @SuppressWarnings("unused")
+    public static class EnvInjectListener extends RunListener<Run> {
 
-//        class MyLauncher extends Launcher {
-//
-//            public MyLauncher(TaskListener listener) {
-//                this(listener, Hudson.MasterComputer.localChannel);
-//            }
-//
-//            public MyLauncher(TaskListener listener, VirtualChannel channel) {
-//                super(listener, channel);
-//            }
-//
-//        @Override
-//        public Proc launch(ProcStarter ps) throws IOException {
-//            maskedPrintCommandLine(ps.cmds(), ps.masks(), ps.pwd());
-//
-//            //EnvVars jobEnv = inherit(ps.envs());
-//
-//            // replace variables in command line
-//            String[] jobCmd = new String[ps.commands().size()];
-//            for ( int idx = 0 ; idx < jobCmd.length; idx++ )
-//            	jobCmd[idx] = jobEnv.expand(ps.commands.get(idx));
-//
-//            return new Proc.LocalProc(jobCmd, Util.mapToEnv(jobEnv),
-//                    ps.reverseStdin ? Proc.LocalProc.SELFPUMP_INPUT:ps.stdin,
-//                    ps.reverseStdout? Proc.LocalProc.SELFPUMP_OUTPUT:ps.stdout,
-//                    ps.reverseStderr? Proc.LocalProc.SELFPUMP_OUTPUT:ps.stderr,
-//                    toFile(ps.pwd));
-//        }
-//
-//        private File toFile(FilePath f) {
-//            return f==null ? null : new File(f.getRemote());
-//        }
-//
-//        public Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException {
-//            printCommandLine(cmd, workDir);
-//
-//            ProcessBuilder pb = new ProcessBuilder(cmd);
-//            pb.directory(toFile(workDir));
-//            if (envVars!=null) pb.environment().putAll(envVars);
-//
-//            return launchChannel(out, pb);
-//        }
-//
-//        @Override
-//        public void kill(Map<String, String> modelEnvVars) throws InterruptedException {
-//            ProcessTree.get().killAll(modelEnvVars);
-//        }
-//
-//        /**
-//         * @param out
-//         *      Where the stderr from the launched process will be sent.
-//         */
-//        public Channel launchChannel(OutputStream out, ProcessBuilder pb) throws IOException {
-//            final EnvVars cookie = EnvVars.createCookie();
-//            pb.environment().putAll(cookie);
-//
-//            final Process proc = pb.start();
-//
-//            final Thread t2 = new StreamCopyThread(pb.command()+": stderr copier", proc.getErrorStream(), out);
-//            t2.start();
-//
-//            return new Channel("locally launched channel on "+ pb.command(),
-//                Computer.threadPoolForRemoting, proc.getInputStream(), proc.getOutputStream(), out) {
-//
-//                /**
-//                 * Kill the process when the channel is severed.
-//                 */
-//                @Override
-//                protected synchronized void terminate(IOException e) {
-//                    super.terminate(e);
-//                    ProcessTree pt = ProcessTree.get();
-//                    try {
-//                        pt.killAll(proc,cookie);
-//                    } catch (InterruptedException x) {
-//                       // LOGGER.log(Level.INFO, "Interrupted", x);
-//                    }
-//                }
-//
-//                @Override
-//                public synchronized void close() throws IOException {
-//                    super.close();
-//                    // wait for all the output from the process to be picked up
-//                    try {
-//                        t2.join();
-//                    } catch (InterruptedException e) {
-//                        // process the interrupt later
-//                        Thread.currentThread().interrupt();
-//                    }
-//                }
-//            };
-//        }
-//        }
-//
-//        return launcher;
-//    }
+        @Override
+        public void onCompleted(final Run run, final TaskListener listener) {
+
+            if (run.getAction(EnvInjectAction.class) != null) {
+                Computer computer = Computer.currentComputer();
+                try {
+                    computer.getNode().getRootPath().act(new Callable<Void, Throwable>() {
+                        public Void call() throws Throwable {
+
+                            //Prepare the new master variables
+                            EnvVars vars = new EnvVars(System.getenv());
+                            Field platformField = vars.getClass().getDeclaredField("platform");
+                            platformField.setAccessible(true);
+                            platformField.set(vars, Platform.current());
+                            if (Main.isUnitTest || Main.isDevelopmentMode) {
+                                vars.remove("MAVEN_OPTS");
+                            }
+
+                            //Set the new master variables
+                            Field masterEnvVarsFiled = EnvVars.class.getDeclaredField("masterEnvVars");
+                            masterEnvVarsFiled.setAccessible(true);
+                            Field modifiersField = Field.class.getDeclaredField("modifiers");
+                            modifiersField.setAccessible(true);
+                            modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
+                            masterEnvVarsFiled.set(null, vars);
+
+                            return null;
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    run.setResult(Result.FAILURE);
+                }
+            }
+        }
+    }
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -295,10 +171,8 @@ public class EnvInjectWrapper extends BuildWrapper implements Serializable {
     }
 
     class EnvironmentImpl extends Environment {
-
         @Override
         public void buildEnvVars(Map<String, String> env) {
-
         }
     }
 

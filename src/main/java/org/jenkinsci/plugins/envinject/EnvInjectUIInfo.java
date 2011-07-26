@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
@@ -13,29 +14,19 @@ public class EnvInjectUIInfo implements Serializable {
 
     private String propertiesContent;
 
-//    private boolean addNodeEnvironmentVariables;
-//
-//    private boolean addJenkinsEnvironmentVariables;
-//
-//    private boolean keepJobParameters;
-//
-//    private boolean addPluginsEnvironmentVariables;
+    private String scriptFilePath;
 
-//    @DataBoundConstructor
-//    public EnvInjectUIInfo(String propertiesFilePath, String propertiesContent, boolean addNodeEnvironmentVariables, boolean addJenkinsEnvironmentVariables, boolean keepJobParameters, boolean addPluginsEnvironmentVariables) {
-//        this.propertiesFilePath = propertiesFilePath;
-//        this.propertiesContent = propertiesContent;
-//        this.addNodeEnvironmentVariables = addNodeEnvironmentVariables;
-//        this.addJenkinsEnvironmentVariables = addJenkinsEnvironmentVariables;
-//        this.keepJobParameters = keepJobParameters;
-//        this.addPluginsEnvironmentVariables = addPluginsEnvironmentVariables;
-//    }
+    private String scriptContent;
 
+    private boolean keepSystemVariables;
 
     @DataBoundConstructor
-    public EnvInjectUIInfo(String propertiesFilePath, String propertiesContent) {
-        this.propertiesFilePath = propertiesFilePath;
-        this.propertiesContent = propertiesContent;
+    public EnvInjectUIInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean keepSystemVariables) {
+        this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
+        this.propertiesContent = Util.fixEmpty(propertiesContent);
+        this.scriptFilePath = Util.fixEmpty(scriptFilePath);
+        this.scriptContent = Util.fixEmpty(scriptContent);
+        this.keepSystemVariables = keepSystemVariables;
     }
 
     public String getPropertiesFilePath() {
@@ -46,19 +37,15 @@ public class EnvInjectUIInfo implements Serializable {
         return propertiesContent;
     }
 
-//    public boolean isAddNodeEnvironmentVariables() {
-//        return addNodeEnvironmentVariables;
-//    }
-//
-//    public boolean isAddJenkinsEnvironmentVariables() {
-//        return addJenkinsEnvironmentVariables;
-//    }
-//
-//    public boolean isKeepJobParameters() {
-//        return keepJobParameters;
-//    }
-//
-//    public boolean isAddPluginsEnvironmentVariables() {
-//        return addPluginsEnvironmentVariables;
-//    }
+    public String getScriptFilePath() {
+        return scriptFilePath;
+    }
+
+    public String getScriptContent() {
+        return scriptContent;
+    }
+
+    public boolean isKeepSystemVariables() {
+        return keepSystemVariables;
+    }
 }
