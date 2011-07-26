@@ -1,16 +1,8 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.Main;
-import hudson.Platform;
-import hudson.model.*;
-import hudson.model.listeners.RunListener;
-import hudson.remoting.Callable;
+import hudson.model.Action;
 import org.kohsuke.stapler.StaplerProxy;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 
 /**
