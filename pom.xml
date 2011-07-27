@@ -41,4 +41,9 @@
         <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
 
+    <scm>
+        <connection>scm:git:git://github.com/jenkinsci/envinject-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
+    </scm>
+
 </project>
