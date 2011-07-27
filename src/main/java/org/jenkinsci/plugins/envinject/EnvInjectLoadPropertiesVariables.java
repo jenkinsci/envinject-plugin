@@ -28,14 +28,13 @@ public class EnvInjectLoadPropertiesVariables implements Callable<Map<String, St
     /**
      * Fill Map environment variable from a properties file path
      *
-     * @param filePath
-     * @return
-     * @throws IOException
+     * @return a environment map
+     * @throws EnvInjectException
      */
-    private Map<String, String> fillMapFromPropertiesFilePath(String filePath) throws EnvInjectException {
+    private Map<String, String> fillMapFromPropertiesFilePath() throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
-        File f = new File(filePath);
+        File f = new File(info.getPropertiesFilePath());
         if (!f.exists()) {
             return result;
         }
@@ -43,7 +42,7 @@ public class EnvInjectLoadPropertiesVariables implements Callable<Map<String, St
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(f);
-            buildListener.getLogger().print(String.format("Load the properties file path '%s'", filePath));
+            buildListener.getLogger().print(String.format("Load the properties file path '%s'", info.getScriptFilePath()));
             properties.load(fileReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
@@ -63,12 +62,18 @@ public class EnvInjectLoadPropertiesVariables implements Callable<Map<String, St
         return result;
     }
 
-    private Map<String, String> fillMapFromPropertiesContent(String propertiesContent) throws EnvInjectException {
+    /**
+     * Fill Map environment variable from the content
+     *
+     * @return a environment map
+     * @throws EnvInjectException
+     */
+    private Map<String, String> fillMapFromPropertiesContent() throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
         StringReader stringReader = new StringReader(info.getPropertiesContent());
         Properties properties = new Properties();
-        buildListener.getLogger().print(String.format("Load the properties file content \n '%s'", info.getPropertiesContent()));
+        buildListener.getLogger().print(String.format("Load the properties file content \n '%s' \n", info.getPropertiesContent()));
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {
@@ -90,12 +95,12 @@ public class EnvInjectLoadPropertiesVariables implements Callable<Map<String, St
 
         //Process the properties file
         if (info.getPropertiesFilePath() != null) {
-            result.putAll(fillMapFromPropertiesFilePath(info.getPropertiesFilePath()));
+            result.putAll(fillMapFromPropertiesFilePath());
         }
 
         //Process the properties content
         if (info.getPropertiesContent() != null) {
-            result.putAll(fillMapFromPropertiesContent(info.getPropertiesContent()));
+            result.putAll(fillMapFromPropertiesContent());
         }
 
         return result;

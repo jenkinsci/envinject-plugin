@@ -1,5 +1,5 @@
 <div>
     <p>
-        This plug-in tries to replace inherited variables provided by the Jenkins process by defining a clean environment. It makes it possible to inject project environment variables.
+        This plug-in set up a clean environment for a job.
     </p>
 </div>

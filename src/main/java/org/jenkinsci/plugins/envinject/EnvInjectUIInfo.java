@@ -10,6 +10,8 @@ import java.io.Serializable;
  */
 public class EnvInjectUIInfo implements Serializable {
 
+    private boolean on;
+
     private String propertiesFilePath;
 
     private String propertiesContent;
@@ -21,12 +23,17 @@ public class EnvInjectUIInfo implements Serializable {
     private boolean keepSystemVariables;
 
     @DataBoundConstructor
-    public EnvInjectUIInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean keepSystemVariables) {
+    public EnvInjectUIInfo(boolean on, String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean keepSystemVariables) {
+        this.on = on;
         this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
         this.propertiesContent = Util.fixEmpty(propertiesContent);
         this.scriptFilePath = Util.fixEmpty(scriptFilePath);
         this.scriptContent = Util.fixEmpty(scriptContent);
         this.keepSystemVariables = keepSystemVariables;
+    }
+
+    public boolean isOn() {
+        return on;
     }
 
     public String getPropertiesFilePath() {

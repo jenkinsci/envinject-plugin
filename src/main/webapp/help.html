@@ -1,9 +1,9 @@
 <div>
     <p>
-        If this option is checked, Jenkins tries to replace inherited variables provided by the Jenkins process by
-        defining a clean environment.<br/>
-        That makes it possible to inject environment variables. <br/>
-        Only environment variables injected will be available in the build scripts, in the Jenkins post-actions, and so
-        on.
+        If this option is checked, Jenkins makes it possible to set an environment
+        for the Job by defining environment variables and execute a script (a setup script).<br/>
+        After the set up, only injected variables (with Jenkins variables)
+        will be available in the build scripts, in the Jenkins post-actions, and so on. <br/>
+        Variables provided by the Jenkins process (inherited variables) will not be available by default.
     </p>
 </div>
