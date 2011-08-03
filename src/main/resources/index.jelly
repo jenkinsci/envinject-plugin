@@ -1,5 +1,5 @@
 <div>
     <p>
-        This plug-in set up a clean environment for a job.
+        This plug-in set up a clean environment for a job and it is able to inject environment variables from properties as build steps.
     </p>
 </div>

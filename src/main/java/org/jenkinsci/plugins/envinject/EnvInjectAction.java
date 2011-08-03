@@ -18,6 +18,10 @@ public class EnvInjectAction implements Action, StaplerProxy {
         this.envMap = envMap;
     }
 
+    public void overrideAll(Map<String,String> all) {
+        envMap.putAll(all);
+    }
+
     public String getIconFileName() {
         return "document-properties.gif";
     }

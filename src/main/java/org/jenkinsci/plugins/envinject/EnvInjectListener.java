@@ -1,6 +1,9 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.*;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Callable;
@@ -11,8 +14,6 @@ import hudson.tasks.Shell;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,18 +23,15 @@ import java.util.Map;
 @Extension
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
 
-    private Map<String, String> computeEnvVars(final EnvInjectUIInfo info, AbstractBuild build, Launcher launcher, final BuildListener listener) throws Throwable {
+    private Map<String, String> computeEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, AbstractBuild build, Launcher launcher, final BuildListener listener) throws Throwable {
 
         final Map<String, String> envMap = new HashMap<String, String>();
 
         Computer computer = Computer.currentComputer();
         FilePath rootPath = computer.getNode().getRootPath();
 
-        //Compute new environment map
-        EnvInjectLoadPropertiesVariables propertiesVariablesProcess = new EnvInjectLoadPropertiesVariables(info, listener);
-
-        //Process properties
-        envMap.putAll(computer.getNode().getRootPath().act(propertiesVariablesProcess));
+        //Get env vars from properties
+        envMap.putAll(computer.getNode().getRootPath().act(new EnvInjectGetEnvVarsFromPropertiesVariables(info, listener)));
 
         //Process the script file path
         if (info.getScriptFilePath() != null) {
@@ -81,46 +79,40 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
-        //Process if keep System is needed
-        if (info.isKeepSystemVariables()) {
-            envMap.putAll(System.getenv());
-        }
-
         return envMap;
     }
 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
+        @SuppressWarnings("unchecked")
         EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) build.getProject().getProperty(EnvInjectJobProperty.class);
-        EnvInjectUIInfo info = envInjectJobProperty.getInfo();
         if (envInjectJobProperty != null) {
-            if (info != null && info.isOn()) {
-
+            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+            if (info != null && envInjectJobProperty.isOn()) {
                 try {
-                    final Map<String, String> envMap = computeEnvVars(envInjectJobProperty.getInfo(), build, launcher, listener);
+                    //Build a properties object with all information
+                    final Map<String, String> envMap = computeEnvVarsFromInfoObject(envInjectJobProperty.getInfo(), build, launcher, listener);
 
+                    //Add system environment variables is needed
+                    if (envInjectJobProperty.isKeepSystemVariables()) {
+                        envMap.putAll(System.getenv());
+                    }
+
+                    //Resolves vars each other
                     EnvVars.resolve(envMap);
 
-                    //Reset the computer variables
-                    Computer.currentComputer().getNode().getRootPath().act(new Callable<Void, Throwable>() {
-                        public Void call() throws Throwable {
-                            Field masterEnvVarsFiled = EnvVars.class.getDeclaredField("masterEnvVars");
-                            masterEnvVarsFiled.setAccessible(true);
-                            Field modifiersField = Field.class.getDeclaredField("modifiers");
-                            modifiersField.setAccessible(true);
-                            modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
-                            masterEnvVarsFiled.set(null, envMap);
-
-                            return null;
-                        }
-                    });
+                    //Set the new computer variables
+                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(envMap)));
 
                     //Add a display action
                     build.addAction(new EnvInjectAction(envMap));
 
-                } catch (Throwable e) {
-                    listener.getLogger().println("SEVERE ERROR occurs: " + e.getMessage());
+                } catch (EnvInjectException envEx) {
+                    listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
+                    throw new Run.RunnerAbortedException();
+                } catch (Throwable throwable) {
+                    listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
                     throw new Run.RunnerAbortedException();
                 }
             }
@@ -132,36 +124,18 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public void onCompleted(final Run run, final TaskListener listener) {
 
+        @SuppressWarnings("unchecked")
         EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
-        EnvInjectUIInfo info = envInjectJobProperty.getInfo();
         if (envInjectJobProperty != null) {
-            if (info != null && info.isOn()) {
-                Computer computer = Computer.currentComputer();
+            EnvInjectInfo info = envInjectJobProperty.getInfo();
+            if (info != null && envInjectJobProperty.isOn()) {
                 try {
-                    computer.getNode().getRootPath().act(new Callable<Void, Throwable>() {
-                        public Void call() throws Throwable {
-
-                            //Prepare the new master variables
-                            EnvVars vars = new EnvVars(System.getenv());
-                            Field platformField = vars.getClass().getDeclaredField("platform");
-                            platformField.setAccessible(true);
-                            platformField.set(vars, Platform.current());
-                            if (Main.isUnitTest || Main.isDevelopmentMode) {
-                                vars.remove("MAVEN_OPTS");
-                            }
-
-                            //Set the new master variables
-                            Field masterEnvVarsFiled = EnvVars.class.getDeclaredField("masterEnvVars");
-                            masterEnvVarsFiled.setAccessible(true);
-                            Field modifiersField = Field.class.getDeclaredField("modifiers");
-                            modifiersField.setAccessible(true);
-                            modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
-                            masterEnvVarsFiled.set(null, vars);
-
-                            return null;
-                        }
-                    });
-                } catch (Throwable throwable) {
+                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(System.getenv())));
+                } catch (EnvInjectException e) {
+                    run.setResult(Result.FAILURE);
+                } catch (InterruptedException e) {
+                    run.setResult(Result.FAILURE);
+                } catch (IOException e) {
                     run.setResult(Result.FAILURE);
                 }
             }
