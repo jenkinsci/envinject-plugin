@@ -59,7 +59,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Process the script content
         if (info.getScriptContent() != null) {
             CommandInterpreter batchRunner;
-            String script = info.getPropertiesContent();
+            String script = info.getScriptContent();
 
             if (launcher.isUnix()) {
                 batchRunner = new Shell(script);
