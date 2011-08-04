@@ -10,7 +10,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectJobProperty<T extends Job<?,?>> extends JobProperty<T> {
+public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     private EnvInjectJobPropertyInfo info;
 

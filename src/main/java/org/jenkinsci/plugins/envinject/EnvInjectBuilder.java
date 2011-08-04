@@ -64,10 +64,9 @@ public class EnvInjectBuilder extends Builder {
 
     private void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) {
         EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-        if (envInjectAction!=null){
+        if (envInjectAction != null) {
             envInjectAction.overrideAll(envMap);
-        }
-        else {
+        } else {
             build.addAction(new EnvInjectAction(envMap));
         }
     }
