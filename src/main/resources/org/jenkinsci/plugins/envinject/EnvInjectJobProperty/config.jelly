@@ -5,14 +5,14 @@
                    checked="${instance.on}"
                    help="/plugin/envinject/help.html">
 
-	<f:entry field="propertiesFilePath" title="${%Environment Properties File Path}">
+	<f:entry field="propertiesFilePath" title="${%Properties File Path}">
 		<f:textbox
 		      name="envInjectInfoJobProperty.propertiesFilePath"
 		      value="${instance.info.propertiesFilePath}"/>
 	</f:entry>
 
     <f:advanced>
-        <f:entry field="propertiesContent" title="${%Environment Properties Content}">
+        <f:entry field="propertiesContent" title="${%Properties Content}">
             <f:textarea
                   name="envInjectInfoJobProperty.propertiesContent"
                   value="${instance.info.propertiesContent}"/>
@@ -25,18 +25,18 @@
 		      value="${instance.info.scriptFilePath}"/>
 	</f:entry>
 
-    <f:advanced>
-        <f:entry field="scriptContent" title="${%Environment Script Content}">
-            <f:textarea
-                  name="envInjectInfoJobProperty.scriptContent"
-                  value="${instance.info.scriptContent}"/>
-        </f:entry>
-    </f:advanced>
+    	<f:advanced>
+        	<f:entry field="scriptContent" title="${%Environment Script Content}">
+            		<f:textarea
+                  		name="envInjectInfoJobProperty.scriptContent"
+                  		value="${instance.info.scriptContent}"/>
+        	</f:entry>
+    	</f:advanced>
 
-	<f:entry field="keepSystemVariables" title="${%Keep Environment Variables}">
-         <f:checkbox
-              name="keepSystemVariables"
-              checked="${instance.keepSystemVariables}" default="${false}" />
+	<f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
+         	<f:checkbox
+              		name="keepSystemVariables"
+              		checked="${instance.keepSystemVariables}" default="${false}" />
 	</f:entry>
 
  </f:optionalBlock>
