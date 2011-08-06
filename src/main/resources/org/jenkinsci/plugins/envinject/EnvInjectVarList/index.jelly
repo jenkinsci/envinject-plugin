@@ -13,7 +13,7 @@
                         <h2>${%Injected environment variables}</h2>
                         <j:choose>
                           <j:when test="${it.envMap.isEmpty()}">
-                            No environment variables were been injected.
+                            ${%No environment variables were been injected}.
                           </j:when>
                           <j:otherwise>
                             <t:propertyTable items="${it.envMap}" />

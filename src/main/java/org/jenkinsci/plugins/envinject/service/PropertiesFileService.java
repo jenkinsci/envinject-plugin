@@ -1,12 +1,10 @@
-package org.jenkinsci.plugins.envinject;
+package org.jenkinsci.plugins.envinject.service;
+
 
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
+import org.jenkinsci.plugins.envinject.EnvInjectException;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -14,45 +12,30 @@ import java.util.Properties;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectGetEnvVarsFromPropertiesVariables implements Callable<Map<String, String>, Throwable> {
-
-    private EnvInjectInfo info;
+public class PropertiesFileService implements Serializable {
 
     private TaskListener listener;
 
-    public EnvInjectGetEnvVarsFromPropertiesVariables(EnvInjectInfo info, TaskListener listener) {
-        this.info = info;
+    public PropertiesFileService(TaskListener listener) {
         this.listener = listener;
     }
 
-    public Map<String, String> call() throws Throwable {
-
-        Map<String, String> result = new HashMap<String, String>();
-
-        //Process the properties file
-        if (info.getPropertiesFilePath() != null) {
-            result.putAll(fillMapFromAPropertiesFilePath());
-        }
-
-        //Process the properties content
-        if (info.getPropertiesContent() != null) {
-            result.putAll(fillMapFromPropertiesContent());
-        }
-
-        return result;
-    }
-
     /**
-     * Fill a map environment variables from a properties file path
+     * Get a map environment variables from a properties file path
      *
      * @return a environment map
-     * @throws EnvInjectException
+     * @throws org.jenkinsci.plugins.envinject.EnvInjectException
+     *
      */
-    private Map<String, String> fillMapFromAPropertiesFilePath() throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesFilePath(String filePath) throws EnvInjectException {
+
+        if (filePath == null) {
+            throw new NullPointerException("The file path object must be set.");
+        }
+
         Map<String, String> result = new HashMap<String, String>();
 
-        //The path is relative from root execution or it's a relative path
-        File f = new File(info.getPropertiesFilePath());
+        File f = new File(filePath);
         if (!f.exists()) {
             return result;
         }
@@ -60,7 +43,7 @@ public class EnvInjectGetEnvVarsFromPropertiesVariables implements Callable<Map<
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(f);
-            listener.getLogger().print(String.format("Injecting as environment variables the properties file path '%s'", info.getPropertiesFilePath()));
+            listener.getLogger().print(String.format("Injecting as environment variables the properties file path '%s'", filePath));
             properties.load(fileReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
@@ -81,17 +64,22 @@ public class EnvInjectGetEnvVarsFromPropertiesVariables implements Callable<Map<
     }
 
     /**
-     * Fill a map environment variables from the content
+     * Gte a map environment variables from the content
      *
      * @return a environment map
      * @throws EnvInjectException
      */
-    private Map<String, String> fillMapFromPropertiesContent() throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesContent(String fileContent) throws EnvInjectException {
+
+        if (fileContent == null) {
+            throw new NullPointerException("The file content object must be set.");
+        }
+
         Map<String, String> result = new HashMap<String, String>();
 
-        StringReader stringReader = new StringReader(info.getPropertiesContent());
+        StringReader stringReader = new StringReader(fileContent);
         Properties properties = new Properties();
-        listener.getLogger().print(String.format("Injecting as environment variables the properties content \n '%s' \n", info.getPropertiesContent()));
+        listener.getLogger().print(String.format("Injecting as environment variables the properties content \n '%s' \n", fileContent));
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {
