@@ -2,8 +2,8 @@ package org.jenkinsci.plugins.envinject.migration;
 
 
 import hudson.Extension;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.ItemListener;
@@ -38,9 +38,9 @@ public class EnvInjectMigrationWrappers extends ItemListener {
         List<TopLevelItem> items = Hudson.getInstance().getItems();
         for (TopLevelItem item : items) {
             try {
-                if (item instanceof FreeStyleProject) {
-                    FreeStyleProject freeStyleProject = (FreeStyleProject) item;
-                    DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersList = freeStyleProject.getBuildWrappersList();
+                if (item instanceof BuildableItemWithBuildWrappers) {
+                    BuildableItemWithBuildWrappers buildableItemWithBuildWrappers = (BuildableItemWithBuildWrappers) item;
+                    DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersList = buildableItemWithBuildWrappers.getBuildWrappersList();
                     Iterator<BuildWrapper> buildWrapperIterator = wrappersList.iterator();
                     while (buildWrapperIterator.hasNext()) {
                         BuildWrapper buildWrapper = buildWrapperIterator.next();
@@ -53,10 +53,10 @@ public class EnvInjectMigrationWrappers extends ItemListener {
                             buildWrapperIterator.remove();
 
                             //Add new wrapper
-                            addOrModifyEnvInjectBuildWrapper(freeStyleProject, oldWrapper.getEnvInjectBuildWrapper());
+                            addOrModifyEnvInjectBuildWrapper(buildableItemWithBuildWrappers, oldWrapper.getEnvInjectBuildWrapper());
 
                             //Save the job with the new elements (the config.xml is overridden)
-                            freeStyleProject.save();
+                            buildableItemWithBuildWrappers.save();
                         }
                     }
                 }
@@ -70,10 +70,10 @@ public class EnvInjectMigrationWrappers extends ItemListener {
         }
     }
 
-    private void addOrModifyEnvInjectBuildWrapper(FreeStyleProject freeStyleProject, EnvInjectBuildWrapper envInjectBuildWrapper) throws EnvInjectException {
+    private void addOrModifyEnvInjectBuildWrapper(BuildableItemWithBuildWrappers buildableItemWithBuildWrappers, EnvInjectBuildWrapper envInjectBuildWrapper) throws EnvInjectException {
 
         //Iterate all wrappers and remove the envInjectWrapper if exists: only one is authorized and the new wins
-        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersList = freeStyleProject.getBuildWrappersList();
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersList = buildableItemWithBuildWrappers.getBuildWrappersList();
         Iterator<BuildWrapper> buildWrapperIterator = wrappersList.iterator();
         while (buildWrapperIterator.hasNext()) {
             BuildWrapper buildWrapper = buildWrapperIterator.next();
