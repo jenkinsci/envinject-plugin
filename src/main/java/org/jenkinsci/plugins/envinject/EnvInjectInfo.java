@@ -10,9 +10,9 @@ import java.io.Serializable;
  */
 public class EnvInjectInfo implements Serializable {
 
-    private String propertiesFilePath;
+    protected String propertiesFilePath;
 
-    private String propertiesContent;
+    protected String propertiesContent;
 
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
