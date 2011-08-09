@@ -12,11 +12,11 @@ import org.jenkinsci.plugins.envinject.migration.EnvInjectMigrationBuildWrapper;
  */
 public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
-    private transient String localWarText;
+    private transient String localVarText;
 
     @Override
     public EnvInjectBuildWrapper getEnvInjectBuildWrapper() {
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, localWarText, null, null);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, localVarText, null, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(jobPropertyInfo);
         return envInjectBuildWrapper;
