@@ -1,0 +1,37 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <f:entry field="propertiesFilePath"
+             title="${%Properties File Path}">
+        <f:textbox
+                name="envInjectInfoWrapper.propertiesFilePath"
+                value="${instance.info.propertiesFilePath}"/>
+    </f:entry>
+
+    <f:advanced>
+        <f:entry title="${%Properties Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+            <f:textarea
+                    name="envInjectInfoWrapper.propertiesContent"
+                    value="${instance.info.propertiesContent}"/>
+        </f:entry>
+    </f:advanced>
+
+    <f:entry field="scriptFilePath"
+             title="${%Environment Script File Path}">
+        <f:textbox
+                name="envInjectInfoWrapper.scriptFilePath"
+                value="${instance.info.scriptFilePath}"/>
+    </f:entry>
+
+    <f:advanced>
+        <f:entry title="${%Environment Script Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+            <f:textarea
+                    name="envInjectInfoWrapper.scriptContent"
+                    value="${instance.info.scriptContent}"/>
+        </f:entry>
+    </f:advanced>
+
+
+</j:jelly>

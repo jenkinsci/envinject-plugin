@@ -1,44 +1,50 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-  <f:optionalBlock name="on"
-                   title="${%Prepare an environment for the job}"
-                   checked="${instance.on}"
-                   help="/plugin/envinject/help.html">
+    <f:optionalBlock name="on"
+                     title="${%Prepare an environment for the job}"
+                     checked="${instance.on}"
+                     help="/plugin/envinject/help.html">
 
-	<f:entry field="propertiesFilePath" title="${%Properties File Path}">
-		<f:textbox
-		      name="envInjectInfoJobProperty.propertiesFilePath"
-		      value="${instance.info.propertiesFilePath}"/>
-	</f:entry>
-
-    <f:advanced>
-        <f:entry field="propertiesContent" title="${%Properties Content}">
-            <f:textarea
-                  name="envInjectInfoJobProperty.propertiesContent"
-                  value="${instance.info.propertiesContent}"/>
+        <f:entry
+                title="${%Properties File Path}"
+                help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
+            <f:textbox
+                    name="envInjectInfoJobProperty.propertiesFilePath"
+                    value="${instance.info.propertiesFilePath}"/>
         </f:entry>
-    </f:advanced>
 
-	<f:entry field="scriptFilePath" title="${%Environment Script File Path}">
-		<f:textbox
-		      name="envInjectInfoJobProperty.scriptFilePath"
-		      value="${instance.info.scriptFilePath}"/>
-	</f:entry>
+        <f:advanced>
+            <f:entry title="${%Properties Content}"
+                     help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+                <f:textarea
+                        name="envInjectInfoJobProperty.propertiesContent"
+                        value="${instance.info.propertiesContent}"/>
+            </f:entry>
+        </f:advanced>
 
-    	<f:advanced>
-        	<f:entry field="scriptContent" title="${%Environment Script Content}">
-            		<f:textarea
-                  		name="envInjectInfoJobProperty.scriptContent"
-                  		value="${instance.info.scriptContent}"/>
-        	</f:entry>
-    	</f:advanced>
+        <f:entry title="${%Environment Script File Path}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
+            <f:textbox
+                    name="envInjectInfoJobProperty.scriptFilePath"
+                    value="${instance.info.scriptFilePath}"/>
+        </f:entry>
 
-	<f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
-         	<f:checkbox
-              		name="keepSystemVariables"
-              		checked="${instance.keepSystemVariables}" default="${false}" />
-	</f:entry>
+        <f:advanced>
+            <f:entry title="${%Environment Script Content}"
+                     help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+                <f:textarea
+                        name="envInjectInfoJobProperty.scriptContent"
+                        value="${instance.info.scriptContent}"/>
+            </f:entry>
+        </f:advanced>
 
- </f:optionalBlock>
+        <f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
+            <f:checkbox
+                    name="keepSystemVariables"
+                    checked="${instance.keepSystemVariables}" default="${false}"/>
+        </f:entry>
+
+    </f:optionalBlock>
 
 </j:jelly>

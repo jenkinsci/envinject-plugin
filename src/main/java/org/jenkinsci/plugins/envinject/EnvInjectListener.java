@@ -1,16 +1,15 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.*;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
-import hudson.remoting.Callable;
-import hudson.tasks.BatchFile;
-import hudson.tasks.CommandInterpreter;
-import hudson.tasks.Shell;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -70,6 +69,27 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
+    private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, final BuildListener listener) throws Throwable {
+
+        final Map<String, String> resultMap = new HashMap<String, String>();
+
+        Computer computer = Computer.currentComputer();
+        Node node = computer.getNode();
+        if (node != null) {
+            final FilePath rootPath = node.getRootPath();
+            if (rootPath != null) {
+
+                //Get env vars from properties
+                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, launcher.getListener(), currentEnvVars)));
+
+                //Execute script info
+                EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, listener);
+                scriptExecutorService.executeScriptFromInfoObject();
+            }
+        }
+        return resultMap;
+    }
+
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         //Add build variables such as parameters
@@ -103,98 +123,5 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Map<String, String> getEnvVarsFromInfoObject(EnvInjectJobPropertyInfo info,
-                                                         Map<String, String> currentEnvVars,
-                                                         Launcher launcher,
-                                                         final BuildListener listener) throws Throwable {
-
-        final Map<String, String> resultMap = new HashMap<String, String>();
-
-        Computer computer = Computer.currentComputer();
-        Node node = computer.getNode();
-        if (node != null) {
-            FilePath rootPath = node.getRootPath();
-            if (rootPath != null) {
-
-                //Get env vars from properties
-                resultMap.putAll(node.getRootPath().act(new PropertiesVariablesRetriever(info, listener, currentEnvVars)));
-
-                //Process the script file path
-                if (info.getScriptFilePath() != null) {
-                    String scriptFilePathResolved = Util.replaceMacro(info.getScriptFilePath(), currentEnvVars);
-                    String scriptFilePathNormalized = scriptFilePathResolved.replace("\\", "/");
-                    executeScriptPath(scriptFilePathNormalized, launcher, listener, rootPath);
-                }
-
-                //Process the script content
-                if (info.getScriptContent() != null) {
-                    String scriptResolved = Util.replaceMacro(info.getScriptContent(), currentEnvVars);
-                    executeScriptContent(scriptResolved, launcher, listener, rootPath);
-                }
-            }
-        }
-        return resultMap;
-    }
-
-
-    private void executeScriptPath(final String scriptFilePath,
-                                   Launcher launcher,
-                                   final BuildListener listener,
-                                   FilePath rootPath) throws EnvInjectException {
-        try {
-            boolean isFileExist = rootPath.act(new Callable<Boolean, Throwable>() {
-                public Boolean call() throws Throwable {
-                    File f = new File(scriptFilePath);
-                    if (!f.exists()) {
-                        listener.getLogger().println(String.format("Can't load the file '%s'. It doesn't exist.", f.getPath()));
-                        return false;
-                    }
-                    return true;
-                }
-            });
-
-            if (isFileExist) {
-                listener.getLogger().println(String.format("Executing '%s' script.", scriptFilePath));
-                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(listener).pwd(rootPath).join();
-                if (cmdCode != 0) {
-                    listener.getLogger().println(String.format("The exit code is '%s'. Fail the build.", cmdCode));
-                }
-            }
-        } catch (Throwable e) {
-            throw new EnvInjectException("Error occurs on execution script file path", e);
-        }
-    }
-
-    private void executeScriptContent(
-            String scriptContent,
-            Launcher launcher,
-            BuildListener listener,
-            FilePath rootPath) throws EnvInjectException {
-
-        try {
-
-            CommandInterpreter batchRunner;
-            if (launcher.isUnix()) {
-                batchRunner = new Shell(scriptContent);
-            } else {
-                batchRunner = new BatchFile(scriptContent);
-            }
-
-            FilePath runScriptPath = new FilePath(rootPath, "tmp");
-            runScriptPath.mkdirs();
-
-            FilePath tmpFile = batchRunner.createScriptFile(runScriptPath);
-            listener.getLogger().println(String.format("Executing the script: \n %s", scriptContent));
-            int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(listener).pwd(runScriptPath).join();
-            if (cmdCode != 0) {
-                listener.getLogger().println(String.format("The exit code is '%s'. Fail the build.", cmdCode));
-            }
-
-        } catch (IOException ioe) {
-            throw new EnvInjectException("Error occurs on execution script file path", ioe);
-        } catch (InterruptedException ie) {
-            throw new EnvInjectException("Error occurs on execution script file path", ie);
-        }
-    }
 
 }
