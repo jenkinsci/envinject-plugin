@@ -8,14 +8,12 @@
                 value="${instance.info.propertiesFilePath}"/>
     </f:entry>
 
-    <f:advanced>
-        <f:entry title="${%Properties Content}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
-            <f:textarea
-                    name="envInjectInfoWrapper.propertiesContent"
-                    value="${instance.info.propertiesContent}"/>
-        </f:entry>
-    </f:advanced>
+    <f:entry title="${%Properties Content}"
+             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+        <f:textarea
+                name="envInjectInfoWrapper.propertiesContent"
+                value="${instance.info.propertiesContent}"/>
+    </f:entry>
 
     <f:entry field="scriptFilePath"
              title="${%Environment Script File Path}">
@@ -24,14 +22,11 @@
                 value="${instance.info.scriptFilePath}"/>
     </f:entry>
 
-    <f:advanced>
-        <f:entry title="${%Environment Script Content}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
-            <f:textarea
-                    name="envInjectInfoWrapper.scriptContent"
-                    value="${instance.info.scriptContent}"/>
-        </f:entry>
-    </f:advanced>
-
+    <f:entry title="${%Environment Script Content}"
+             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+        <f:textarea
+                name="envInjectInfoWrapper.scriptContent"
+                value="${instance.info.scriptContent}"/>
+    </f:entry>
 
 </j:jelly>

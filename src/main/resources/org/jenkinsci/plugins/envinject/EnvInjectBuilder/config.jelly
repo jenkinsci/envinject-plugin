@@ -8,13 +8,11 @@
                 value="${instance.info.propertiesFilePath}"/>
     </f:entry>
 
-    <f:advanced>
-        <f:entry  title="${%Properties Content}"
-                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
-            <f:textarea
-                    name="envInjectInfoBuilder.propertiesContent"
-                    value="${instance.info.propertiesContent}"/>
-        </f:entry>
-    </f:advanced>
+    <f:entry  title="${%Properties Content}"
+              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+        <f:textarea
+                name="envInjectInfoBuilder.propertiesContent"
+                value="${instance.info.propertiesContent}"/>
+    </f:entry>
 
 </j:jelly>

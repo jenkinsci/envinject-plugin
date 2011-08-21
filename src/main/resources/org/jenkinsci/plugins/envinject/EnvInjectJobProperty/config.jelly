@@ -6,6 +6,12 @@
                      checked="${instance.on}"
                      help="/plugin/envinject/help.html">
 
+        <f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
+            <f:checkbox
+                    name="keepSystemVariables"
+                    checked="${instance.keepSystemVariables}" default="${false}"/>
+        </f:entry>
+
         <f:entry
                 title="${%Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
@@ -14,14 +20,12 @@
                     value="${instance.info.propertiesFilePath}"/>
         </f:entry>
 
-        <f:advanced>
-            <f:entry title="${%Properties Content}"
-                     help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
-                <f:textarea
-                        name="envInjectInfoJobProperty.propertiesContent"
-                        value="${instance.info.propertiesContent}"/>
-            </f:entry>
-        </f:advanced>
+        <f:entry title="${%Properties Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+            <f:textarea
+                    name="envInjectInfoJobProperty.propertiesContent"
+                    value="${instance.info.propertiesContent}"/>
+        </f:entry>
 
         <f:entry title="${%Environment Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
@@ -30,19 +34,11 @@
                     value="${instance.info.scriptFilePath}"/>
         </f:entry>
 
-        <f:advanced>
-            <f:entry title="${%Environment Script Content}"
-                     help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
-                <f:textarea
-                        name="envInjectInfoJobProperty.scriptContent"
-                        value="${instance.info.scriptContent}"/>
-            </f:entry>
-        </f:advanced>
-
-        <f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
-            <f:checkbox
-                    name="keepSystemVariables"
-                    checked="${instance.keepSystemVariables}" default="${false}"/>
+        <f:entry title="${%Environment Script Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+            <f:textarea
+                    name="envInjectInfoJobProperty.scriptContent"
+                    value="${instance.info.scriptContent}"/>
         </f:entry>
 
     </f:optionalBlock>
