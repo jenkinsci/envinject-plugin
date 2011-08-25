@@ -18,6 +18,8 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     private boolean keepSystemVariables;
 
+    private boolean keepBuildVariables;
+
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -33,6 +35,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return keepSystemVariables;
     }
 
+    @SuppressWarnings("unused")
+    public boolean isKeepBuildVariables() {
+        return keepBuildVariables;
+    }
+
     public void setInfo(EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
@@ -43,6 +50,10 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     public void setKeepSystemVariables(boolean keepSystemVariables) {
         this.keepSystemVariables = keepSystemVariables;
+    }
+
+    public void setKeepBuildVariables(boolean keepBuildVariables) {
+        this.keepBuildVariables = keepBuildVariables;
     }
 
     @Extension
@@ -66,22 +77,22 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
         @Override
         public EnvInjectJobProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
-            EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoJobProperty.");
-            envInjectJobProperty.setInfo(info);
-
             Object onObject = formData.get("on");
+
             if (onObject != null) {
+                EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+                EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoJobProperty.");
+                envInjectJobProperty.setInfo(info);
                 envInjectJobProperty.setOn(true);
                 if (onObject instanceof JSONObject) {
                     envInjectJobProperty.setKeepSystemVariables(((JSONObject) onObject).getBoolean("keepSystemVariables"));
+                    envInjectJobProperty.setKeepBuildVariables(((JSONObject) onObject).getBoolean("keepBuildVariables"));
+                    return envInjectJobProperty;
                 }
-            } else {
-                envInjectJobProperty.setOn(false);
-                envInjectJobProperty.setKeepSystemVariables(false);
             }
 
-            return envInjectJobProperty;
+            return null;
         }
     }
+
 }

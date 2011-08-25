@@ -12,6 +12,12 @@
                     checked="${instance.keepSystemVariables}" default="${false}"/>
         </f:entry>
 
+        <f:entry field="keepBuildVariables" title="${%Keep Jenkins Build Variables}">
+            <f:checkbox
+                    name="keepBuildVariables"
+                    checked="${instance.keepBuildVariables}" default="${true}"/>
+        </f:entry>
+
         <f:entry
                 title="${%Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">

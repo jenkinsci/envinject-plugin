@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
+import hudson.util.LogTaskListener;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
@@ -14,12 +15,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Gregory Boissinot
  */
 @Extension
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
+
+    private static Logger LOG = Logger.getLogger(EnvInjectListener.class.getName());
 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -37,11 +42,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     //Add system environment variables if needed
                     if (envInjectJobProperty.isKeepSystemVariables()) {
                         //The new envMap wins
-                        resultVariables.putAll(System.getenv());
+                        //resultVariables.putAll(System.getenv());
+                        resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                     }
 
-                    //Always beep build variables (such as parameter variables).
-                    resultVariables.putAll(getAndAddBuildVariables(build));
+                    //Add build variables (such as parameter variables).
+                    if (envInjectJobProperty.isKeepBuildVariables()) {
+                        resultVariables.putAll(getAndAddBuildVariables(build));
+                    }
 
                     //Build a properties object with all information
                     final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
@@ -92,8 +100,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
-        //Add build variables such as parameters
+
+        //Add build process variables
+        result.putAll(build.getCharacteristicEnvVars());
+
+        //Add build variables such as parameters, plugins contributions, ...
         result.putAll(build.getBuildVariables());
+
         //Add workspace variable
         FilePath ws = build.getWorkspace();
         if (ws != null) {
