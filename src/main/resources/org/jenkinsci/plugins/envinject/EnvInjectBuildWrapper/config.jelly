@@ -29,4 +29,13 @@
                 value="${instance.info.scriptContent}"/>
     </f:entry>
 
+
+    <f:entry title="${%All triggers variable name}"
+    		 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/allTriggerVarName">
+        <f:textbox
+              name="envInjectInfoWrapper.allTriggerVarName"
+              value="${instance.info.allTriggerVarName}"/>
+    </f:entry>
+      
+    
 </j:jelly>

@@ -1,0 +1,13 @@
+<div>
+    <p>
+        Defining this variable name provides an environment variable containing all the triggers which caused the build to run, separated by ','.
+        In addition each single trigger gets available as single environment variable with the given name as prefix too:
+        <ul>
+        	<li>myVar_SCMTRIGGER=true</li>
+        	<li>myVar_TIMERTRIGGER=true</li>
+        	<li>myVar_MANUALTRIGGER=true</li>
+        	<li>myVar_UPSTREAMTRIGGER=true</li>
+        	<li>myVar=myVar_SCMTRIGGER,myVar_TIMERTRIGGER,myVar_MANUALTRIGGER,myVar_UPSTREAMTRIGGER</li>
+        </ul>
+    </p>
+</div>
