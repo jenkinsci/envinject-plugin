@@ -119,11 +119,8 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 				}
 
 			}
-
-			// setup a variable containing all the trigger names
-			if (!StringUtils.isBlank(allTriggerVariableName)) {
-				triggerVars.put(allTriggerVariableName, all.toString());
-			}
+			// add variable containing all the trigger names
+			triggerVars.put(allTriggerVariableName, all.toString());
 		}
 		return triggerVars;
 	}
