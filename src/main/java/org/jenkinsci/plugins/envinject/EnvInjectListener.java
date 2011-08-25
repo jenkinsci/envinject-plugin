@@ -77,10 +77,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, final BuildListener listener) throws Throwable {
+    private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws Throwable {
 
         final Map<String, String> resultMap = new HashMap<String, String>();
 
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
         Computer computer = Computer.currentComputer();
         Node node = computer.getNode();
         if (node != null) {
@@ -88,10 +89,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             if (rootPath != null) {
 
                 //Get env vars from properties
-                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, launcher.getListener(), currentEnvVars)));
+                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, currentEnvVars, logger)));
 
                 //Execute script info
-                EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, listener);
+                EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, logger);
                 scriptExecutorService.executeScriptFromInfoObject();
             }
         }

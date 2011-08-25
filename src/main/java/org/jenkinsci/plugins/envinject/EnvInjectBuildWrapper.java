@@ -43,6 +43,8 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
         final Map<String, String> resultVariables = new HashMap<String, String>();
 
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+
         try {
 
             final FilePath ws = build.getWorkspace();
@@ -61,11 +63,11 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, listener, resultVariables));
+            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, resultVariables, logger));
             resultVariables.putAll(envMap);
 
             //Execute script info
-            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, listener);
+            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, logger);
             scriptExecutorService.executeScriptFromInfoObject();
 
             //Resolve vars each other
@@ -112,6 +114,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Extension
+    @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
         @Override
