@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>0.6</version>
+    <version>0.7-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Jenkins Environment Inject Plug-in</name>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin</url>
