@@ -6,6 +6,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.Builder;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
@@ -14,6 +16,7 @@ import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,48 +32,47 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
-        @SuppressWarnings("unchecked")
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) build.getProject().getProperty(EnvInjectJobProperty.class);
-        if (envInjectJobProperty != null) {
-            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
+        if (isEnvInjectJobPropertyActive(build)) {
 
-                Map<String, String> resultVariables = new HashMap<String, String>();
+            Map<String, String> resultVariables = new HashMap<String, String>();
+            try {
 
-                try {
+                EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
+                assert envInjectJobProperty != null;
+                EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+                assert envInjectJobProperty != null && envInjectJobProperty.isOn();
 
-                    //Add system environment variables if needed
-                    if (envInjectJobProperty.isKeepSystemVariables()) {
-                        //The new envMap wins
-                        //resultVariables.putAll(System.getenv());
-                        resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
-                    }
-
-                    //Add build variables (such as parameter variables).
-                    if (envInjectJobProperty.isKeepBuildVariables()) {
-                        resultVariables.putAll(getAndAddBuildVariables(build));
-                    }
-
-                    //Build a properties object with all information
-                    final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
-                    resultVariables.putAll(envMap);
-
-                    //Resolves vars each other
-                    EnvVars.resolve(resultVariables);
-
-                    //Set the new computer variables
-                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
-
-                    //Add a display action
-                    build.addAction(new EnvInjectAction(resultVariables));
-
-                } catch (EnvInjectException envEx) {
-                    listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
-                    throw new Run.RunnerAbortedException();
-                } catch (Throwable throwable) {
-                    listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
-                    throw new Run.RunnerAbortedException();
+                //Add system environment variables if needed
+                if (envInjectJobProperty.isKeepSystemVariables()) {
+                    //The new envMap wins
+                    //resultVariables.putAll(System.getenv());
+                    resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                 }
+
+                //Add build variables (such as parameter variables).
+                if (envInjectJobProperty.isKeepBuildVariables()) {
+                    resultVariables.putAll(getAndAddBuildVariables(build));
+                }
+
+                //Build a properties object with all information
+                final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
+                resultVariables.putAll(envMap);
+
+                //Resolves vars each other
+                EnvVars.resolve(resultVariables);
+
+                //Set the new computer variables
+                Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+
+                //Add a display action
+                build.addAction(new EnvInjectAction(resultVariables));
+
+            } catch (EnvInjectException envEx) {
+                listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
+                throw new Run.RunnerAbortedException();
+            } catch (Throwable throwable) {
+                listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
+                throw new Run.RunnerAbortedException();
             }
         }
         return new Environment() {
@@ -119,23 +121,68 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public void onCompleted(final Run run, final TaskListener listener) {
 
-        @SuppressWarnings("unchecked")
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
-        if (envInjectJobProperty != null) {
-            EnvInjectInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
-                try {
-                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(System.getenv())));
-                } catch (EnvInjectException e) {
-                    run.setResult(Result.FAILURE);
-                } catch (InterruptedException e) {
-                    run.setResult(Result.FAILURE);
-                } catch (IOException e) {
-                    run.setResult(Result.FAILURE);
-                }
+        if (isEnvInjectPluginActive(run)) {
+            try {
+                Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(System.getenv())));
+            } catch (EnvInjectException e) {
+                run.setResult(Result.FAILURE);
+            } catch (InterruptedException e) {
+                run.setResult(Result.FAILURE);
+            } catch (IOException e) {
+                run.setResult(Result.FAILURE);
             }
         }
     }
 
+
+    private boolean isEnvInjectPluginActive(Run run) {
+
+        boolean isJobPropertyChecked = isEnvInjectJobPropertyActive(run);
+        if (isJobPropertyChecked) {
+            return true;
+        }
+
+        Job job = run.getParent();
+        if (job instanceof Project) {
+            Project project = (Project) job;
+            return isEnvInjectBuildWrapperActive(project) || isEnvInjectBuildStepActive(project);
+        }
+
+        return false;
+    }
+
+
+    private boolean isEnvInjectJobPropertyActive(Run run) {
+        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(run);
+        if (envInjectJobProperty != null) {
+            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+            if (info != null && envInjectJobProperty.isOn()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private EnvInjectJobProperty getEnvInjectJobProperty(Run run) {
+        return (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
+    }
+
+    private boolean isEnvInjectBuildWrapperActive(Project project) {
+        for (Iterator<BuildWrapper> it = project.getBuildWrappersList().iterator(); it.hasNext();) {
+            if (EnvInjectBuildWrapper.class.isAssignableFrom(it.next().getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isEnvInjectBuildStepActive(Project project) {
+        for (Iterator<Builder> it = project.getBuildersList().iterator(); it.hasNext();) {
+            if (EnvInjectBuilder.class.isAssignableFrom(it.next().getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
