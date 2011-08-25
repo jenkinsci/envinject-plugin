@@ -60,7 +60,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = build.getWorkspace().act(new PropertiesVariablesRetriever(info, listener, resultVariables));
+            Map<String, String> envMap = build.getWorkspace().act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
             resultVariables.putAll(envMap);
 
             //Resolve vars each other

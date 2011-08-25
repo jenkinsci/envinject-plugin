@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.envinject.service;
 
 
-import hudson.model.TaskListener;
 import org.jenkinsci.plugins.envinject.EnvInjectException;
 
 import java.io.*;
@@ -14,18 +13,12 @@ import java.util.Properties;
  */
 public class PropertiesFileService implements Serializable {
 
-    private TaskListener listener;
-
-    public PropertiesFileService(TaskListener listener) {
-        this.listener = listener;
-    }
-
     /**
      * Get a map environment variables from a properties file path
      *
-     * @return a environment map
-     * @throws org.jenkinsci.plugins.envinject.EnvInjectException
-     *
+     * @param filePath
+     * @return
+     * @throws EnvInjectException
      */
     public Map<String, String> getVarsFromPropertiesFilePath(String filePath) throws EnvInjectException {
 
@@ -43,7 +36,6 @@ public class PropertiesFileService implements Serializable {
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(f);
-            listener.getLogger().print(String.format("Injecting as environment variables the properties file path '%s'", filePath));
             properties.load(fileReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
@@ -64,9 +56,10 @@ public class PropertiesFileService implements Serializable {
     }
 
     /**
-     * Gte a map environment variables from the content
+     * Get a map environment variables from the content
      *
-     * @return a environment map
+     * @param fileContent
+     * @return
      * @throws EnvInjectException
      */
     public Map<String, String> getVarsFromPropertiesContent(String fileContent) throws EnvInjectException {
@@ -79,7 +72,6 @@ public class PropertiesFileService implements Serializable {
 
         StringReader stringReader = new StringReader(fileContent);
         Properties properties = new Properties();
-        listener.getLogger().print(String.format("Injecting as environment variables the properties content \n '%s' \n", fileContent));
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {

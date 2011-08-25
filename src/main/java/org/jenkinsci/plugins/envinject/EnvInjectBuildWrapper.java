@@ -36,66 +36,75 @@ import java.util.Map;
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
 
-	private EnvInjectJobPropertyInfo info;
+    private EnvInjectJobPropertyInfo info;
 
-	public void setInfo(EnvInjectJobPropertyInfo info) {
-		this.info = info;
-	}
+    public void setInfo(EnvInjectJobPropertyInfo info) {
+        this.info = info;
+    }
 
-	@SuppressWarnings("unused")
-	public EnvInjectJobPropertyInfo getInfo() {
-		return info;
-	}
+    @SuppressWarnings("unused")
+    public EnvInjectJobPropertyInfo getInfo() {
+        return info;
+    }
 
-	@Override
-	public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    @Override
+    public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
-		final Map<String, String> resultVariables = new HashMap<String, String>();
+        final Map<String, String> resultVariables = new HashMap<String, String>();
 
-		try {
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-			final FilePath ws = build.getWorkspace();
+        try {
 
-			// Add the current system env vars
-			ws.act(new Callable<Void, Throwable>() {
+            final FilePath ws = build.getWorkspace();
 
-				public Void call() throws Throwable {
-					resultVariables.putAll(EnvVars.masterEnvVars);
-					return null;
-				}
-			});
+            //Add the current system env vars
+            ws.act(new Callable<Void, Throwable>() {
 
-			// Always keep build variables (such as parameter variables).
-			resultVariables.putAll(getAndAddBuildVariables(build));
+                public Void call() throws Throwable {
+                    resultVariables.putAll(EnvVars.masterEnvVars);
+                    return null;
+                }
+            });
 
-			// Get env vars from properties info.
-			// File information path can be relative to the workspace
-			Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, listener, resultVariables));
-			resultVariables.putAll(envMap);
+            //Always keep build variables (such as parameter variables).
+            resultVariables.putAll(getAndAddBuildVariables(build));
 
-			// Execute script info
-			EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, listener);
-			scriptExecutorService.executeScriptFromInfoObject();
+            //Get env vars from properties info.
+            //File information path can be relative to the workspace
+            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, resultVariables, logger));
+            resultVariables.putAll(envMap);
 
+            //Execute script info
+            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, logger);
+            scriptExecutorService.executeScriptFromInfoObject();
+
+            // get infos about the triggers and expose it as env variables
 			Map<String, String> triggerVariable = getTriggerVariable(info.getAllTriggerVarName(), build);
 			resultVariables.putAll(triggerVariable);
+			
+            //Resolve vars each other
+            EnvVars.resolve(resultVariables);
 
-			// Resolve vars each other
-			EnvVars.resolve(resultVariables);
+            //Set the new build variables map
+            build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
 
-			// Set the new build variables map
-			build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+            //Add or get the existing action to add new env vars
+            addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
-			// Add or get the existing action to add new env vars
-			addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+        } catch (Throwable throwable) {
+            build.setResult(Result.FAILURE);
+        }
 
-		} catch (Throwable throwable) {
-			build.setResult(Result.FAILURE);
-		}
+        return new EnvironmentImpl();
+    }
 
-		return new EnvironmentImpl();
-	}
-
+    class EnvironmentImpl extends Environment {
+        @Override
+        public void buildEnvVars(Map<String, String> env) {
+        }
+    }
+    
 	private Map<String, String> getTriggerVariable(String allTriggerVariableName, AbstractBuild<?, ?> build) {
 
 		StringBuilder all = new StringBuilder();
@@ -137,57 +146,52 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 		return null;
 	}
 
-	class EnvironmentImpl extends Environment {
-		@Override
-		public void buildEnvVars(Map<String, String> env) {
-		}
-	}
+    private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
+        Map<String, String> result = new HashMap<String, String>();
+        //Add build variables such as parameters
+        result.putAll(build.getBuildVariables());
+        //Add workspace variable
+        FilePath ws = build.getWorkspace();
+        if (ws != null) {
+            result.put("WORKSPACE", ws.getRemote());
+        }
+        return result;
+    }
 
-	private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
-		Map<String, String> result = new HashMap<String, String>();
-		// Add build variables such as parameters
-		result.putAll(build.getBuildVariables());
-		// Add workspace variable
-		FilePath ws = build.getWorkspace();
-		if (ws != null) {
-			result.put("WORKSPACE", ws.getRemote());
-		}
-		return result;
-	}
+    private void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) {
+        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
+        if (envInjectAction != null) {
+            envInjectAction.overrideAll(envMap);
+        } else {
+            build.addAction(new EnvInjectAction(envMap));
+        }
+    }
 
-	private void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) {
-		EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-		if (envInjectAction != null) {
-			envInjectAction.overrideAll(envMap);
-		} else {
-			build.addAction(new EnvInjectAction(envMap));
-		}
-	}
+    @Extension
+    @SuppressWarnings("unused")
+    public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
-	@Extension
-	public static final class DescriptorImpl extends BuildWrapperDescriptor {
+        @Override
+        public boolean isApplicable(AbstractProject<?, ?> item) {
+            return true;
+        }
 
-		@Override
-		public boolean isApplicable(AbstractProject<?, ?> item) {
-			return true;
-		}
+        @Override
+        public String getDisplayName() {
+            return Messages.envinject_wrapper_displayName();
+        }
 
-		@Override
-		public String getDisplayName() {
-			return Messages.envinject_wrapper_displayName();
-		}
+        @Override
+        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+            EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoWrapper.");
+            wrapper.setInfo(info);
+            return wrapper;
+        }
 
-		@Override
-		public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-			EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-			EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoWrapper.");
-			wrapper.setInfo(info);
-			return wrapper;
-		}
-
-		@Override
-		public String getHelpFile() {
-			return "/plugin/envinject/help-buildWrapper.html";
-		}
-	}
+        @Override
+        public String getHelpFile() {
+            return "/plugin/envinject/help-buildWrapper.html";
+        }
+    }
 }

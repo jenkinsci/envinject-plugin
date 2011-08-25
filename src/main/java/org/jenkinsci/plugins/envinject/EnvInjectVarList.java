@@ -5,8 +5,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Gregory Boissinot
@@ -14,10 +14,10 @@ import java.util.Map;
 @ExportedBean
 public class EnvInjectVarList implements Serializable {
 
-    private Map<String, String> envMap = new HashMap<String, String>();
+    private Map<String, String> envMap = new TreeMap<String, String>();
 
     public EnvInjectVarList(Map<String, String> envMap) {
-        this.envMap = envMap;
+        this.envMap.putAll(envMap);
     }
 
     @Exported
