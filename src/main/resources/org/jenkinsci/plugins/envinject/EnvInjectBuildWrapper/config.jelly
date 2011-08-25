@@ -31,7 +31,7 @@
 
 
     <f:entry title="${%All triggers variable name}"
-    		 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/allTriggerVarName">
+    		 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper/help/allTriggerVarName">
         <f:textbox
               name="envInjectInfoWrapper.allTriggerVarName"
               value="${instance.info.allTriggerVarName}"/>
