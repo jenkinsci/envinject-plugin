@@ -47,13 +47,12 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             FilePath ws = build.getWorkspace();
 
             //Add the current system env vars
-            ws.act(new Callable<Void, Throwable>() {
+            resultVariables.putAll(ws.act(new Callable<Map<String, String>, Throwable>() {
 
-                public Void call() throws Throwable {
-                    resultVariables.putAll(EnvVars.masterEnvVars);
-                    return null;
+                public Map<String, String> call() throws Throwable {
+                    return EnvVars.masterEnvVars;
                 }
-            });
+            }));
 
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
@@ -67,7 +66,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             EnvVars.resolve(resultVariables);
 
             //Set the new build variables map
-            build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+            ws.act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
 
             //Add or get the existing action to add new env vars
             addEnvVarsToEnvInjectBuildAction(build, resultVariables);
