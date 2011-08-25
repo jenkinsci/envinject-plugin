@@ -34,6 +34,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Gregory Boissinot
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
+	
+	private static final String ENV_CAUSE = "BUILD_CAUSE";
 
 	private EnvInjectJobPropertyInfo info;
 
@@ -79,8 +81,10 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 			scriptExecutorService.executeScriptFromInfoObject();
 
 			// get infos about the triggers and expose it as env variables
-			Map<String, String> triggerVariable = getTriggerVariable(info.getAllTriggerVarName(), build);
-			resultVariables.putAll(triggerVariable);
+			if(info.isPopulateCauseEnv()){
+			  Map<String, String> triggerVariable = getTriggerVariable(build);
+			  resultVariables.putAll(triggerVariable);
+			}
 
 			// Resolve vars each other
 			EnvVars.resolve(resultVariables);
@@ -104,39 +108,37 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 		}
 	}
 
-	private Map<String, String> getTriggerVariable(String allTriggerVariableName, AbstractBuild<?, ?> build) {
+	private Map<String, String> getTriggerVariable(AbstractBuild<?, ?> build) {
 		Map<String, String> triggerVars = new HashMap<String, String>();
-		if (!StringUtils.isBlank(allTriggerVariableName)) {
-			StringBuilder all = new StringBuilder();
-			CauseAction causeAction = build.getAction(CauseAction.class);
-			List<Cause> buildCauses = causeAction.getCauses();
-			for (Cause cause : buildCauses) {
-				String name = getTriggerName(allTriggerVariableName, cause);
-				if (!StringUtils.isBlank(name)) {
-					triggerVars.put(name, "true");
-					all.append(name);
-					all.append(",");
-				}
-
+		StringBuilder all = new StringBuilder();
+		CauseAction causeAction = build.getAction(CauseAction.class);
+		List<Cause> buildCauses = causeAction.getCauses();
+		for (Cause cause : buildCauses) {
+			String name = getTriggerName(cause);
+			if (!StringUtils.isBlank(name)) {
+				triggerVars.put(ENV_CAUSE + "_" + name, "true");
+				all.append(name);
+				all.append(",");
 			}
-			// add variable containing all the trigger names
-			triggerVars.put(allTriggerVariableName, all.toString());
+
 		}
+		// add variable containing all the trigger names
+		triggerVars.put(ENV_CAUSE, all.toString());
 		return triggerVars;
 	}
 
-	private static String getTriggerName(String prefix, Cause cause) {
+	private static String getTriggerName(Cause cause) {
 		if (SCMTrigger.SCMTriggerCause.class.isInstance(cause)) {
-			return prefix + "_SCMTRIGGER";
+			return "SCMTRIGGER";
 		} else if (TimerTrigger.TimerTriggerCause.class.isInstance(cause)) {
-			return prefix + "_TIMERTRIGGER";
+			return "TIMERTRIGGER";
 		} else if (Cause.UserCause.class.isInstance(cause)) {
-			return prefix + "_MANUALTRIGGER";
+			return "MANUALTRIGGER";
 		} else if (Cause.UpstreamCause.class.isInstance(cause)) {
-			return prefix + "_UPSTREAMTRIGGER";
+			return "UPSTREAMTRIGGER";
 		} else if (cause != null) {
 			// fallback
-			return prefix + "_" + cause.getClass().getSimpleName().toUpperCase();
+			return cause.getClass().getSimpleName().toUpperCase();
 		}
 		return null;
 	}

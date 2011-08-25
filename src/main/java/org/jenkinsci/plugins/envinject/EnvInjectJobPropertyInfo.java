@@ -12,14 +12,14 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
 
 	private String scriptContent;
 
-	private String allTriggerVarName;
+	private boolean populateCauseEnv;
 
 	@DataBoundConstructor
-	public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, String allTriggerVarName) {
+	public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean populateCauseEnv) {
 		super(Util.fixEmpty(propertiesFilePath), Util.fixEmpty(propertiesContent));
 		this.scriptFilePath = Util.fixEmpty(scriptFilePath);
 		this.scriptContent = Util.fixEmpty(scriptContent);
-		this.allTriggerVarName = allTriggerVarName;
+		this.populateCauseEnv = populateCauseEnv;
 	}
 
 	public String getScriptFilePath() {
@@ -30,8 +30,8 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
 		return scriptContent;
 	}
 
-	public String getAllTriggerVarName() {
-		return allTriggerVarName;
+	public boolean isPopulateCauseEnv() {
+		return populateCauseEnv;
 	}
 
 }
