@@ -31,16 +31,18 @@ public class PropertiesVariablesRetriever implements Callable<Map<String, String
 
         PropertiesFileService propertiesFileService = new PropertiesFileService(listener);
 
-        //Process the properties file
+        //Add the properties file
         if (info.getPropertiesFilePath() != null) {
             String scriptFilePath = Util.replaceMacro(info.getPropertiesFilePath(), currentEnvVars);
-            scriptFilePath = scriptFilePath.replace("\\", "/");
+            scriptFilePath = scriptFilePath.replace("\\", " / ");
+            listener.getLogger().print(String.format("Injecting as environment variables the properties file path '%s'", scriptFilePath));
             result.putAll(propertiesFileService.getVarsFromPropertiesFilePath(scriptFilePath));
         }
 
-        //Process the properties content
+        //Add the properties content
         if (info.getPropertiesContent() != null) {
             String fileContent = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
+            listener.getLogger().print(String.format("Injecting as environment variables the properties content \n '%s' \n", fileContent));
             result.putAll(propertiesFileService.getVarsFromPropertiesContent(fileContent));
         }
 

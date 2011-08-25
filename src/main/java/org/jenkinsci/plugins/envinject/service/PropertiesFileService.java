@@ -43,7 +43,6 @@ public class PropertiesFileService implements Serializable {
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(f);
-            listener.getLogger().print(String.format("Injecting as environment variables the properties file path '%s'", filePath));
             properties.load(fileReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
@@ -79,7 +78,6 @@ public class PropertiesFileService implements Serializable {
 
         StringReader stringReader = new StringReader(fileContent);
         Properties properties = new Properties();
-        listener.getLogger().print(String.format("Injecting as environment variables the properties content \n '%s' \n", fileContent));
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {
