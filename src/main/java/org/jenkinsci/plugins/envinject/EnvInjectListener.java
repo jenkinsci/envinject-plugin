@@ -8,6 +8,7 @@ import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
+import hudson.util.DescribableList;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
@@ -45,7 +46,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 //Add system environment variables if needed
                 if (envInjectJobProperty.isKeepSystemVariables()) {
                     //The new envMap wins
-                    //resultVariables.putAll(System.getenv());
                     resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                 }
 
@@ -145,7 +145,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         Job job = run.getParent();
         if (job instanceof Project) {
             Project project = (Project) job;
-            return isEnvInjectBuildWrapperActive(project) || isEnvInjectBuildStepActive(project);
+            return isEnvInjectBuildWrapperActive(project.getBuildWrappersList()) || isEnvInjectBuildStepActive(project.getBuildersList());
+        }
+
+        if (job instanceof hudson.maven.MavenModuleSet) {
+            hudson.maven.MavenModuleSet moduleSet = (hudson.maven.MavenModuleSet) job;
+            return isEnvInjectBuildWrapperActive(moduleSet.getBuildWrappersList());
         }
 
         return false;
@@ -167,8 +172,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
     }
 
-    private boolean isEnvInjectBuildWrapperActive(Project project) {
-        for (Iterator<BuildWrapper> it = project.getBuildWrappersList().iterator(); it.hasNext();) {
+    private boolean isEnvInjectBuildWrapperActive(DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrapperList) {
+        assert wrapperList != null;
+        for (Iterator<BuildWrapper> it = wrapperList.iterator(); it.hasNext();) {
             if (EnvInjectBuildWrapper.class.isAssignableFrom(it.next().getClass())) {
                 return true;
             }
@@ -176,8 +182,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return false;
     }
 
-    private boolean isEnvInjectBuildStepActive(Project project) {
-        for (Iterator<Builder> it = project.getBuildersList().iterator(); it.hasNext();) {
+    private boolean isEnvInjectBuildStepActive(DescribableList<Builder, Descriptor<Builder>> builderList) {
+        assert builderList != null;
+        for (Iterator<Builder> it = builderList.iterator(); it.hasNext();) {
             if (EnvInjectBuilder.class.isAssignableFrom(it.next().getClass())) {
                 return true;
             }
