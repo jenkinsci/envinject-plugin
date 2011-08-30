@@ -9,7 +9,6 @@ import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.DescribableList;
-import hudson.util.LogTaskListener;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
@@ -19,7 +18,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -33,9 +31,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
+        final Map<String, String> resultVariables = new HashMap<String, String>();
         if (isEnvInjectJobPropertyActive(build)) {
-
-            Map<String, String> resultVariables = new HashMap<String, String>();
             try {
 
                 EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
@@ -43,11 +40,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
                 assert envInjectJobProperty != null && envInjectJobProperty.isOn();
 
+                //Fix JENKINS-10847 postponed
                 //Add system environment variables if needed
-                if (envInjectJobProperty.isKeepSystemVariables()) {
-                    //The new envMap wins
-                    resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
-                }
+//                if (envInjectJobProperty.isKeepSystemVariables()) {
+//                    //The new envMap wins
+//                    resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+//                }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
@@ -61,8 +59,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 //Resolves vars each other
                 EnvVars.resolve(resultVariables);
 
+                //Fix JENKINS-10847 postponed
                 //Set the new computer variables
-                Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+//                Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
 
                 //Add a display action
                 build.addAction(new EnvInjectAction(resultVariables));
@@ -76,6 +75,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
         return new Environment() {
+
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                env.clear();
+                env.putAll(resultVariables);
+            }
         };
     }
 

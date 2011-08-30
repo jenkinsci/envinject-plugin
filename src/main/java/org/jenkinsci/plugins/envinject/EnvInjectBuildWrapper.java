@@ -8,11 +8,9 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.remoting.Callable;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
@@ -49,14 +47,15 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             final FilePath ws = build.getWorkspace();
 
-            //Add the current system env vars
-            ws.act(new Callable<Void, Throwable>() {
-
-                public Void call() throws Throwable {
-                    resultVariables.putAll(EnvVars.masterEnvVars);
-                    return null;
-                }
-            });
+//Fix JENKINS-10847 postponed
+//            //Add the current system env vars
+//            ws.act(new Callable<Void, Throwable>() {
+//
+//                public Void call() throws Throwable {
+//                    resultVariables.putAll(EnvVars.masterEnvVars);
+//                    return null;
+//                }
+//            });
 
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
@@ -73,8 +72,9 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             //Resolve vars each other
             EnvVars.resolve(resultVariables);
 
+            //Fix JENKINS-10847 postponed
             //Set the new build variables map
-            build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+            //build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
 
             //Add or get the existing action to add new env vars
             addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -83,13 +83,13 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             build.setResult(Result.FAILURE);
         }
 
-        return new EnvironmentImpl();
-    }
+        return new Environment() {
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                env.putAll(resultVariables);
 
-    class EnvironmentImpl extends Environment {
-        @Override
-        public void buildEnvVars(Map<String, String> env) {
-        }
+            }
+        };
     }
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
