@@ -41,9 +41,9 @@ public class PropertiesVariablesRetriever implements Callable<Map<String, String
 
         //Add the properties content
         if (info.getPropertiesContent() != null) {
-            String fileContent = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
-            logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", fileContent));
-            result.putAll(propertiesFileService.getVarsFromPropertiesContent(fileContent));
+            String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
+            logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", content));
+            result.putAll(propertiesFileService.getVarsFromPropertiesContent(content));
         }
 
         return result;
