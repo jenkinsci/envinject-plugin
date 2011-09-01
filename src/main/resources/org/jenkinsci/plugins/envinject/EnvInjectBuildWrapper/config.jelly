@@ -29,4 +29,13 @@
                 value="${instance.info.scriptContent}"/>
     </f:entry>
 
+
+    <f:entry title="${%Populate build cause}"
+    		 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper/help/populateCauseEnv">
+        <f:checkbox
+                    name="envInjectInfoWrapper.populateCauseEnv"
+                    checked="${instance.info.isPopulateCauseEnv()}" />      
+    </f:entry>
+      
+    
 </j:jelly>

@@ -48,6 +48,13 @@
                     name="envInjectInfoJobProperty.scriptContent"
                     value="${instance.info.scriptContent}"/>
         </f:entry>
+        
+        <f:entry title="${%Populate build cause}"
+    		 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper/help/populateCauseEnv">
+        	<f:checkbox
+                    name="envInjectInfoJobProperty.populateCauseEnv"
+                    checked="${instance.info.isPopulateCauseEnv()}" />      
+    </f:entry>
 
     </f:optionalBlock>
 

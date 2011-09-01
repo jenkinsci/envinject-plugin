@@ -11,6 +11,8 @@ import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
+
+import org.jenkinsci.plugins.envinject.service.BuildCauseUtil;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
@@ -69,6 +71,11 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, logger);
             scriptExecutorService.executeScriptFromInfoObject();
 
+            // get infos about the triggers/causes and expose it as env variables
+            if(info.isPopulateCauseEnv()){
+            	resultVariables.putAll(BuildCauseUtil.getTriggerVariable(build));
+            }
+            
             //Resolve vars each other
             EnvVars.resolve(resultVariables);
 
