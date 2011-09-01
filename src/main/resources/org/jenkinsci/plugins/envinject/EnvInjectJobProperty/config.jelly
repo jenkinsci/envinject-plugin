@@ -6,11 +6,13 @@
                      checked="${instance.on}"
                      help="/plugin/envinject/help.html">
 
+        <!--
         <f:entry field="keepSystemVariables" title="${%Keep System Environment Variables}">
             <f:checkbox
                     name="keepSystemVariables"
                     checked="${instance.keepSystemVariables}" default="${false}"/>
         </f:entry>
+        -->
 
         <f:entry field="keepBuildVariables" title="${%Keep Jenkins Build Variables}">
             <f:checkbox

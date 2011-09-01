@@ -16,7 +16,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     private boolean on;
 
-    private boolean keepSystemVariables;
+    private transient boolean keepSystemVariables;
 
     private boolean keepBuildVariables;
 
@@ -85,7 +85,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                 envInjectJobProperty.setInfo(info);
                 envInjectJobProperty.setOn(true);
                 if (onObject instanceof JSONObject) {
-                    envInjectJobProperty.setKeepSystemVariables(((JSONObject) onObject).getBoolean("keepSystemVariables"));
+                    //envInjectJobProperty.setKeepSystemVariables(((JSONObject) onObject).getBoolean("keepSystemVariables"));
                     envInjectJobProperty.setKeepBuildVariables(((JSONObject) onObject).getBoolean("keepBuildVariables"));
                     return envInjectJobProperty;
                 }

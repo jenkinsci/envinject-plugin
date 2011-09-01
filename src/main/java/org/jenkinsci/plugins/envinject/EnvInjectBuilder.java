@@ -4,15 +4,10 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.remoting.Callable;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -46,15 +41,15 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             FilePath ws = build.getWorkspace();
 
+            //Fix JENKINS-10847 postponed
+/*
             //Add the current system env vars
-            ws.act(new Callable<Void, Throwable>() {
-
-                public Void call() throws Throwable {
-                    resultVariables.putAll(EnvVars.masterEnvVars);
-                    return null;
+            resultVariables.putAll(ws.act(new Callable<Map<String, String>, Throwable>() {
+                public Map<String, String> call() throws Throwable {
+                    return EnvVars.masterEnvVars;
                 }
-            });
-
+            }));
+*/
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
 
@@ -66,8 +61,26 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             //Resolve vars each other
             EnvVars.resolve(resultVariables);
 
+            //Fix JENKINS-10847 postponed
             //Set the new build variables map
-            build.getWorkspace().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+            //ws.act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+            build.addAction(new EnvironmentContributingAction() {
+                public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+                    env.putAll(resultVariables);
+                }
+
+                public String getIconFileName() {
+                    return null;
+                }
+
+                public String getDisplayName() {
+                    return null;
+                }
+
+                public String getUrlName() {
+                    return null;
+                }
+            });
 
             //Add or get the existing action to add new env vars
             addEnvVarsToEnvInjectBuildAction(build, resultVariables);
