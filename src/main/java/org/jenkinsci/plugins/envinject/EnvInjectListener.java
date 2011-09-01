@@ -7,6 +7,8 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.util.LogTaskListener;
+
+import org.jenkinsci.plugins.envinject.service.BuildCauseUtil;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
@@ -24,118 +26,125 @@ import java.util.logging.Logger;
 @Extension
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
 
-    private static Logger LOG = Logger.getLogger(EnvInjectListener.class.getName());
+	private static Logger LOG = Logger.getLogger(EnvInjectListener.class.getName());
 
-    @Override
-    public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+	@Override
+	public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
-        @SuppressWarnings("unchecked")
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) build.getProject().getProperty(EnvInjectJobProperty.class);
-        if (envInjectJobProperty != null) {
-            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
+		@SuppressWarnings("unchecked")
+		EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) build.getProject().getProperty(EnvInjectJobProperty.class);
+		if (envInjectJobProperty != null) {
+			EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+			if (info != null && envInjectJobProperty.isOn()) {
 
-                Map<String, String> resultVariables = new HashMap<String, String>();
+				Map<String, String> resultVariables = new HashMap<String, String>();
 
-                try {
+				try {
 
-                    //Add system environment variables if needed
-                    if (envInjectJobProperty.isKeepSystemVariables()) {
-                        //The new envMap wins
-                        //resultVariables.putAll(System.getenv());
-                        resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
-                    }
+					// Add system environment variables if needed
+					if (envInjectJobProperty.isKeepSystemVariables()) {
+						// The new envMap wins
+						// resultVariables.putAll(System.getenv());
+						resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+					}
 
-                    //Add build variables (such as parameter variables).
-                    if (envInjectJobProperty.isKeepBuildVariables()) {
-                        resultVariables.putAll(getAndAddBuildVariables(build));
-                    }
+					// Add build variables (such as parameter variables).
+					if (envInjectJobProperty.isKeepBuildVariables()) {
+						resultVariables.putAll(getAndAddBuildVariables(build));
+					}
 
-                    //Build a properties object with all information
-                    final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
-                    resultVariables.putAll(envMap);
+					// get infos about the triggers and expose it as env
+					// variables
+					if (info.isPopulateCauseEnv()) {
+						Map<String, String> triggerVariable = BuildCauseUtil.getTriggerVariable(build);
+						resultVariables.putAll(triggerVariable);
+					}
 
-                    //Resolves vars each other
-                    EnvVars.resolve(resultVariables);
+					// Build a properties object with all information
+					final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
+					resultVariables.putAll(envMap);
 
-                    //Set the new computer variables
-                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
+					// Resolves vars each other
+					EnvVars.resolve(resultVariables);
 
-                    //Add a display action
-                    build.addAction(new EnvInjectAction(resultVariables));
+					// Set the new computer variables
+					Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
 
-                } catch (EnvInjectException envEx) {
-                    listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
-                    throw new Run.RunnerAbortedException();
-                } catch (Throwable throwable) {
-                    listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
-                    throw new Run.RunnerAbortedException();
-                }
-            }
-        }
-        return new Environment() {
-        };
-    }
+					// Add a display action
+					build.addAction(new EnvInjectAction(resultVariables));
 
-    private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws Throwable {
+				} catch (EnvInjectException envEx) {
+					listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
+					throw new Run.RunnerAbortedException();
+				} catch (Throwable throwable) {
+					listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
+					throw new Run.RunnerAbortedException();
+				}
+			}
+		}
+		return new Environment() {
+		};
+	}
 
-        final Map<String, String> resultMap = new HashMap<String, String>();
+	private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars,
+			final Launcher launcher, BuildListener listener) throws Throwable {
 
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
-        Computer computer = Computer.currentComputer();
-        Node node = computer.getNode();
-        if (node != null) {
-            final FilePath rootPath = node.getRootPath();
-            if (rootPath != null) {
+		final Map<String, String> resultMap = new HashMap<String, String>();
 
-                //Get env vars from properties
-                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, currentEnvVars, logger)));
+		EnvInjectLogger logger = new EnvInjectLogger(listener);
+		Computer computer = Computer.currentComputer();
+		Node node = computer.getNode();
+		if (node != null) {
+			final FilePath rootPath = node.getRootPath();
+			if (rootPath != null) {
 
-                //Execute script info
-                EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, logger);
-                scriptExecutorService.executeScriptFromInfoObject();
-            }
-        }
-        return resultMap;
-    }
+				// Get env vars from properties
+				resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, currentEnvVars, logger)));
 
-    private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
-        Map<String, String> result = new HashMap<String, String>();
+				// Execute script info
+				EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, logger);
+				scriptExecutorService.executeScriptFromInfoObject();
+			}
+		}
+		return resultMap;
+	}
 
-        //Add build process variables
-        result.putAll(build.getCharacteristicEnvVars());
+	private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
+		Map<String, String> result = new HashMap<String, String>();
 
-        //Add build variables such as parameters, plugins contributions, ...
-        result.putAll(build.getBuildVariables());
+		// Add build process variables
+		result.putAll(build.getCharacteristicEnvVars());
 
-        //Add workspace variable
-        FilePath ws = build.getWorkspace();
-        if (ws != null) {
-            result.put("WORKSPACE", ws.getRemote());
-        }
-        return result;
-    }
+		// Add build variables such as parameters, plugins contributions, ...
+		result.putAll(build.getBuildVariables());
 
-    @Override
-    public void onCompleted(final Run run, final TaskListener listener) {
+		// Add workspace variable
+		FilePath ws = build.getWorkspace();
+		if (ws != null) {
+			result.put("WORKSPACE", ws.getRemote());
+		}
+		return result;
+	}
 
-        @SuppressWarnings("unchecked")
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
-        if (envInjectJobProperty != null) {
-            EnvInjectInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
-                try {
-                    Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(System.getenv())));
-                } catch (EnvInjectException e) {
-                    run.setResult(Result.FAILURE);
-                } catch (InterruptedException e) {
-                    run.setResult(Result.FAILURE);
-                } catch (IOException e) {
-                    run.setResult(Result.FAILURE);
-                }
-            }
-        }
-    }
+	@Override
+	public void onCompleted(final Run run, final TaskListener listener) {
 
+		@SuppressWarnings("unchecked")
+		EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
+		if (envInjectJobProperty != null) {
+			EnvInjectInfo info = envInjectJobProperty.getInfo();
+			if (info != null && envInjectJobProperty.isOn()) {
+				try {
+					Computer.currentComputer().getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars(System.getenv())));
+				} catch (EnvInjectException e) {
+					run.setResult(Result.FAILURE);
+				} catch (InterruptedException e) {
+					run.setResult(Result.FAILURE);
+				} catch (IOException e) {
+					run.setResult(Result.FAILURE);
+				}
+			}
+		}
+	}
 
 }
