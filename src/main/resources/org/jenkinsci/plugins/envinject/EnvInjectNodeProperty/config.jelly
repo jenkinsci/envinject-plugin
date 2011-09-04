@@ -1,0 +1,12 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <f:entry field="unsetSystemVariables"
+             title="${%Unset System Environment Variables}"
+             help="/plugin/envinject/help-unsetSystemVariables.html">
+        <f:checkbox
+                name="unsetSystemVariables"
+                checked="${it.unsetSystemVariables}" default="${true}"/>
+    </f:entry>
+
+</j:jelly>

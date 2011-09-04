@@ -8,6 +8,7 @@ import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -39,31 +40,21 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
         try {
 
-            FilePath ws = build.getWorkspace();
+            FilePath workspace = build.getWorkspace();
 
-            //Fix JENKINS-10847 postponed
-/*
-            //Add the current system env vars
-            resultVariables.putAll(ws.act(new Callable<Map<String, String>, Throwable>() {
-                public Map<String, String> call() throws Throwable {
-                    return EnvVars.masterEnvVars;
-                }
-            }));
-*/
+
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = build.getWorkspace().act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
+            Map<String, String> envMap = workspace.act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
             resultVariables.putAll(envMap);
 
             //Resolve vars each other
             EnvVars.resolve(resultVariables);
 
-            //Fix JENKINS-10847 postponed
             //Set the new build variables map
-            //ws.act(new EnvInjectMasterEnvVarsSetter(new EnvVars(resultVariables)));
             build.addAction(new EnvironmentContributingAction() {
                 public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
                     env.putAll(resultVariables);
@@ -83,7 +74,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             });
 
             //Add or get the existing action to add new env vars
-            addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            new EnvInjectActionSetter(workspace).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
             build.setResult(Result.FAILURE);
@@ -103,15 +94,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             result.put("WORKSPACE", ws.getRemote());
         }
         return result;
-    }
-
-    private void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) {
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-        if (envInjectAction != null) {
-            envInjectAction.overrideAll(envMap);
-        } else {
-            build.addAction(new EnvInjectAction(envMap));
-        }
     }
 
     @Extension

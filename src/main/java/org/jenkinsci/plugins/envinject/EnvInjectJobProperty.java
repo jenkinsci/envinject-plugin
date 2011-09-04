@@ -18,6 +18,8 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     private transient boolean keepSystemVariables;
 
+    private boolean keepJenkinsSystemVariables;
+
     private boolean keepBuildVariables;
 
     @SuppressWarnings("unused")
@@ -36,6 +38,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @SuppressWarnings("unused")
+    public boolean isKeepJenkinsSystemVariables() {
+        return keepJenkinsSystemVariables;
+    }
+
+    @SuppressWarnings("unused")
     public boolean isKeepBuildVariables() {
         return keepBuildVariables;
     }
@@ -48,8 +55,8 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.on = on;
     }
 
-    public void setKeepSystemVariables(boolean keepSystemVariables) {
-        this.keepSystemVariables = keepSystemVariables;
+    public void setKeepJenkinsSystemVariables(boolean keepJenkinsSystemVariables) {
+        this.keepJenkinsSystemVariables = keepJenkinsSystemVariables;
     }
 
     public void setKeepBuildVariables(boolean keepBuildVariables) {
@@ -85,7 +92,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                 envInjectJobProperty.setInfo(info);
                 envInjectJobProperty.setOn(true);
                 if (onObject instanceof JSONObject) {
-                    //envInjectJobProperty.setKeepSystemVariables(((JSONObject) onObject).getBoolean("keepSystemVariables"));
+                    envInjectJobProperty.setKeepJenkinsSystemVariables(((JSONObject) onObject).getBoolean("keepJenkinsSystemVariables"));
                     envInjectJobProperty.setKeepBuildVariables(((JSONObject) onObject).getBoolean("keepBuildVariables"));
                     return envInjectJobProperty;
                 }

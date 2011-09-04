@@ -5,5 +5,11 @@
         All these actions will be executed before a SCM checkout.<br/>
         By default, after the set up, only injected variables (with Jenkins variables) will be available in the build
         scripts, in the Jenkins post-actions, and so on. <br/>
+
+        Default inherited environment variables (inherited variables by
+        the Jenkins process which often contains machine-specific information,
+        like PATH, TIMEZONE, etc.) can be unset if you enable
+        the 'envInject' property and check 'Unset system variables'
+        in the node configuration page.
     </p>
 </div>
