@@ -34,7 +34,7 @@ public class PropertiesVariablesRetriever implements Callable<Map<String, String
         //Add the properties file
         if (info.getPropertiesFilePath() != null) {
             String scriptFilePath = Util.replaceMacro(info.getPropertiesFilePath(), currentEnvVars);
-            scriptFilePath = scriptFilePath.replace("\\", " / ");
+            scriptFilePath = scriptFilePath.replace("\\", "/");
             logger.info(String.format("Injecting as environment variables the properties file path '%s'", scriptFilePath));
             result.putAll(propertiesFileService.getVarsFromPropertiesFilePath(scriptFilePath));
         }
