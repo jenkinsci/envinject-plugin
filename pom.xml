@@ -45,11 +45,4 @@
         <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
     </scm>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>maven-plugin</artifactId>
-        </dependency>
-    </dependencies>
-
 </project>
