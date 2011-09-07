@@ -1,17 +1,21 @@
 package org.jenkinsci.plugins.envinject.service;
 
+import hudson.FilePath;
 import hudson.Util;
-import hudson.remoting.Callable;
+import hudson.remoting.VirtualChannel;
+import org.jenkinsci.plugins.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesVariablesRetriever implements Callable<Map<String, String>, Throwable> {
+public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<String, String>> {
 
     private EnvInjectInfo info;
 
@@ -25,28 +29,49 @@ public class PropertiesVariablesRetriever implements Callable<Map<String, String
         this.logger = logger;
     }
 
-    public Map<String, String> call() throws Throwable {
-
+    public Map<String, String> invoke(File base, VirtualChannel channel) throws IOException, InterruptedException {
         Map<String, String> result = new HashMap<String, String>();
 
-        PropertiesFileService propertiesFileService = new PropertiesFileService();
+        try {
 
-        //Add the properties file
-        if (info.getPropertiesFilePath() != null) {
-            String scriptFilePath = Util.replaceMacro(info.getPropertiesFilePath(), currentEnvVars);
-            scriptFilePath = scriptFilePath.replace("\\", "/");
-            logger.info(String.format("Injecting as environment variables the properties file path '%s'", scriptFilePath));
-            result.putAll(propertiesFileService.getVarsFromPropertiesFilePath(scriptFilePath));
-        }
+            PropertiesFileService propertiesFileService = new PropertiesFileService();
 
-        //Add the properties content
-        if (info.getPropertiesContent() != null) {
-            String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
-            logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", content));
-            result.putAll(propertiesFileService.getVarsFromPropertiesContent(content));
+            //Add the properties file
+            if (info.getPropertiesFilePath() != null) {
+                String propertiesFilePath = Util.replaceMacro(info.getPropertiesFilePath(), currentEnvVars);
+                propertiesFilePath = propertiesFilePath.replace("\\", "/");
+                File propertiesFile = getFile(base, propertiesFilePath);
+                if (propertiesFile == null) {
+                    throw new EnvInjectException(String.format("The given properties file path '%s' doesn't exist.", propertiesFilePath));
+                }
+                logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePath));
+                result.putAll(propertiesFileService.getVarsFromPropertiesFile(propertiesFile));
+            }
+
+            //Add the properties content
+            if (info.getPropertiesContent() != null) {
+                String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
+                logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", content));
+                result.putAll(propertiesFileService.getVarsFromPropertiesContent(content));
+            }
+
+        } catch (EnvInjectException envEx) {
+            logger.error("Exception occurs " + envEx.getMessage());
+            throw new IOException(envEx);
         }
 
         return result;
+    }
+
+    private File getFile(File base, String scriptFilePath) {
+
+        File file = new File(scriptFilePath);
+        if (file.exists()) {
+            return file;
+        }
+
+        file = new File(base, scriptFilePath);
+        return file.exists() ? file : null;
     }
 
 

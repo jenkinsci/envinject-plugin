@@ -18,4 +18,9 @@ public class EnvInjectLogger implements Serializable {
     public void info(String message) {
         listener.getLogger().println("[EnvInject] - " + message);
     }
+
+    public void error(String message) {
+        listener.getLogger().println("[EnvInject] - [ERROR] - " + message);
+    }
+
 }

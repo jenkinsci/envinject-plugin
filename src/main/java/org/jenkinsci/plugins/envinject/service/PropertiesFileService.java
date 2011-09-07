@@ -16,26 +16,25 @@ public class PropertiesFileService implements Serializable {
     /**
      * Get a map environment variables from a properties file path
      *
-     * @param filePath
-     * @return
+     * @param propertiesFile the properties file
+     * @return a map containing all the file properties content
      * @throws EnvInjectException
      */
-    public Map<String, String> getVarsFromPropertiesFilePath(String filePath) throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile) throws EnvInjectException {
 
-        if (filePath == null) {
-            throw new NullPointerException("The file path object must be set.");
+        if (propertiesFile == null) {
+            throw new NullPointerException("The properties file object must be set.");
+        }
+        if (!propertiesFile.exists()) {
+            throw new NullPointerException("The properties file object must be exist.");
         }
 
         Map<String, String> result = new HashMap<String, String>();
 
-        File f = new File(filePath);
-        if (!f.exists()) {
-            return result;
-        }
         Properties properties = new Properties();
         FileReader fileReader = null;
         try {
-            fileReader = new FileReader(f);
+            fileReader = new FileReader(propertiesFile);
             properties.load(fileReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);

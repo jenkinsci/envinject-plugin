@@ -68,6 +68,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
         } catch (Throwable throwable) {
             build.setResult(Result.FAILURE);
+            return null;
         }
 
         return new Environment() {

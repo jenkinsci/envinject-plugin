@@ -5,6 +5,10 @@ package org.jenkinsci.plugins.envinject;
  */
 public class EnvInjectException extends Exception {
 
+    public EnvInjectException(String s) {
+        super(s);
+    }
+
     public EnvInjectException(Throwable throwable) {
         super(throwable);
     }
