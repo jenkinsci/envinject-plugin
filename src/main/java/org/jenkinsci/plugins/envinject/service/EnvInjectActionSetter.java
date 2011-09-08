@@ -9,6 +9,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectException;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -30,7 +31,9 @@ public class EnvInjectActionSetter implements Serializable {
         } else {
             envInjectAction = new EnvInjectAction(rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
                 public Map<String, String> call() throws EnvInjectException {
-                    return EnvVars.masterEnvVars;
+                    HashMap<String, String> result = new HashMap<String, String>();
+                    result.putAll(EnvVars.masterEnvVars);
+                    return result;
                 }
             }));
             envInjectAction.overrideAll(envMap);
