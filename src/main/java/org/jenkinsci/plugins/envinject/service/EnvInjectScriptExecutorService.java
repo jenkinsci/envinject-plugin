@@ -64,10 +64,12 @@ public class EnvInjectScriptExecutorService {
                     logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
                 }
             } else {
-                logger.info(String.format("Can't load the file '%s'. It doesn't exist.", f.getRemote()));
+                String message = String.format("Can't load the file '%s'. It doesn't exist.", f.getRemote());
+                logger.error(message);
+                throw new EnvInjectException(message);
             }
         } catch (Throwable e) {
-            throw new EnvInjectException("Error occurs on execution script file path", e);
+            throw new EnvInjectException("Error occurs on execution script file path.", e);
         }
     }
 
@@ -86,7 +88,9 @@ public class EnvInjectScriptExecutorService {
             logger.info(String.format("Executing the script: \n %s", scriptContent));
             int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).pwd(rootScriptExecutionPath).join();
             if (cmdCode != 0) {
-                logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
+                String message = String.format("The exit code is '%s'. Fail the build.", cmdCode);
+                logger.error(message);
+                throw new EnvInjectException(message);
             }
 
         } catch (IOException ioe) {

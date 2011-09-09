@@ -42,7 +42,9 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                 propertiesFilePath = propertiesFilePath.replace("\\", "/");
                 File propertiesFile = getFile(base, propertiesFilePath);
                 if (propertiesFile == null) {
-                    throw new EnvInjectException(String.format("The given properties file path '%s' doesn't exist.", propertiesFilePath));
+                    String message = String.format("The given properties file path '%s' doesn't exist.", propertiesFilePath);
+                    logger.error(message);
+                    throw new EnvInjectException(message);
                 }
                 logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePath));
                 result.putAll(propertiesFileService.getVarsFromPropertiesFile(propertiesFile));
@@ -56,7 +58,6 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             }
 
         } catch (EnvInjectException envEx) {
-            logger.error("Exception occurs " + envEx.getMessage());
             throw new IOException(envEx);
         }
 
