@@ -1,0 +1,24 @@
+<div>
+    <p>
+        By setting this to true, an environment variable 'BUILD_CAUSE' holding all causes of the running build is
+        populated (separated by ',').
+
+    <ul>
+        <li>BUILD_CAUSE = SCMTRIGGER,TIMERTRIGGER,MANUALTRIGGER,UPSTREAMTRIGGER</li>
+    </ul>
+
+
+    In addition each single trigger gets available as single environment variable:<br/>
+    <ul>
+        <li>BUILD_CAUSE_SCMTRIGGER = true (SCM Trigger)</li>
+        <li>BUILD_CAUSE_TIMERTRIGGER = true (Triggered by Schedule)</li>
+        <li>BUILD_CAUSE_MANUALTRIGGER = true (triggered by user)</li>
+        <li>BUILD_CAUSE_UPSTREAMTRIGGER = true (triggered by upstream project)</li>
+    </ul>
+
+    ...unknown triggers will be added with its implementation name in upper case.<br/>
+    ...unknown triggers/causes (e.g. from plugins other then from core) will be added with its implementation name in
+    upper case.
+
+    </p>
+</div>

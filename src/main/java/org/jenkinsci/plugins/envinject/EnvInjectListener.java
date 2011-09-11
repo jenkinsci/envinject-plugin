@@ -7,6 +7,7 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.util.LogTaskListener;
+import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
@@ -51,6 +52,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 //Build a properties object with all information
                 final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
                 resultVariables.putAll(envMap);
+
+                // Retrieve triggered cause
+                if (info.isPopulateTriggerCause()) {
+                    Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
+                    resultVariables.putAll(triggerVariable);
+                }
 
                 //Resolves vars each other
                 EnvVars.resolve(resultVariables);

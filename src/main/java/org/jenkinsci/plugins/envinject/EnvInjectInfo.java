@@ -14,10 +14,13 @@ public class EnvInjectInfo implements Serializable {
 
     protected String propertiesContent;
 
+    protected boolean populateTriggerCause;
+
     @DataBoundConstructor
-    public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
-        this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
-        this.propertiesContent = Util.fixEmpty(propertiesContent);
+    public EnvInjectInfo(String propertiesFilePath, String propertiesContent, boolean populateTriggerCause) {
+        this.propertiesFilePath = propertiesFilePath;
+        this.propertiesContent = propertiesContent;
+        this.populateTriggerCause = populateTriggerCause;
     }
 
     public String getPropertiesFilePath() {
@@ -28,4 +31,7 @@ public class EnvInjectInfo implements Serializable {
         return propertiesContent;
     }
 
+    public boolean isPopulateTriggerCause() {
+        return populateTriggerCause;
+    }
 }
