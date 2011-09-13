@@ -22,6 +22,11 @@ public class EnvInjectAction implements Action, StaplerProxy {
         envMap.putAll(all);
     }
 
+    @SuppressWarnings("unused")
+    public Map<String, String> getEnvMap() {
+        return envMap;
+    }
+
     public String getIconFileName() {
         return "document-properties.gif";
     }
