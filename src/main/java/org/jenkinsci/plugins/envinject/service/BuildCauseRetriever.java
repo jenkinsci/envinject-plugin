@@ -17,6 +17,7 @@ import java.util.Map;
 public class BuildCauseRetriever {
 
     public static final String ENV_CAUSE = "BUILD_CAUSE";
+
     public Map<String, String> getTriggeredCause(AbstractBuild<?, ?> build) {
 
         Map<String, String> triggerVars = new HashMap<String, String>();

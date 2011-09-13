@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
