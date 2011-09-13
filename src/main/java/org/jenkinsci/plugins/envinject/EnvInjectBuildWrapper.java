@@ -74,7 +74,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             new EnvInjectActionSetter(ws).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
-            listener.getLogger().println("[EnvInject] - [ERROR] - " + throwable.getMessage());
+            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on job setup");
             build.setResult(Result.FAILURE);
             return null;
         }
