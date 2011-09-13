@@ -49,7 +49,11 @@ public class PropertiesFileService implements Serializable {
         }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            result.put((String) entry.getKey(), (String) entry.getValue());
+            String propKey = String.valueOf(entry.getKey());
+            propKey = propKey.trim();
+            String propVal = String.valueOf(entry.getValue());
+            propVal = propVal.trim();
+            result.put(propKey, propVal);
         }
         return result;
     }
