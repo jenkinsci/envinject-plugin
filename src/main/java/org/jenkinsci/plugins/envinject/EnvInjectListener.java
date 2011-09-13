@@ -39,14 +39,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
                 assert envInjectJobProperty != null && envInjectJobProperty.isOn();
 
-                //Ad Jenkins System variables
+                //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
                     resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                 }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    resultVariables.putAll(getAndAddBuildVariables(build));
+                    resultVariables.putAll(getBuildVariables(build));
                 }
 
                 //Build a properties object with all information
@@ -117,7 +117,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-    private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
+    private Map<String, String> getBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
 
         //Add build process variables
