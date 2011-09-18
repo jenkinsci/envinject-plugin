@@ -41,12 +41,18 @@ public class EnvInjectActionSetter implements Serializable {
         }
     }
 
+    /**
+     * Get a new map with the current envMap
+     */
     public Map<String, String> getCurrentEnvVars(AbstractBuild<?, ?> build) {
         EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
+        Map<String, String> result = new HashMap<String, String>();
         if (envInjectAction != null) {
-            return envInjectAction.getEnvMap();
+            Map envMap = envInjectAction.getEnvMap();
+            result.putAll(envMap);
+            return result;
         } else {
-            return new HashMap<String, String>();
+            return result;
         }
     }
 }

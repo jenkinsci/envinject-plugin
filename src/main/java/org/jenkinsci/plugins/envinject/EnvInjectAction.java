@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.model.Action;
+import org.apache.commons.collections.map.UnmodifiableMap;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.util.Map;
@@ -24,7 +25,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
 
     @SuppressWarnings("unused")
     public Map<String, String> getEnvMap() {
-        return envMap;
+        return UnmodifiableMap.decorate(envMap);
     }
 
     public String getIconFileName() {

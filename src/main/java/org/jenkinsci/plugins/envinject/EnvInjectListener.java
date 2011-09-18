@@ -7,10 +7,7 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.util.LogTaskListener;
-import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
-import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
+import org.jenkinsci.plugins.envinject.service.*;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,9 +27,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
-        final Map<String, String> resultVariables = new HashMap<String, String>();
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
         if (isEnvInjectJobPropertyActive(build)) {
             try {
+
+                Map<String, String> variables = new HashMap<String, String>();
 
                 EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
                 assert envInjectJobProperty != null;
@@ -41,47 +40,54 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-                    resultVariables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+                    variables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                 }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    resultVariables.putAll(getBuildVariables(build));
+                    variables.putAll(getBuildVariables(build));
                 }
 
                 //Build a properties object with all information
-                final Map<String, String> envMap = getEnvVarsFromInfoObject(info, resultVariables, launcher, listener);
-                resultVariables.putAll(envMap);
+                final Map<String, String> envMap = getEnvVarsFromInfoObject(info, variables, launcher, listener);
+                variables.putAll(envMap);
 
                 // Retrieve triggered cause
                 if (info.isPopulateTriggerCause()) {
                     Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                    resultVariables.putAll(triggerVariable);
+                    variables.putAll(triggerVariable);
                 }
 
                 //Resolves vars each other
-                EnvVars.resolve(resultVariables);
+                EnvVars.resolve(variables);
+
+                //Remove unset variables
+                final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
 
                 //Add a display action
                 FilePath rootPath = getNodeRootPath();
                 if (rootPath != null) {
                     new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
                 }
+
+                return new Environment() {
+
+                    @Override
+                    public void buildEnvVars(Map<String, String> env) {
+                        env.putAll(resultVariables);
+                    }
+                };
+
             } catch (EnvInjectException envEx) {
-                listener.getLogger().println("SEVERE ERROR occurs: " + envEx.getMessage());
+                logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
                 throw new Run.RunnerAbortedException();
             } catch (Throwable throwable) {
-                listener.getLogger().println("SEVERE ERROR occurs: " + throwable.getMessage());
+                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
                 throw new Run.RunnerAbortedException();
             }
         }
 
         return new Environment() {
-
-            @Override
-            public void buildEnvVars(Map<String, String> env) {
-                env.putAll(resultVariables);
-            }
         };
     }
 

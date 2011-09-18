@@ -11,7 +11,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
 
 /**
  * @author Gregory Boissinot
@@ -93,7 +92,7 @@ public class PropertiesFileService implements Serializable {
         if (content == null) {
             return null;
         }
-        return content.replaceAll("\\\\", Matcher.quoteReplacement(File.separator));
+        return content.replace("\\", "\\\\");
     }
 
 }

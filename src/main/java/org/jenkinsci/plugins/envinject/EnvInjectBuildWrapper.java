@@ -11,10 +11,7 @@ import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectScriptExecutorService;
-import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
+import org.jenkinsci.plugins.envinject.service.*;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -42,51 +39,53 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
 
         //Get current envVars
-        final Map<String, String> resultVariables = envInjectActionSetter.getCurrentEnvVars(build);
+        Map<String, String> variables = envInjectActionSetter.getCurrentEnvVars(build);
 
         try {
 
             //Always keep build variables (such as parameter variables).
-            resultVariables.putAll(getAndAddBuildVariables(build));
+            variables.putAll(getAndAddBuildVariables(build));
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, resultVariables, logger));
-            resultVariables.putAll(envMap);
+            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, logger));
+            variables.putAll(envMap);
 
             //Execute script info
-            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, resultVariables, ws, launcher, logger);
+            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, variables, ws, launcher, logger);
             scriptExecutorService.executeScriptFromInfoObject();
 
             // Retrieve triggered cause
             if (info.isPopulateTriggerCause()) {
                 Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                resultVariables.putAll(triggerVariable);
+                variables.putAll(triggerVariable);
             }
 
             //Resolve vars each other
-            EnvVars.resolve(resultVariables);
+            EnvVars.resolve(variables);
+
+            //Remove unset variables
+            final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
 
             //Add or get the existing action to add new env vars
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
+            return new Environment() {
+                @Override
+                public void buildEnvVars(Map<String, String> env) {
+                    env.putAll(resultVariables);
+                }
+            };
+
         } catch (Throwable throwable) {
-            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
+            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return null;
         }
-
-        return new Environment() {
-            @Override
-            public void buildEnvVars(Map<String, String> env) {
-                env.putAll(resultVariables);
-            }
-        };
     }
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {

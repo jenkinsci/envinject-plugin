@@ -9,6 +9,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVarsUnset;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -36,24 +37,27 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
+        FilePath ws = build.getWorkspace();
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
         try {
 
-            FilePath ws = build.getWorkspace();
-            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
-
             //Get current envVars
-            final Map<String, String> resultVariables = envInjectActionSetter.getCurrentEnvVars(build);
+            Map<String, String> variables = envInjectActionSetter.getCurrentEnvVars(build);
 
             //Always keep build variables (such as parameter variables).
-            resultVariables.putAll(getAndAddBuildVariables(build));
+            variables.putAll(getAndAddBuildVariables(build));
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
-            resultVariables.putAll(envMap);
+            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, new EnvInjectLogger(listener)));
+            variables.putAll(envMap);
 
             //Resolve vars each other
-            EnvVars.resolve(resultVariables);
+            EnvVars.resolve(variables);
+
+            //Remove unset variables
+            final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
 
             //Set the new build variables map
             build.addAction(new EnvironmentContributingAction() {
@@ -78,7 +82,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
-            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
+            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return false;
         }
