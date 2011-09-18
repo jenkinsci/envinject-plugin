@@ -14,7 +14,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
 
     @DataBoundConstructor
     public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean populateTriggerCause) {
-        super(Util.fixEmpty(propertiesFilePath), Util.fixEmpty(propertiesContent), populateTriggerCause);
+        super(propertiesFilePath, propertiesContent, populateTriggerCause);
         this.scriptFilePath = Util.fixEmpty(scriptFilePath);
         this.scriptContent = Util.fixEmpty(scriptContent);
     }

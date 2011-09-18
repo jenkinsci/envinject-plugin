@@ -41,13 +41,15 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     @Override
     public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
-        final Map<String, String> resultVariables = new HashMap<String, String>();
-
         EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-        try {
+        FilePath ws = build.getWorkspace();
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
 
-            final FilePath ws = build.getWorkspace();
+        //Get current envVars
+        final Map<String, String> resultVariables = envInjectActionSetter.getCurrentEnvVars(build);
+
+        try {
 
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
@@ -71,10 +73,10 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             EnvVars.resolve(resultVariables);
 
             //Add or get the existing action to add new env vars
-            new EnvInjectActionSetter(ws).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
-            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on job setup");
+            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return null;
         }

@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
@@ -17,8 +18,8 @@ public class EnvInjectInfo implements Serializable {
 
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent, boolean populateTriggerCause) {
-        this.propertiesFilePath = propertiesFilePath;
-        this.propertiesContent = propertiesContent;
+        this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
+        this.propertiesContent = Util.fixEmpty(propertiesContent);
         this.populateTriggerCause = populateTriggerCause;
     }
 

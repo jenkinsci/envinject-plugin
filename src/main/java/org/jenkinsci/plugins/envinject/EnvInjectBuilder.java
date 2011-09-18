@@ -36,19 +36,20 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
-        final Map<String, String> resultVariables = new HashMap<String, String>();
-
         try {
 
-            FilePath workspace = build.getWorkspace();
+            FilePath ws = build.getWorkspace();
+            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
 
+            //Get current envVars
+            final Map<String, String> resultVariables = envInjectActionSetter.getCurrentEnvVars(build);
 
             //Always keep build variables (such as parameter variables).
             resultVariables.putAll(getAndAddBuildVariables(build));
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = workspace.act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
+            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, resultVariables, new EnvInjectLogger(listener)));
             resultVariables.putAll(envMap);
 
             //Resolve vars each other
@@ -74,9 +75,10 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             });
 
             //Add or get the existing action to add new env vars
-            new EnvInjectActionSetter(workspace).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
+            listener.getLogger().println("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return false;
         }

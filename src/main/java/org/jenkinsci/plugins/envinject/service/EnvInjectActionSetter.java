@@ -40,4 +40,13 @@ public class EnvInjectActionSetter implements Serializable {
             build.addAction(envInjectAction);
         }
     }
+
+    public Map<String, String> getCurrentEnvVars(AbstractBuild<?, ?> build) {
+        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
+        if (envInjectAction != null) {
+            return envInjectAction.getEnvMap();
+        } else {
+            return new HashMap<String, String>();
+        }
+    }
 }
