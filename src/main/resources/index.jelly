@@ -1,7 +1,6 @@
 <div>
     <p>
-        This plug-in set up a clean environment for a job and it is able to inject environment variables from properties
-        as build steps.
+        This plug-in sets up a clean environment for a job and it is able to inject environment variables from properties content. <br/>
         The plugin replaces the setenv plugin and the envfile plugin.
     </p>
 </div>
