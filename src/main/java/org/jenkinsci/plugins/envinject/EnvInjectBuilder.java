@@ -114,7 +114,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         @Override
         public EnvInjectBuilder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             EnvInjectBuilder envInjectBuilder = new EnvInjectBuilder();
-            EnvInjectInfo info = req.bindParameters(EnvInjectInfo.class, "envInjectInfoBuilder.");
+            EnvInjectInfo info = new EnvInjectInfo(formData.getString("propertiesFilePath"), formData.getString("propertiesContent"), false);
             envInjectBuilder.setInfo(info);
             return envInjectBuilder;
         }
