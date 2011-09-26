@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesFileService implements Serializable {
+public class PropertiesService implements Serializable {
 
     /**
      * Get a map environment variables from a properties file path
@@ -92,6 +92,7 @@ public class PropertiesFileService implements Serializable {
         if (content == null) {
             return null;
         }
+        content = content.replace("\\\\", "\\");
         return content.replace("\\", "\\\\");
     }
 
