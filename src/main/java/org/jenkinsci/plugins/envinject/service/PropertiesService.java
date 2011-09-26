@@ -3,14 +3,14 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.Util;
 import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.util.SortedProperties;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Gregory Boissinot
@@ -33,9 +33,9 @@ public class PropertiesService implements Serializable {
             throw new NullPointerException("The properties file object must be exist.");
         }
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<String, String>();
 
-        Properties properties = new Properties();
+        SortedProperties properties = new SortedProperties();
         try {
             String fileContent = Util.loadFile(propertiesFile);
             fileContent = processWindowsFilePath(fileContent);
@@ -64,9 +64,9 @@ public class PropertiesService implements Serializable {
 
         fileContent = processWindowsFilePath(fileContent);
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<String, String>();
         StringReader stringReader = new StringReader(fileContent);
-        Properties properties = new Properties();
+        SortedProperties properties = new SortedProperties();
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {

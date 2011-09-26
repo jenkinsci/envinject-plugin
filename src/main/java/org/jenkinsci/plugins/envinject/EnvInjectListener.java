@@ -12,6 +12,7 @@ import org.jenkinsci.plugins.envinject.service.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (isEnvInjectJobPropertyActive(build)) {
             try {
 
-                Map<String, String> variables = new HashMap<String, String>();
+                Map<String, String> variables = new LinkedHashMap<String, String>();
 
                 EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
                 assert envInjectJobProperty != null;
@@ -93,7 +94,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws Throwable {
 
-        final Map<String, String> resultMap = new HashMap<String, String>();
+        final Map<String, String> resultMap = new LinkedHashMap<String, String>();
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         FilePath rootPath = getNodeRootPath();

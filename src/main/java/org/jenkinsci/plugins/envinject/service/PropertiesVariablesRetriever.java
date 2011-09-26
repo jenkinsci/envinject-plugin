@@ -9,7 +9,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +30,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
     }
 
     public Map<String, String> invoke(File base, VirtualChannel channel) throws IOException, InterruptedException {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<String, String>();
 
         try {
 
