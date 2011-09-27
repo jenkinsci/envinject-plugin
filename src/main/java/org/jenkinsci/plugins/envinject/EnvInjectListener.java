@@ -49,35 +49,38 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     variables.putAll(getBuildVariables(build));
                 }
 
-                //Build a properties object with all information
-                final Map<String, String> envMap = getEnvVarsFromInfoObject(info, variables, launcher, listener);
-                variables.putAll(envMap);
-
-                // Retrieve triggered cause
-                if (info.isPopulateTriggerCause()) {
-                    Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                    variables.putAll(triggerVariable);
-                }
-
-                //Resolves vars each other
-                EnvVars.resolve(variables);
-
-                //Remove unset variables
-                final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
-
-                //Add a display action
-                FilePath rootPath = getNodeRootPath();
+                final FilePath rootPath = getNodeRootPath();
                 if (rootPath != null) {
-                    new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
-                }
 
-                return new Environment() {
+                    //Build a properties object with all information
+                    final Map<String, String> envMap = getEnvVarsFromProperties(rootPath, info, variables, launcher, listener);
+                    variables.putAll(envMap);
 
-                    @Override
-                    public void buildEnvVars(Map<String, String> env) {
-                        env.putAll(resultVariables);
+                    // Retrieve triggered cause
+                    if (info.isPopulateTriggerCause()) {
+                        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
+                        variables.putAll(triggerVariable);
                     }
-                };
+
+                    //Resolves vars each other
+                    EnvVars.resolve(variables);
+
+                    //Remove unset variables
+                    final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
+
+                    //Add an action
+                    new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+
+                    //Execute script
+                    executeScript(rootPath, info, resultVariables, launcher, listener);
+
+                    return new Environment() {
+                        @Override
+                        public void buildEnvVars(Map<String, String> env) {
+                            env.putAll(resultVariables);
+                        }
+                    };
+                }
 
             } catch (EnvInjectException envEx) {
                 logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
@@ -88,27 +91,24 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
+
         return new Environment() {
         };
     }
 
-    private Map<String, String> getEnvVarsFromInfoObject(final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws Throwable {
 
+    private Map<String, String> getEnvVarsFromProperties(FilePath rootPath, final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
-
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        FilePath rootPath = getNodeRootPath();
-        if (rootPath != null) {
-
-            //Get env vars from properties
-            resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, currentEnvVars, logger)));
-
-            //Execute script info
-            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, logger);
-            scriptExecutorService.executeScriptFromInfoObject();
-        }
-
+        //Get env vars from properties
+        resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, currentEnvVars, logger)));
         return resultMap;
+    }
+
+    private static void executeScript(FilePath rootPath, final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws EnvInjectException {
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, currentEnvVars, rootPath, launcher, logger);
+        scriptExecutorService.executeScriptFromInfoObject();
     }
 
     private Node getNode() {
