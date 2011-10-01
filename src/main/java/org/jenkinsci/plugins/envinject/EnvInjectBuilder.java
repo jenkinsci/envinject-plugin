@@ -9,7 +9,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVarsUnset;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -40,10 +40,16 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
         EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+        //Get previous enVars
+        Map<String, String> previousEnvVars = envInjectEnvVarsService.getComputerEnvVars();
+        previousEnvVars.putAll(envInjectActionSetter.getCurrentEnvVars(build));
+
         try {
 
             //Get current envVars
-            Map<String, String> variables = envInjectActionSetter.getCurrentEnvVars(build);
+            Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
 
             //Always keep build variables (such as parameter variables).
             variables.putAll(getAndAddBuildVariables(build));
@@ -53,11 +59,12 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, new EnvInjectLogger(listener)));
             variables.putAll(envMap);
 
-            //Resolve vars each other
-            EnvVars.resolve(variables);
+
+            //Resolves vars each other
+            envInjectEnvVarsService.resolveVars(variables, previousEnvVars);
 
             //Remove unset variables
-            final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.removeUnsetVars(variables);
 
             //Set the new build variables map
             build.addAction(new EnvironmentContributingAction() {

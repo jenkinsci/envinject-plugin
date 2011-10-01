@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -32,7 +31,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (isEnvInjectJobPropertyActive(build)) {
             try {
 
-                Map<String, String> variables = new LinkedHashMap<String, String>();
+                Map<String, String> infraEnvVars = new LinkedHashMap<String, String>();
 
                 EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
                 assert envInjectJobProperty != null;
@@ -41,16 +40,18 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-                    variables.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+                    infraEnvVars.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
                 }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    variables.putAll(getBuildVariables(build));
+                    infraEnvVars.putAll(getBuildVariables(build));
                 }
 
                 final FilePath rootPath = getNodeRootPath();
                 if (rootPath != null) {
+
+                    Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
 
                     //Build a properties object with all information
                     final Map<String, String> envMap = getEnvVarsFromProperties(rootPath, info, variables, launcher, listener);
@@ -62,11 +63,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                         variables.putAll(triggerVariable);
                     }
 
+                    EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
                     //Resolves vars each other
-                    EnvVars.resolve(variables);
+                    envInjectEnvVarsService.resolveVars(variables, infraEnvVars);
 
                     //Remove unset variables
-                    final Map<String, String> resultVariables = new EnvInjectEnvVarsUnset(logger).removeUnsetVars(variables);
+                    final Map<String, String> resultVariables = envInjectEnvVarsService.removeUnsetVars(variables);
 
                     //Add an action
                     new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -95,7 +98,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return new Environment() {
         };
     }
-
 
     private Map<String, String> getEnvVarsFromProperties(FilePath rootPath, final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
