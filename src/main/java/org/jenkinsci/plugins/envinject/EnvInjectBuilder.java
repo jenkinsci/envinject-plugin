@@ -7,11 +7,10 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,6 +23,11 @@ import java.util.Map;
 public class EnvInjectBuilder extends Builder implements Serializable {
 
     private EnvInjectInfo info;
+
+    @DataBoundConstructor
+    public EnvInjectBuilder(String propertiesFilePath, String propertiesContent) {
+        this.info = new EnvInjectInfo(propertiesFilePath, propertiesContent, false);
+    }
 
     @SuppressWarnings("unused")
     public EnvInjectInfo getInfo() {
@@ -109,6 +113,10 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         return result;
     }
 
+    private void setInfo() {
+
+    }
+
     @Extension
     @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -116,14 +124,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         @Override
         public String getDisplayName() {
             return Messages.envinject_addVars_displayName();
-        }
-
-        @Override
-        public EnvInjectBuilder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            EnvInjectBuilder envInjectBuilder = new EnvInjectBuilder();
-            EnvInjectInfo info = new EnvInjectInfo(formData.getString("propertiesFilePath"), formData.getString("propertiesContent"), false);
-            envInjectBuilder.setInfo(info);
-            return envInjectBuilder;
         }
 
         @Override
