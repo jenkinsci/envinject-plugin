@@ -5,6 +5,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.plugins.envinject.service.*;
 
@@ -13,6 +15,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +43,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-                    infraEnvVars.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+                    infraEnvVars.putAll(getJenkinsSystemVariables(build));
                 }
 
                 //Add build variables (such as parameter variables).
@@ -86,10 +89,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 }
 
             } catch (EnvInjectException envEx) {
-                logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
+                logger.error("SEVERE ERROR occurs: " + envEx.getCause().getMessage());
                 throw new Run.RunnerAbortedException();
             } catch (Throwable throwable) {
-                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+                logger.error("SEVERE ERROR occurs: " + throwable.getCause().getMessage());
                 throw new Run.RunnerAbortedException();
             }
         }
@@ -97,6 +100,37 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         return new Environment() {
         };
+    }
+
+    private Map<String, String> getJenkinsSystemVariables(AbstractBuild build) throws IOException, InterruptedException {
+
+        Map<String, String> result = new TreeMap<String, String>();
+
+        result.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
+
+        //Global properties
+        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
+                result.putAll(environmentVariablesNodeProperty.getEnvVars());
+            }
+        }
+
+        //Node properties
+        Computer computer = Computer.currentComputer();
+        if (computer != null) {
+            Node node = computer.getNode();
+            if (node != null) {
+                for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
+                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                        EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
+                        result.putAll(environmentVariablesNodeProperty.getEnvVars());
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     private Map<String, String> getEnvVarsFromProperties(FilePath rootPath, final EnvInjectJobPropertyInfo info, final Map<String, String> currentEnvVars, final Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
