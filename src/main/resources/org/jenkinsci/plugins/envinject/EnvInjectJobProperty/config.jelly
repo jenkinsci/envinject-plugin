@@ -47,6 +47,13 @@
                     value="${instance.info.scriptContent}"/>
         </f:entry>
 
+        <f:entry title="${%Load files from the master}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/loadFilesFromMaster">
+            <f:checkbox
+                    name="envInjectInfoJobProperty.loadFilesFromMaster"
+                    checked="${instance.info.loadFilesFromMaster}"/>
+        </f:entry>
+
         <f:entry title="${%Populate build cause}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/populateCauseEnv">
             <f:checkbox

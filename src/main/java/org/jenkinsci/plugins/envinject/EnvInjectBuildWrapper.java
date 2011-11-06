@@ -42,37 +42,38 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
-        //Get previous enVars
-        Map<String, String> previousEnvVars = envInjectEnvVarsService.getComputerEnvVars();
-        previousEnvVars.putAll(envInjectActionSetter.getCurrentEnvVars(build));
-
         try {
 
-            Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
+            Map<String, String> nodeEnvVars = getNodeEnvVars(envInjectEnvVarsService);
+            Map<String, String> currentEnvInjectEnvVars = getCurrentEnvInjectEnvVars(envInjectActionSetter, build);
+            Map<String, String> buildEnvVars = getBuildVariables(build);
+            Map<String, String> envVarsForFilePath = getEnvVarsForFilePath(envInjectEnvVarsService, nodeEnvVars, currentEnvInjectEnvVars, buildEnvVars);
+            Map<String, String> propertiesEnvVars = retrievePropertiesVars(ws, logger, envVarsForFilePath);
 
-            //Always keep build variables (such as parameter variables).
-            variables.putAll(getAndAddBuildVariables(build));
+            Map<String, String> previousEnvVars = new HashMap<String, String>();
+            previousEnvVars.putAll(nodeEnvVars);
+            previousEnvVars.putAll(currentEnvInjectEnvVars);
 
-            //Get env vars from properties info.
-            //File information path can be relative to the workspace
-            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, logger));
-            variables.putAll(envMap);
+            Map<String, String> injectedEnvVars = new HashMap<String, String>();
+            injectedEnvVars.putAll(previousEnvVars);
+            injectedEnvVars.putAll(buildEnvVars);
+            injectedEnvVars.putAll(propertiesEnvVars);
 
             //Execute script info
-            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, variables, ws, launcher, logger);
+            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, envVarsForFilePath, injectedEnvVars, ws, launcher, logger);
             scriptExecutorService.executeScriptFromInfoObject();
 
             // Retrieve triggered cause
             if (info.isPopulateTriggerCause()) {
                 Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                variables.putAll(triggerVariable);
+                injectedEnvVars.putAll(triggerVariable);
             }
 
             //Resolves vars each other
-            envInjectEnvVarsService.resolveVars(variables, previousEnvVars);
+            envInjectEnvVarsService.resolveVars(injectedEnvVars, previousEnvVars);
 
             //Remove unset variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.removeUnsetVars(variables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.removeUnsetVars(injectedEnvVars);
 
             //Add or get the existing action to add new env vars
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -91,7 +92,28 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         }
     }
 
-    private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
+    private Map<String, String> getNodeEnvVars(EnvInjectEnvVars envInjectEnvVarsService) {
+        return envInjectEnvVarsService.getCurrentNodeEnvVars();
+    }
+
+    private Map<String, String> getCurrentEnvInjectEnvVars(EnvInjectActionSetter envInjectActionSetter, AbstractBuild build) {
+        return envInjectActionSetter.getCurrentEnvVars(build);
+    }
+
+    private Map<String, String> getEnvVarsForFilePath(EnvInjectEnvVars envInjectEnvVarsService, Map<String, String> nodeVars, Map<String, String> currentEnvInjectEnvVars, Map<String, String> buildVars) {
+        Map<String, String> buildVarsForFilePath = new HashMap<String, String>();
+        buildVarsForFilePath.putAll(nodeVars);
+        buildVarsForFilePath.putAll(currentEnvInjectEnvVars);
+        buildVarsForFilePath.putAll(buildVars);
+        return buildVarsForFilePath;
+    }
+
+    private Map<String, String> retrievePropertiesVars(FilePath ws, EnvInjectLogger logger, Map<String, String> buildVarsForFilePath) throws IOException, InterruptedException {
+        Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, buildVarsForFilePath, logger));
+        return envMap;
+    }
+
+    private Map<String, String> getBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         //Add build variables such as parameters
         result.putAll(build.getBuildVariables());

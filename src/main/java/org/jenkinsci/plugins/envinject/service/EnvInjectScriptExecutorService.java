@@ -21,7 +21,9 @@ public class EnvInjectScriptExecutorService {
 
     private EnvInjectJobPropertyInfo info;
 
-    private Map<String, String> currentEnvVars;
+    private Map<String, String> scriptPathEnvVars;
+
+    private Map<String, String> scriptContentEnvVars;
 
     private FilePath rootScriptExecutionPath;
 
@@ -29,9 +31,10 @@ public class EnvInjectScriptExecutorService {
 
     private EnvInjectLogger logger;
 
-    public EnvInjectScriptExecutorService(EnvInjectJobPropertyInfo info, Map<String, String> currentEnvVars, FilePath rootScriptExecutionPath, Launcher launcher, EnvInjectLogger logger) {
+    public EnvInjectScriptExecutorService(EnvInjectJobPropertyInfo info, Map<String, String> scriptPathEnvVars, Map<String, String> scriptContentEnvVars, FilePath rootScriptExecutionPath, Launcher launcher, EnvInjectLogger logger) {
         this.info = info;
-        this.currentEnvVars = currentEnvVars;
+        this.scriptPathEnvVars = scriptPathEnvVars;
+        this.scriptContentEnvVars = scriptContentEnvVars;
         this.rootScriptExecutionPath = rootScriptExecutionPath;
         this.launcher = launcher;
         this.logger = logger;
@@ -41,14 +44,14 @@ public class EnvInjectScriptExecutorService {
 
         //Process the script file path
         if (info.getScriptFilePath() != null) {
-            String scriptFilePathResolved = Util.replaceMacro(info.getScriptFilePath(), currentEnvVars);
+            String scriptFilePathResolved = Util.replaceMacro(info.getScriptFilePath(), scriptPathEnvVars);
             String scriptFilePathNormalized = scriptFilePathResolved.replace("\\", "/");
             executeScriptPath(scriptFilePathNormalized);
         }
 
         //Process the script content
         if (info.getScriptContent() != null) {
-            String scriptResolved = Util.replaceMacro(info.getScriptContent(), currentEnvVars);
+            String scriptResolved = Util.replaceMacro(info.getScriptContent(), scriptContentEnvVars);
             executeScriptContent(scriptResolved);
         }
     }
@@ -59,7 +62,7 @@ public class EnvInjectScriptExecutorService {
             FilePath f = new FilePath(rootScriptExecutionPath, scriptFilePath);
             if (f.exists()) {
                 launcher.getListener().getLogger().println(String.format("Executing '%s' script.", scriptFilePath));
-                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(launcher.getListener()).pwd(rootScriptExecutionPath).join();
+                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(launcher.getListener()).envs(scriptContentEnvVars).pwd(rootScriptExecutionPath).join();
                 if (cmdCode != 0) {
                     logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
                 }

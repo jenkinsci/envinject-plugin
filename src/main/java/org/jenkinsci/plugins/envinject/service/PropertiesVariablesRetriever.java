@@ -34,7 +34,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
 
         try {
 
-            PropertiesService propertiesService = new PropertiesService();
+            PropertiesLoader loader = new PropertiesLoader();
 
             //Add the properties file
             if (info.getPropertiesFilePath() != null) {
@@ -47,14 +47,14 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                     throw new EnvInjectException(message);
                 }
                 logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePath));
-                result.putAll(propertiesService.getVarsFromPropertiesFile(propertiesFile));
+                result.putAll(loader.getVarsFromPropertiesFile(propertiesFile));
             }
 
             //Add the properties content
             if (info.getPropertiesContent() != null) {
                 String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
                 logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", content));
-                result.putAll(propertiesService.getVarsFromPropertiesContent(content));
+                result.putAll(loader.getVarsFromPropertiesContent(content));
             }
 
         } catch (EnvInjectException envEx) {

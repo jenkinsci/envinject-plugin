@@ -46,8 +46,8 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
-        //Get previous enVars
-        Map<String, String> previousEnvVars = envInjectEnvVarsService.getComputerEnvVars();
+
+        Map<String, String> previousEnvVars = envInjectEnvVarsService.getCurrentNodeEnvVars();
         previousEnvVars.putAll(envInjectActionSetter.getCurrentEnvVars(build));
 
         try {
@@ -62,7 +62,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             //File information path can be relative to the workspace
             Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, new EnvInjectLogger(listener)));
             variables.putAll(envMap);
-
 
             //Resolves vars each other
             envInjectEnvVarsService.resolveVars(variables, previousEnvVars);

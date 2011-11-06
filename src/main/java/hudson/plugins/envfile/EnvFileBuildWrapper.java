@@ -16,7 +16,7 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
     @Override
     public EnvInjectBuildWrapper getEnvInjectBuildWrapper() {
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, false, false);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(jobPropertyInfo);
         return envInjectBuildWrapper;

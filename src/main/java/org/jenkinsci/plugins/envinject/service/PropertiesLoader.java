@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesService implements Serializable {
+public class PropertiesLoader implements Serializable {
 
     /**
      * Get a map environment variables from a properties file path

@@ -29,6 +29,10 @@
                 value="${instance.info.scriptContent}"/>
     </f:entry>
 
+    <f:hidden
+            name="envInjectInfoWrapper.loadFilesFromMaster"
+            value="false"/>
+
     <f:entry title="${%Populate build cause}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/populateCauseEnv">
         <f:checkbox
