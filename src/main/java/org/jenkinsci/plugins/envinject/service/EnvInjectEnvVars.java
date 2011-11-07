@@ -2,11 +2,8 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
 import hudson.Util;
-import hudson.model.Computer;
-import hudson.model.Hudson;
 import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,30 +18,6 @@ public class EnvInjectEnvVars implements Serializable {
     public EnvInjectEnvVars(EnvInjectLogger logger) {
         this.logger = logger;
     }
-
-    public Map<String, String> getMasterEnvVars() {
-        return getEnvVars(Hudson.getInstance().toComputer());
-    }
-
-    public Map<String, String> getCurrentNodeEnvVars() {
-        return getEnvVars(Computer.currentComputer());
-    }
-
-    private Map<String, String> getEnvVars(Computer computer) {
-        Map<String, String> result = new HashMap<String, String>();
-        try {
-            EnvVars envVars = computer.getEnvironment();
-            for (Map.Entry<String, String> entry : envVars.entrySet()) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        } catch (IOException ioe) {
-            logger.error(ioe.getMessage());
-        } catch (InterruptedException ie) {
-            logger.error(ie.getMessage());
-        }
-        return result;
-    }
-
 
     public void resolveVars(Map<String, String> variables, Map<String, String> env) {
         for (Map.Entry<String, String> entry : variables.entrySet()) {

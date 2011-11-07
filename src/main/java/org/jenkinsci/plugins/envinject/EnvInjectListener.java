@@ -10,7 +10,6 @@ import org.jenkinsci.plugins.envinject.service.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,11 +27,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        if (isEnvInjectJobPropertyActive(build)) {
+        if (variableGetter.isEnvInjectJobPropertyActive(build)) {
             try {
 
-                EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(build);
+                EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
                 assert envInjectJobProperty != null;
                 EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
                 assert envInjectJobProperty != null && envInjectJobProperty.isOn();
@@ -42,14 +43,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-                    infraEnvVarsNode.putAll(getJenkinsSystemVariablesCurrentNode(build));
+                    infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
                     infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
                 }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    infraEnvVarsNode.putAll(getBuildVariables(build));
-                    infraEnvVarsMaster.putAll(getBuildVariables(build));
+                    infraEnvVarsNode.putAll(variableGetter.getBuildVariables(build));
+                    infraEnvVarsMaster.putAll(variableGetter.getBuildVariables(build));
                 }
 
                 final FilePath rootPath = getNodeRootPath();
@@ -100,37 +101,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         return new Environment() {
         };
-    }
-
-    private Map<String, String> getJenkinsSystemVariablesCurrentNode(AbstractBuild build) throws IOException, InterruptedException {
-
-        Map<String, String> result = new TreeMap<String, String>();
-
-        result.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
-
-        //Global properties
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                result.putAll(environmentVariablesNodeProperty.getEnvVars());
-            }
-        }
-
-        //Node properties
-        Computer computer = Computer.currentComputer();
-        if (computer != null) {
-            Node node = computer.getNode();
-            if (node != null) {
-                for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
-                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                        EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                        result.putAll(environmentVariablesNodeProperty.getEnvVars());
-                    }
-                }
-            }
-        }
-
-        return result;
     }
 
     private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
@@ -235,35 +205,4 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-    private Map<String, String> getBuildVariables(AbstractBuild build) {
-        Map<String, String> result = new HashMap<String, String>();
-
-        //Add build process variables
-        result.putAll(build.getCharacteristicEnvVars());
-
-        //Add build variables such as parameters, plugins contributions, ...
-        result.putAll(build.getBuildVariables());
-
-        //Add workspace variable
-        FilePath ws = build.getWorkspace();
-        if (ws != null) {
-            result.put("WORKSPACE", ws.getRemote());
-        }
-        return result;
-    }
-
-    private boolean isEnvInjectJobPropertyActive(Run run) {
-        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(run);
-        if (envInjectJobProperty != null) {
-            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private EnvInjectJobProperty getEnvInjectJobProperty(Run run) {
-        return (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
-    }
 }

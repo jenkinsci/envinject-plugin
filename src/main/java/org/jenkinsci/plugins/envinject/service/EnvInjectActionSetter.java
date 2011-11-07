@@ -10,7 +10,6 @@ import org.jenkinsci.plugins.envinject.EnvInjectException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -39,21 +38,6 @@ public class EnvInjectActionSetter implements Serializable {
             }));
             envInjectAction.overrideAll(envMap);
             build.addAction(envInjectAction);
-        }
-    }
-
-    /**
-     * Get a new map with the current envMap
-     */
-    public Map<String, String> getCurrentEnvVars(AbstractBuild<?, ?> build) {
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-        Map<String, String> result = new LinkedHashMap<String, String>();
-        if (envInjectAction != null) {
-            Map envMap = envInjectAction.getEnvMap();
-            result.putAll(envMap);
-            return result;
-        } else {
-            return result;
         }
     }
 }

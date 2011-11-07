@@ -9,6 +9,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -46,9 +47,8 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
-
-        Map<String, String> previousEnvVars = envInjectEnvVarsService.getCurrentNodeEnvVars();
-        previousEnvVars.putAll(envInjectActionSetter.getCurrentEnvVars(build));
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+        Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build);
 
         try {
 
@@ -102,9 +102,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
-        //Add build variables such as parameters
         result.putAll(build.getBuildVariables());
-        //Add workspace variable
         FilePath ws = build.getWorkspace();
         if (ws != null) {
             result.put("WORKSPACE", ws.getRemote());
@@ -112,9 +110,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         return result;
     }
 
-    private void setInfo() {
-
-    }
 
     @Extension
     @SuppressWarnings("unused")

@@ -37,26 +37,18 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     @Override
     public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-
-            Map<String, String> nodeEnvVars = getNodeEnvVars(envInjectEnvVarsService);
-            Map<String, String> currentEnvInjectEnvVars = getCurrentEnvInjectEnvVars(envInjectActionSetter, build);
-            Map<String, String> buildEnvVars = getBuildVariables(build);
-            Map<String, String> envVarsForFilePath = getEnvVarsForFilePath(envInjectEnvVarsService, nodeEnvVars, currentEnvInjectEnvVars, buildEnvVars);
+            Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build);
+            Map<String, String> envVarsForFilePath = getEnvVarsForFilePath(variableGetter, build);
             Map<String, String> propertiesEnvVars = retrievePropertiesVars(ws, logger, envVarsForFilePath);
-
-            Map<String, String> previousEnvVars = new HashMap<String, String>();
-            previousEnvVars.putAll(nodeEnvVars);
-            previousEnvVars.putAll(currentEnvInjectEnvVars);
-
             Map<String, String> injectedEnvVars = new HashMap<String, String>();
             injectedEnvVars.putAll(previousEnvVars);
-            injectedEnvVars.putAll(buildEnvVars);
             injectedEnvVars.putAll(propertiesEnvVars);
 
             //Execute script info
@@ -92,19 +84,17 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         }
     }
 
-    private Map<String, String> getNodeEnvVars(EnvInjectEnvVars envInjectEnvVarsService) {
-        return envInjectEnvVarsService.getCurrentNodeEnvVars();
-    }
+    private Map<String, String> getEnvVarsForFilePath(EnvInjectVariableGetter variableGetter, AbstractBuild build) throws IOException, InterruptedException {
 
-    private Map<String, String> getCurrentEnvInjectEnvVars(EnvInjectActionSetter envInjectActionSetter, AbstractBuild build) {
-        return envInjectActionSetter.getCurrentEnvVars(build);
-    }
-
-    private Map<String, String> getEnvVarsForFilePath(EnvInjectEnvVars envInjectEnvVarsService, Map<String, String> nodeVars, Map<String, String> currentEnvInjectEnvVars, Map<String, String> buildVars) {
         Map<String, String> buildVarsForFilePath = new HashMap<String, String>();
-        buildVarsForFilePath.putAll(nodeVars);
+
+        Map<String, String> nodeEnvVars = variableGetter.getCurrentNodeEnvVars();
+        Map<String, String> currentEnvInjectEnvVars = variableGetter.getCurrentInjectedEnvVars(build);
+        Map<String, String> buildEnvVars = getBuildVariables(build);
+        buildVarsForFilePath.putAll(nodeEnvVars);
         buildVarsForFilePath.putAll(currentEnvInjectEnvVars);
-        buildVarsForFilePath.putAll(buildVars);
+        buildVarsForFilePath.putAll(buildEnvVars);
+
         return buildVarsForFilePath;
     }
 
@@ -115,9 +105,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
     private Map<String, String> getBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
-        //Add build variables such as parameters
         result.putAll(build.getBuildVariables());
-        //Add workspace variable
         FilePath ws = build.getWorkspace();
         if (ws != null) {
             result.put("WORKSPACE", ws.getRemote());
