@@ -29,6 +29,7 @@ public class EnvInjectVariableGetter {
 
         Map<String, String> result = new TreeMap<String, String>();
 
+        //Environment variables
         result.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
 
         //Global properties
@@ -74,8 +75,8 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    public boolean isEnvInjectJobPropertyActive(Run run) {
-        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(run);
+    public boolean isEnvInjectJobPropertyActive(Job job) {
+        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(job);
         if (envInjectJobProperty != null) {
             EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
             if (info != null && envInjectJobProperty.isOn()) {
@@ -85,13 +86,13 @@ public class EnvInjectVariableGetter {
         return false;
     }
 
-    public EnvInjectJobProperty getEnvInjectJobProperty(Run run) {
-        return (EnvInjectJobProperty) run.getParent().getProperty(EnvInjectJobProperty.class);
+    public EnvInjectJobProperty getEnvInjectJobProperty(Job project) {
+        return (EnvInjectJobProperty) project.getProperty(EnvInjectJobProperty.class);
     }
 
     public Map<String, String> getPreviousEnvVars(AbstractBuild build) throws IOException, InterruptedException {
         Map<String, String> result = new HashMap<String, String>();
-        EnvInjectJobProperty jobProperty = getEnvInjectJobProperty(build);
+        EnvInjectJobProperty jobProperty = getEnvInjectJobProperty(build.getParent());
         if (jobProperty != null) {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
