@@ -60,10 +60,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 if (rootPath != null) {
 
                     EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
-                    final Map<String, String> resultVariables = envInjectEnvVarsService.processEnvVars(rootPath, info, infraEnvVarsMaster, infraEnvVarsNode);
+                    final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsJobPropertyInfo(rootPath, info, infraEnvVarsMaster, infraEnvVarsNode);
 
                     //Execute script
-                    envInjectEnvVarsService.executeScript(rootPath, info, infraEnvVarsMaster, infraEnvVarsNode, resultVariables, launcher, listener);
+                    envInjectEnvVarsService.executeScript(info, rootPath, infraEnvVarsMaster, infraEnvVarsNode, resultVariables, launcher, listener);
 
                     // Retrieve triggered cause
                     if (info.isPopulateTriggerCause()) {

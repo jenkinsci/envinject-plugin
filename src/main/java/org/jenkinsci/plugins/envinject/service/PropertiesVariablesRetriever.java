@@ -75,5 +75,4 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
         return file.exists() ? file : null;
     }
 
-
 }

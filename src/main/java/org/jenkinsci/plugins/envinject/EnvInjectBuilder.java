@@ -10,7 +10,6 @@ import hudson.tasks.Builder;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
-import org.jenkinsci.plugins.envinject.service.PropertiesVariablesRetriever;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -35,10 +34,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         return info;
     }
 
-    public void setInfo(EnvInjectInfo info) {
-        this.info = info;
-    }
-
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
@@ -60,14 +55,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            Map<String, String> envMap = ws.act(new PropertiesVariablesRetriever(info, variables, new EnvInjectLogger(listener)));
-            variables.putAll(envMap);
-
-            //Resolves vars each other
-            envInjectEnvVarsService.resolveVars(variables, previousEnvVars);
-
-            //Remove unset variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.removeUnsetVars(variables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsInfo(ws, info, variables);
 
             //Set the new build variables map
             build.addAction(new EnvironmentContributingAction() {
@@ -129,6 +117,5 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
-
     }
 }

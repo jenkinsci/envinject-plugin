@@ -1,12 +1,12 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
 import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.EnvInjectInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
@@ -27,9 +27,8 @@ public class EnvInjectEnvVars implements Serializable {
         this.logger = logger;
     }
 
-    public Map<String, String> processEnvVars(
+    public Map<String, String> getEnvVarsJobPropertyInfo(
             FilePath rootPath,
-
             EnvInjectJobPropertyInfo info,
             Map<String, String> infraEnvVarsMaster,
             Map<String, String> infraEnvVarsNode) throws IOException, InterruptedException {
@@ -37,43 +36,74 @@ public class EnvInjectEnvVars implements Serializable {
         final Map<String, String> envMap = getEnvVarsFromProperties(rootPath, logger, info, infraEnvVarsMaster, infraEnvVarsNode);
         Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVarsNode);
         variables.putAll(envMap);
-        return filterEnvVars(logger, infraEnvVarsNode, variables);
+        return filterEnvVars(infraEnvVarsNode, variables);
     }
 
-    public void executeScript(FilePath rootPath,
-                              final EnvInjectJobPropertyInfo info,
-                              final Map<String, String> infraEnvVarsMaster,
-                              final Map<String, String> infraEnvVarsNode,
-                              Map<String, String> scriptContentEnvVars,
+    public Map<String, String> getEnvVarsInfo(
+            FilePath rootPath,
+            EnvInjectInfo info,
+            Map<String, String> currentEnvVars) throws IOException, InterruptedException {
+
+        final Map<String, String> propertiesEnv = getEnvVarsFromProperties(rootPath, logger, info, currentEnvVars);
+        Map<String, String> variables = new LinkedHashMap<String, String>(currentEnvVars);
+        variables.putAll(propertiesEnv);
+        return filterEnvVars(currentEnvVars, variables);
+    }
+
+    public void executeScript(final EnvInjectJobPropertyInfo info,
+                              FilePath scriptExecutionRoot,
+                              Map<String, String> infraEnvVarsMaster,
+                              Map<String, String> infraEnvVarsNode,
+                              Map<String, String> computedEnvVars,
                               final Launcher launcher,
                               BuildListener listener) throws EnvInjectException {
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectScriptExecutorService scriptExecutorService;
         if (info.isLoadFilesFromMaster()) {
-            scriptExecutorService = new EnvInjectScriptExecutorService(info, infraEnvVarsMaster, scriptContentEnvVars, rootPath, launcher, logger);
+            scriptExecutorService = new EnvInjectScriptExecutorService(info, scriptExecutionRoot, infraEnvVarsMaster, computedEnvVars, launcher, logger);
         } else {
-            scriptExecutorService = new EnvInjectScriptExecutorService(info, infraEnvVarsNode, scriptContentEnvVars, rootPath, launcher, logger);
+            scriptExecutorService = new EnvInjectScriptExecutorService(info, scriptExecutionRoot, infraEnvVarsNode, computedEnvVars, launcher, logger);
         }
         scriptExecutorService.executeScriptFromInfoObject();
     }
 
-    private Map<String, String> filterEnvVars(EnvInjectLogger logger, Map<String, String> infraEnvVarsNode, Map<String, String> variables) {
+    private Map<String, String> filterEnvVars(Map<String, String> previousEnvVars, Map<String, String> variables) {
 
         //Resolves vars each other
-        resolveVars(variables, infraEnvVarsNode);
+        resolveVars(variables, previousEnvVars);
 
         //Remove unset variables
         return removeUnsetVars(variables);
     }
 
-    public void resolveVars(Map<String, String> variables, Map<String, String> env) {
+    private void resolveVars(Map<String, String> variables, Map<String, String> env) {
+
+        //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
             entry.setValue(Util.replaceMacro(entry.getValue(), env));
         }
-        EnvVars.resolve(variables);
+
+        //Resolve variables against variables itself
+        boolean stopToResolveVars = false;
+        int nbUnresolvedVar = 0;
+
+        while (!stopToResolveVars) {
+            int previousNbUnresolvedVar = nbUnresolvedVar;
+            nbUnresolvedVar = 0;
+            for (Map.Entry<String, String> entry : variables.entrySet()) {
+                String value = Util.replaceMacro(entry.getValue(), variables);
+                entry.setValue(value);
+                if (isUnresolvedVar(value)) {
+                    nbUnresolvedVar++;
+                }
+            }
+            if (previousNbUnresolvedVar == nbUnresolvedVar) {
+                stopToResolveVars = true;
+            }
+        }
     }
 
-    public Map<String, String> removeUnsetVars(Map<String, String> envVars) {
+    private Map<String, String> removeUnsetVars(Map<String, String> envVars) {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             if (!isUnresolvedVar(entry.getValue())) {
@@ -86,10 +116,7 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     private boolean isUnresolvedVar(String value) {
-        if (value == null) {
-            return false;
-        }
-        return value.contains("$");
+        return value != null && value.contains("$");
     }
 
     private Map<String, String> getEnvVarsFromProperties(FilePath rootPath,
@@ -106,5 +133,12 @@ public class EnvInjectEnvVars implements Serializable {
         return resultMap;
     }
 
-
+    private Map<String, String> getEnvVarsFromProperties(FilePath rootPath,
+                                                         EnvInjectLogger logger,
+                                                         final EnvInjectInfo info,
+                                                         final Map<String, String> infraEnvVarsNode) throws IOException, InterruptedException {
+        final Map<String, String> resultMap = new LinkedHashMap<String, String>();
+        resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(info, infraEnvVarsNode, logger)));
+        return resultMap;
+    }
 }

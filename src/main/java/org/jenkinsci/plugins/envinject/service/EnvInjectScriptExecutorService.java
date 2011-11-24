@@ -21,21 +21,25 @@ public class EnvInjectScriptExecutorService {
 
     private EnvInjectJobPropertyInfo info;
 
-    private Map<String, String> scriptPathEnvVars;
+    private FilePath scriptExecutionRoot;
 
-    private Map<String, String> scriptContentEnvVars;
+    private Map<String, String> scriptPathExecutionEnvVars;
 
-    private FilePath rootScriptExecutionPath;
+    private Map<String, String> scriptExecutionEnvVars;
 
     private Launcher launcher;
 
     private EnvInjectLogger logger;
 
-    public EnvInjectScriptExecutorService(EnvInjectJobPropertyInfo info, Map<String, String> scriptPathEnvVars, Map<String, String> scriptContentEnvVars, FilePath rootScriptExecutionPath, Launcher launcher, EnvInjectLogger logger) {
+    public EnvInjectScriptExecutorService(EnvInjectJobPropertyInfo info,
+                                          FilePath scriptExecutionRoot,
+                                          Map<String, String> scriptPathExecutionEnvVars,
+                                          Map<String, String> scriptExecutionEnvVars,
+                                          Launcher launcher, EnvInjectLogger logger) {
         this.info = info;
-        this.scriptPathEnvVars = scriptPathEnvVars;
-        this.scriptContentEnvVars = scriptContentEnvVars;
-        this.rootScriptExecutionPath = rootScriptExecutionPath;
+        this.scriptExecutionRoot = scriptExecutionRoot;
+        this.scriptPathExecutionEnvVars = scriptPathExecutionEnvVars;
+        this.scriptExecutionEnvVars = scriptExecutionEnvVars;
         this.launcher = launcher;
         this.logger = logger;
     }
@@ -44,25 +48,24 @@ public class EnvInjectScriptExecutorService {
 
         //Process the script file path
         if (info.getScriptFilePath() != null) {
-            String scriptFilePathResolved = Util.replaceMacro(info.getScriptFilePath(), scriptPathEnvVars);
+            String scriptFilePathResolved = Util.replaceMacro(info.getScriptFilePath(), scriptPathExecutionEnvVars);
             String scriptFilePathNormalized = scriptFilePathResolved.replace("\\", "/");
             executeScriptPath(scriptFilePathNormalized);
         }
 
         //Process the script content
         if (info.getScriptContent() != null) {
-            String scriptResolved = Util.replaceMacro(info.getScriptContent(), scriptContentEnvVars);
-            executeScriptContent(scriptResolved);
+            executeScriptContent(info.getScriptContent());
         }
     }
 
 
     private void executeScriptPath(String scriptFilePath) throws EnvInjectException {
         try {
-            FilePath f = new FilePath(rootScriptExecutionPath, scriptFilePath);
+            FilePath f = new FilePath(scriptExecutionRoot, scriptFilePath);
             if (f.exists()) {
                 launcher.getListener().getLogger().println(String.format("Executing '%s' script.", scriptFilePath));
-                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(launcher.getListener()).envs(scriptContentEnvVars).pwd(rootScriptExecutionPath).join();
+                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(launcher.getListener()).envs(scriptPathExecutionEnvVars).pwd(scriptExecutionRoot).join();
                 if (cmdCode != 0) {
                     logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
                 }
@@ -87,9 +90,9 @@ public class EnvInjectScriptExecutorService {
                 batchRunner = new BatchFile(scriptContent);
             }
 
-            FilePath tmpFile = batchRunner.createScriptFile(rootScriptExecutionPath);
+            FilePath tmpFile = batchRunner.createScriptFile(scriptExecutionRoot);
             logger.info(String.format("Executing the script: \n %s", scriptContent));
-            int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).pwd(rootScriptExecutionPath).join();
+            int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
                 String message = String.format("The exit code is '%s'. Fail the build.", cmdCode);
                 logger.error(message);
