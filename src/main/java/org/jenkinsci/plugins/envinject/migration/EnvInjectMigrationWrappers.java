@@ -72,7 +72,7 @@ public class EnvInjectMigrationWrappers extends ItemListener {
 
     private void addOrModifyEnvInjectBuildWrapper(BuildableItemWithBuildWrappers buildableItemWithBuildWrappers, EnvInjectBuildWrapper envInjectBuildWrapper) throws EnvInjectException {
 
-        //Iterate all wrappers and remove the envInjectWrapper if exists: only one is authorized and the new wins
+        //Iterate through all wrappers and remove the envInjectWrapper if exists: only one is authorized and the new wins
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersList = buildableItemWithBuildWrappers.getBuildWrappersList();
         Iterator<BuildWrapper> buildWrapperIterator = wrappersList.iterator();
         while (buildWrapperIterator.hasNext()) {
@@ -82,7 +82,7 @@ public class EnvInjectMigrationWrappers extends ItemListener {
             }
         }
 
-        //Adds the new envInjectBuildWrapper
+        //Add the new envInjectBuildWrapper
         try {
             wrappersList.add(envInjectBuildWrapper);
         } catch (IOException ioe) {
