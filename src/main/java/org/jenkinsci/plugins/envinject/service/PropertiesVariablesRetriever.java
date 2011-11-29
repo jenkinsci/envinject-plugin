@@ -53,7 +53,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             //Add the properties content
             if (info.getPropertiesContent() != null) {
                 String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
-                logger.info(String.format("Injecting as environment variables the properties content \n '%s' \n", content));
+                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", content));
                 result.putAll(loader.getVarsFromPropertiesContent(content));
             }
 

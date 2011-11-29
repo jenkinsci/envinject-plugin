@@ -91,7 +91,7 @@ public class EnvInjectScriptExecutorService {
             }
 
             FilePath tmpFile = batchRunner.createScriptFile(scriptExecutionRoot);
-            logger.info(String.format("Executing the script: \n %s", scriptContent));
+            logger.info(String.format("Executing and processing the following script content: \n%s\n", scriptContent));
             int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
                 String message = String.format("The exit code is '%s'. Fail the build.", cmdCode);
