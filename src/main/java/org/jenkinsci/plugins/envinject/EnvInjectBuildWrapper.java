@@ -10,7 +10,10 @@ import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.envinject.service.*;
+import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -46,10 +49,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         try {
             Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build);
 
-            //Execute script info
-            EnvInjectScriptExecutorService scriptExecutorService = new EnvInjectScriptExecutorService(info, ws, previousEnvVars, previousEnvVars, launcher, logger);
-            scriptExecutorService.executeScriptFromInfoObject();
-
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 
             // Retrieve triggered cause
@@ -58,8 +57,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 injectedEnvVars.putAll(triggerVariable);
             }
 
-            //Remove unset variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsInfo(ws, info, injectedEnvVars);
+            //Get result variables
+            Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), injectedEnvVars);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars);
+
+            //Execute script info
+            envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
 
             //Add or get the existing action to add new env vars
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);

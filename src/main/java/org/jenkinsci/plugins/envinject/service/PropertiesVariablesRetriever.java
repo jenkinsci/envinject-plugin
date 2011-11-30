@@ -4,7 +4,6 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
 import org.jenkinsci.plugins.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.EnvInjectInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
 import java.io.File;
@@ -17,14 +16,17 @@ import java.util.Map;
  */
 public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<String, String>> {
 
-    private EnvInjectInfo info;
+    private String propertiesFilePath;
+
+    private String propertiesContent;
 
     private Map<String, String> currentEnvVars;
 
     private EnvInjectLogger logger;
 
-    public PropertiesVariablesRetriever(EnvInjectInfo info, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
-        this.info = info;
+    public PropertiesVariablesRetriever(String propertiesFilePath, String propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+        this.propertiesFilePath = propertiesFilePath;
+        this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
         this.logger = logger;
     }
@@ -37,10 +39,10 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             PropertiesLoader loader = new PropertiesLoader();
 
             //Add the properties file
-            if (info.getPropertiesFilePath() != null) {
-                String propertiesFilePath = Util.replaceMacro(info.getPropertiesFilePath(), currentEnvVars);
-                propertiesFilePath = propertiesFilePath.replace("\\", "/");
-                File propertiesFile = getFile(base, propertiesFilePath);
+            if (propertiesFilePath != null) {
+                String propertiesFilePathResolved = Util.replaceMacro(propertiesFilePath, currentEnvVars);
+                propertiesFilePathResolved = propertiesFilePathResolved.replace("\\", "/");
+                File propertiesFile = getFile(base, propertiesFilePathResolved);
                 if (propertiesFile == null) {
                     String message = String.format("The given properties file path '%s' doesn't exist.", propertiesFilePath);
                     logger.error(message);
@@ -51,10 +53,10 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             }
 
             //Add the properties content
-            if (info.getPropertiesContent() != null) {
-                String content = Util.replaceMacro(info.getPropertiesContent(), currentEnvVars);
-                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", content));
-                result.putAll(loader.getVarsFromPropertiesContent(content));
+            if (propertiesContent != null) {
+                String propertiesContentResolved = Util.replaceMacro(propertiesContent, currentEnvVars);
+                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", propertiesContentResolved));
+                result.putAll(loader.getVarsFromPropertiesContent(propertiesContentResolved));
             }
 
         } catch (EnvInjectException envEx) {

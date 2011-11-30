@@ -55,7 +55,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsInfo(ws, info, variables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), variables);
 
             //Set the new build variables map
             build.addAction(new EnvironmentContributingAction() {
@@ -90,6 +90,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
+        @SuppressWarnings("unchecked")
         result.putAll(build.getBuildVariables());
         FilePath ws = build.getWorkspace();
         if (ws != null) {

@@ -60,12 +60,19 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 if (rootPath != null) {
 
                     EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
-                    final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsJobPropertyInfo(rootPath, info, infraEnvVarsMaster, infraEnvVarsNode);
+                    final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
+                            logger, info.isLoadFilesFromMaster(),
+                            info.getPropertiesFilePath(), info.getPropertiesContent(),
+                            infraEnvVarsMaster, infraEnvVarsNode);
 
                     //Execute script
-                    envInjectEnvVarsService.executeScript(info, rootPath, infraEnvVarsMaster, infraEnvVarsNode, resultVariables, launcher, listener);
+                    envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
+                            info.getScriptContent(),
+                            rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, propertiesVariables, launcher, listener);
 
-                    // Retrieve triggered cause
+                    final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
+
+                    //Retrieve triggered cause
                     if (info.isPopulateTriggerCause()) {
                         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
                         resultVariables.putAll(triggerVariable);
@@ -91,7 +98,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
-
         return new Environment() {
         };
     }
@@ -100,7 +106,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
-
         Computer computer = Hudson.getInstance().toComputer();
         result.putAll(build.getCharacteristicEnvVars());
 
