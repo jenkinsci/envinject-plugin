@@ -90,7 +90,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
-        @SuppressWarnings("unchecked")
         result.putAll(build.getBuildVariables());
         FilePath ws = build.getWorkspace();
         if (ws != null) {
