@@ -30,9 +30,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-
         EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Preparing an environment for the job.");
+
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         if (variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
             try {
 
@@ -52,8 +53,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    infraEnvVarsNode.putAll(variableGetter.getBuildVariables(build));
-                    infraEnvVarsMaster.putAll(variableGetter.getBuildVariables(build));
+                    TopLevelItem topLevelItem = (TopLevelItem) build.getParent();
+                    infraEnvVarsNode.putAll(variableGetter.getBuildVariables(build, topLevelItem));
+                    infraEnvVarsMaster.putAll(variableGetter.getBuildVariables(build, topLevelItem));
                 }
 
                 final FilePath rootPath = getNodeRootPath();
