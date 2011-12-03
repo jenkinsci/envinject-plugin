@@ -132,10 +132,6 @@ public class EnvInjectVariableGetter {
         }
     }
 
-    public Map<String, String> getCurrentNodeEnvVars() throws IOException, InterruptedException {
-        return getEnvVars(Computer.currentComputer());
-    }
-
     private Map<String, String> getEnvVars(Computer computer) throws IOException, InterruptedException {
         Map<String, String> result = new HashMap<String, String>();
         EnvVars envVars = computer.getEnvironment();
