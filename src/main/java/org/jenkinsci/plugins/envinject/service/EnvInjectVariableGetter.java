@@ -58,7 +58,7 @@ public class EnvInjectVariableGetter {
     }
 
 
-    public Map<String, String> getBuildVariables(AbstractBuild build) {
+    public Map<String, String> getBuildVariables(AbstractBuild build, TopLevelItem topLevelItem) {
         Map<String, String> result = new HashMap<String, String>();
 
         //Add build process variables
@@ -68,11 +68,26 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getBuildVariables());
 
         //Add workspace variable
+        String workspace = getOrCreateWorkspace(build, topLevelItem);
+        if (workspace != null) {
+            result.put("WORKSPACE", workspace);
+        }
+
+        return result;
+    }
+
+    private String getOrCreateWorkspace(AbstractBuild build, TopLevelItem item) {
         FilePath ws = build.getWorkspace();
         if (ws != null) {
-            result.put("WORKSPACE", ws.getRemote());
+            return ws.getRemote();
+        } else {
+            Node node = Computer.currentComputer().getNode();
+            if (node != null) {
+                FilePath wFilePath = node.getWorkspaceFor(item);
+                return wFilePath.getRemote();
+            }
+            return null;
         }
-        return result;
     }
 
     public boolean isEnvInjectJobPropertyActive(Job job) {
@@ -97,7 +112,7 @@ public class EnvInjectVariableGetter {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
-            result.putAll(getBuildVariables(build));
+            result.putAll(getBuildVariables(build, (TopLevelItem) build.getParent()));
         }
         return result;
     }
