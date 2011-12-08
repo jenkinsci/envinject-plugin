@@ -47,7 +47,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-            Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build);
+            Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build, logger);
 
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 

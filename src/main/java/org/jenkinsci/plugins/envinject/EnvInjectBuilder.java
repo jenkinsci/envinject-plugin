@@ -42,10 +42,10 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build);
-
         try {
+
+            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+            Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build, logger);
 
             //Get current envVars
             Map<String, String> variables = new HashMap<String, String>(previousEnvVars);

@@ -54,8 +54,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
                     TopLevelItem topLevelItem = (TopLevelItem) build.getParent();
-                    infraEnvVarsNode.putAll(variableGetter.getBuildVariables(build, topLevelItem));
-                    infraEnvVarsMaster.putAll(variableGetter.getBuildVariables(build, topLevelItem));
+                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, topLevelItem, logger);
+                    infraEnvVarsNode.putAll(buildVariables);
+                    infraEnvVarsMaster.putAll(buildVariables);
                 }
 
                 final FilePath rootPath = getNodeRootPath();
