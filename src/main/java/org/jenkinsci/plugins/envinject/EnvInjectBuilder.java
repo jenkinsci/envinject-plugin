@@ -37,9 +37,11 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Injecting variables as a build step.");
+
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
@@ -55,7 +57,10 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), variables);
+            final Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), variables);
+
+            //Resolve variables
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(variables, propertiesEnvVars);
 
             //Set the new build variables map
             build.addAction(new EnvironmentContributingAction() {
