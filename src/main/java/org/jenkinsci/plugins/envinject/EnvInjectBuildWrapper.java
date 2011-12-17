@@ -40,10 +40,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     @Override
     public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Executing scripts and injecting variables after the SCM step.");
+
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
@@ -59,6 +61,8 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             //Get result variables
             Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), injectedEnvVars);
+
+            //Resolve variables
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars);
 
             //Execute script info
