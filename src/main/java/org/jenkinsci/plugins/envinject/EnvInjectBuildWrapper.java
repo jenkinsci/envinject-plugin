@@ -66,7 +66,10 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars);
 
             //Execute script info
-            envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
+            int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
+            if (resultCode != 0) {
+                logger.info(String.format("The exit code is '%s'. Fail the build.", resultCode));
+            }
 
             //Add or get the existing action to add new env vars
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);

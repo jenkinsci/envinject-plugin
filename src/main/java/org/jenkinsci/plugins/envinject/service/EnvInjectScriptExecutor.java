@@ -6,10 +6,10 @@ import hudson.Util;
 import hudson.tasks.BatchFile;
 import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
+import hudson.util.ArgumentListBuilder;
 import org.jenkinsci.plugins.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectLogger;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -27,46 +27,59 @@ public class EnvInjectScriptExecutor {
         this.logger = logger;
     }
 
-    public void executeScriptSection(FilePath scriptExecutionRoot,
-                                     String scriptFilePath,
-                                     String scriptContent,
-                                     Map<String, String> scriptPathExecutionEnvVars,
-                                     Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+    public int executeScriptSection(FilePath scriptExecutionRoot,
+                                    String scriptFilePath,
+                                    String scriptContent,
+                                    Map<String, String> scriptPathExecutionEnvVars,
+                                    Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
 
         //Process the script file path
         if (scriptFilePath != null) {
             String scriptFilePathResolved = Util.replaceMacro(scriptFilePath, scriptPathExecutionEnvVars);
             String scriptFilePathNormalized = scriptFilePathResolved.replace("\\", "/");
-            executeScriptPath(scriptExecutionRoot, scriptFilePathNormalized, scriptExecutionEnvVars);
+            int resultCode = executeScriptPath(scriptExecutionRoot, scriptFilePathNormalized, scriptExecutionEnvVars);
+            if (resultCode != 0) {
+                return resultCode;
+            }
+
         }
 
         //Process the script content
         if (scriptContent != null) {
-            executeScriptContent(scriptExecutionRoot, scriptContent, scriptExecutionEnvVars);
+            int resultCode = executeScriptContent(scriptExecutionRoot, scriptContent, scriptExecutionEnvVars);
+            if (resultCode != 0) {
+                return resultCode;
+            }
+
         }
+
+        return 0;
     }
 
 
-    private void executeScriptPath(FilePath scriptExecutionRoot, String scriptFilePath, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+    private int executeScriptPath(FilePath scriptExecutionRoot, String scriptFilePath, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
         try {
-            FilePath f = new FilePath(scriptExecutionRoot, scriptFilePath);
-            if (f.exists()) {
-                launcher.getListener().getLogger().println(String.format("Executing '%s' script.", scriptFilePath));
-                int cmdCode = launcher.launch().cmds(new File(scriptFilePath)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
-                if (cmdCode != 0) {
-                    logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
-                }
-            } else {
-                String message = String.format("Can't load the file '%s'. It doesn't exist.", f.getRemote());
-                logger.error(message);
-                throw new EnvInjectException(message);
+            //FilePath f = new FilePath(scriptExecutionRoot, scriptFilePath);
+            //if (f.exists()) {
+            launcher.getListener().getLogger().println(String.format("Executing '%s'.", scriptFilePath));
+            ArgumentListBuilder cmds = new ArgumentListBuilder();
+            cmds.addTokenized(scriptFilePath);
+            int cmdCode = launcher.launch().cmds(cmds).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
+            if (cmdCode != 0) {
+                logger.info(String.format("The exit code is '%s'. Fail the build.", cmdCode));
             }
+            return cmdCode;
+//            } else {
+//                String message = String.format("Can't load the file '%s'. It doesn't exist.", f.getRemote());
+//                logger.error(message);
+//                throw new EnvInjectException(message);
+//            }
         } catch (Throwable e) {
             throw new EnvInjectException("Error occurs on execution script file path.", e);
         }
     }
 
-    private void executeScriptContent(FilePath scriptExecutionRoot, String scriptContent, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+    private int executeScriptContent(FilePath scriptExecutionRoot, String scriptContent, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
 
         try {
 
@@ -81,10 +94,9 @@ public class EnvInjectScriptExecutor {
             logger.info(String.format("Executing and processing the following script content: \n%s\n", scriptContent));
             int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
-                String message = String.format("The exit code is '%s'. Fail the build.", cmdCode);
-                logger.error(message);
-                throw new EnvInjectException(message);
+                logger.error(String.format("The exit code is '%s'. Fail the build.", cmdCode));
             }
+            return cmdCode;
 
         } catch (IOException ioe) {
             throw new EnvInjectException("Error occurs on execution script file path", ioe);

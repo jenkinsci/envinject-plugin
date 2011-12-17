@@ -69,9 +69,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                             infraEnvVarsMaster, infraEnvVarsNode);
 
                     //Execute script
-                    envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
+                    int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
                             info.getScriptContent(),
                             rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, propertiesVariables, launcher, listener);
+                    if (resultCode != 0) {
+                        logger.info(String.format("The exit code is '%s'. Fail the build.", resultCode));
+                    }
 
                     final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
 

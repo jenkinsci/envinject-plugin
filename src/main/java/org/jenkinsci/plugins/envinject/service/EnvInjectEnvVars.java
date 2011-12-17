@@ -51,7 +51,7 @@ public class EnvInjectEnvVars implements Serializable {
         return resultMap;
     }
 
-    public void executeScript(boolean loadFromMaster,
+    public int executeScript(boolean loadFromMaster,
                               String scriptContent,
                               FilePath scriptExecutionRoot,
                               String scriptFilePath,
@@ -72,13 +72,13 @@ public class EnvInjectEnvVars implements Serializable {
             Map<String, String> scriptPathExecutionEnvVars = new HashMap<String, String>();
             scriptPathExecutionEnvVars.putAll(infraEnvVarsMaster);
             scriptPathExecutionEnvVars.putAll(propertiesEnvVars);
-            scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
+            return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
         } else {
-            scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptExecutionEnvVars, scriptExecutionEnvVars);
+            return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptExecutionEnvVars, scriptExecutionEnvVars);
         }
     }
 
-    public void executeScript(
+    public int executeScript(
             String scriptContent,
             FilePath scriptExecutionRoot,
             String scriptFilePath,
@@ -88,7 +88,7 @@ public class EnvInjectEnvVars implements Serializable {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectScriptExecutor scriptExecutor = new EnvInjectScriptExecutor(launcher, logger);
-        scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, envVars, envVars);
+        return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, envVars, envVars);
     }
 
 
