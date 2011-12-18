@@ -41,7 +41,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Executing scripts and injecting variables after the SCM step.");
+        logger.info("Executing scripts and injecting environment variables after the SCM step.");
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         FilePath ws = build.getWorkspace();

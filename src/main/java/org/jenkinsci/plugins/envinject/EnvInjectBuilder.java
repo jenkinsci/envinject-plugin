@@ -38,7 +38,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Injecting variables as a build step.");
+        logger.info("Injecting environment variables from a build step.");
 
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);

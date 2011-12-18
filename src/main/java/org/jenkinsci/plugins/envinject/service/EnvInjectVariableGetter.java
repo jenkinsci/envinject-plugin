@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
@@ -56,7 +56,7 @@ public class EnvInjectVariableGetter {
     }
 
 
-    public Map<String, String> getBuildVariables(AbstractBuild build, TopLevelItem topLevelItem, EnvInjectLogger logger) throws EnvInjectException {
+    public Map<String, String> getBuildVariables(AbstractBuild build, AbstractProject project, EnvInjectLogger logger) throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
         //Add build process variables
@@ -66,7 +66,7 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getBuildVariables());
 
         //Add workspace variable
-        String workspace = getOrCreateWorkspace(build, topLevelItem, logger);
+        String workspace = getOrCreateWorkspace(build, project, logger);
         if (workspace != null) {
             result.put("WORKSPACE", workspace);
         }
@@ -74,11 +74,11 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private String getOrCreateWorkspace(AbstractBuild build, TopLevelItem item, EnvInjectLogger logger) throws EnvInjectException {
+    private String getOrCreateWorkspace(AbstractBuild build, AbstractProject project, EnvInjectLogger logger) throws EnvInjectException {
         try {
             Node node = build.getBuiltOn();
             if (node != null) {
-                FilePath workspace = decideWorkspace(build, item, node, logger.getListener());
+                FilePath workspace = decideWorkspace(build, project, node, logger.getListener());
                 workspace.mkdirs();
                 return workspace.getRemote();
             }
@@ -90,18 +90,18 @@ public class EnvInjectVariableGetter {
         }
     }
 
-    private FilePath decideWorkspace(AbstractBuild build, TopLevelItem item, Node n, TaskListener listener) throws InterruptedException, IOException {
-        if (item instanceof AbstractProject) {
-            String customWorkspace = ((AbstractProject) item).getCustomWorkspace();
-            if (customWorkspace != null) {
-                return n.getRootPath().child(build.getEnvironment(listener).expand(customWorkspace));
-            }
+    private FilePath decideWorkspace(AbstractBuild build, AbstractProject project, Node n, TaskListener listener) throws InterruptedException, IOException {
+
+        String customWorkspace = project.getCustomWorkspace();
+        if (customWorkspace != null) {
+            return n.getRootPath().child(build.getEnvironment(listener).expand(customWorkspace));
         }
-        return n.getWorkspaceFor(item);
+
+        return project.getSomeWorkspace();
     }
 
     public boolean isEnvInjectJobPropertyActive(Job job) {
-        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(job);
+        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
         if (envInjectJobProperty != null) {
             EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
             if (info != null && envInjectJobProperty.isOn()) {
@@ -117,38 +117,42 @@ public class EnvInjectVariableGetter {
 
     public Map<String, String> getPreviousEnvVars(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
-        EnvInjectJobProperty jobProperty = getEnvInjectJobProperty(build.getParent());
-        if (jobProperty != null) {
+        if (isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
-            result.putAll(getBuildVariables(build, (TopLevelItem) build.getParent(), logger));
+            result.putAll(getBuildVariables(build, (AbstractProject) build.getParent(), logger));
         }
         return result;
     }
 
-    /**
-     * Get a new map with the current envMap
-     */
+    private boolean isEnvInjectActivated(AbstractBuild build) {
+        if (build instanceof MatrixRun) {
+            return (((MatrixRun) build).getParentBuild().getAction(EnvInjectAction.class)) != null;
+        } else {
+            return build.getAction(EnvInjectAction.class) != null;
+        }
+    }
+
     public Map<String, String> getCurrentInjectedEnvVars(AbstractBuild<?, ?> build) {
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
+        EnvInjectAction envInjectAction = getEnvInjectAction(build);
         Map<String, String> result = new LinkedHashMap<String, String>();
-        if (envInjectAction != null) {
-            Map envMap = envInjectAction.getEnvMap();
-            result.putAll(envMap);
+        if (envInjectAction == null) {
             return result;
         } else {
+            result.putAll(envInjectAction.getEnvMap());
             return result;
         }
     }
 
-    private Map<String, String> getEnvVars(Computer computer) throws IOException, InterruptedException {
-        Map<String, String> result = new HashMap<String, String>();
-        EnvVars envVars = computer.getEnvironment();
-        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            result.put(entry.getKey(), entry.getValue());
+    private EnvInjectAction getEnvInjectAction(AbstractBuild<?, ?> build) {
+        EnvInjectAction envInjectAction;
+        if (build instanceof MatrixRun) {
+            envInjectAction = ((MatrixRun) build).getParentBuild().getAction(EnvInjectAction.class);
+        } else {
+            envInjectAction = build.getAction(EnvInjectAction.class);
         }
-        return result;
+        return envInjectAction;
     }
 
 }

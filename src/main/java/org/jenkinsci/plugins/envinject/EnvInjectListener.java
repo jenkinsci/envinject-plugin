@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.*;
+import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -34,7 +35,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         logger.info("Preparing an environment for the job.");
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        if (variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
+        if (!isMatrixRun(build) && variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
             try {
 
                 EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
@@ -53,8 +54,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    TopLevelItem topLevelItem = (TopLevelItem) build.getParent();
-                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, topLevelItem, logger);
+                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, (AbstractProject) build.getParent(), logger);
                     infraEnvVarsNode.putAll(buildVariables);
                     infraEnvVarsMaster.putAll(buildVariables);
                 }
@@ -106,6 +106,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         return new Environment() {
         };
+    }
+
+    private boolean isMatrixRun(AbstractBuild build) {
+        return build instanceof MatrixRun;
     }
 
 
