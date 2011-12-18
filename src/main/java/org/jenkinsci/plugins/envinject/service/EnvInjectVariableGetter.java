@@ -56,7 +56,7 @@ public class EnvInjectVariableGetter {
     }
 
 
-    public Map<String, String> getBuildVariables(AbstractBuild build, AbstractProject project, EnvInjectLogger logger) throws EnvInjectException {
+    public Map<String, String> getBuildVariables(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
         //Add build process variables
@@ -66,7 +66,7 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getBuildVariables());
 
         //Add workspace variable
-        String workspace = getOrCreateWorkspace(build, project, logger);
+        String workspace = getWorkspaceWithCreation(build, logger);
         if (workspace != null) {
             result.put("WORKSPACE", workspace);
         }
@@ -74,13 +74,16 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private String getOrCreateWorkspace(AbstractBuild build, AbstractProject project, EnvInjectLogger logger) throws EnvInjectException {
+    private String getWorkspaceWithCreation(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
         try {
             Node node = build.getBuiltOn();
             if (node != null) {
-                FilePath workspace = decideWorkspace(build, project, node, logger.getListener());
-                workspace.mkdirs();
-                return workspace.getRemote();
+                Job job = build.getParent();
+                if (job instanceof TopLevelItem) {
+                    FilePath workspace = decideWorkspace(build, (TopLevelItem) job, node, logger.getListener());
+                    workspace.mkdirs();
+                    return workspace.getRemote();
+                }
             }
             return null;
         } catch (InterruptedException ie) {
@@ -90,14 +93,14 @@ public class EnvInjectVariableGetter {
         }
     }
 
-    private FilePath decideWorkspace(AbstractBuild build, AbstractProject project, Node n, TaskListener listener) throws InterruptedException, IOException {
-
-        String customWorkspace = project.getCustomWorkspace();
-        if (customWorkspace != null) {
-            return n.getRootPath().child(build.getEnvironment(listener).expand(customWorkspace));
+    private FilePath decideWorkspace(AbstractBuild build, TopLevelItem item, Node n, TaskListener listener) throws InterruptedException, IOException {
+        if (item instanceof AbstractProject) {
+            String customWorkspace = ((AbstractProject) item).getCustomWorkspace();
+            if (customWorkspace != null) {
+                return n.getRootPath().child(build.getEnvironment(listener).expand(customWorkspace));
+            }
         }
-
-        return project.getSomeWorkspace();
+        return n.getWorkspaceFor(item);
     }
 
     public boolean isEnvInjectJobPropertyActive(Job job) {
@@ -121,7 +124,7 @@ public class EnvInjectVariableGetter {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
-            result.putAll(getBuildVariables(build, (AbstractProject) build.getParent(), logger));
+            result.putAll(getBuildVariables(build, logger));
         }
         return result;
     }
