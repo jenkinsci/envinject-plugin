@@ -31,11 +31,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Preparing an environment for the job.");
-
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         if (!isMatrixRun(build) && variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
+
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
+            logger.info("Preparing an environment for the job.");
             try {
 
                 EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
@@ -54,7 +54,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
-                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, (AbstractProject) build.getParent(), logger);
+                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
                     infraEnvVarsNode.putAll(buildVariables);
                     infraEnvVarsMaster.putAll(buildVariables);
                 }
