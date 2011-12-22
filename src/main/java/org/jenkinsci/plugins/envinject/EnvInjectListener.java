@@ -118,10 +118,18 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
-        Computer computer = Hudson.getInstance().toComputer();
         result.putAll(build.getCharacteristicEnvVars());
 
-        result = computer.getEnvironment().overrideAll(result);
+        Computer computer = Hudson.getInstance().toComputer();
+        //test if there is at least one executor
+        if (computer != null) {
+            result = computer.getEnvironment().overrideAll(result);
+            Node n = computer.getNode();
+            if (n != null)
+                result.put("NODE_NAME", computer.getName());
+            result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+        }
+
         String rootUrl = Hudson.getInstance().getRootUrl();
         if (rootUrl != null) {
             result.put("JENKINS_URL", rootUrl);
@@ -129,13 +137,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             result.put("BUILD_URL", rootUrl + build.getUrl());
             result.put("JOB_URL", rootUrl + build.getParent().getUrl());
         }
-
         result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
         result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
-        result.put("NODE_NAME", computer.getName());
-        Node n = computer.getNode();
-        if (n != null)
-            result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+
 
         EnvVars envVars = new EnvVars();
         for (EnvironmentContributor ec : EnvironmentContributor.all())
@@ -151,12 +155,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         //Node properties
-        Node node = computer.getNode();
-        if (node != null) {
-            for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
-                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                    EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                    result.putAll(environmentVariablesNodeProperty.getEnvVars());
+        if (computer != null) {
+            Node node = computer.getNode();
+            if (node != null) {
+                for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
+                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                        EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
+                        result.putAll(environmentVariablesNodeProperty.getEnvVars());
+                    }
                 }
             }
         }
@@ -166,6 +172,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     private Node getNode() {
         Computer computer = Computer.currentComputer();
+        if (computer == null) {
+            return null;
+        }
         return computer.getNode();
     }
 
