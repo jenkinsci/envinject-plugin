@@ -48,12 +48,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Add Jenkins System variables
                 if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
+                    logger.info("Jenkins system variables are kept.");
                     infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
                     infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
                 }
 
                 //Add build variables (such as parameter variables).
                 if (envInjectJobProperty.isKeepBuildVariables()) {
+                    logger.info("Jenkins build variables are kept.");
                     Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
                     infraEnvVarsNode.putAll(buildVariables);
                     infraEnvVarsMaster.putAll(buildVariables);
