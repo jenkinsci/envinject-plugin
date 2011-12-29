@@ -18,15 +18,6 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
-    <f:entry title="${%Global System Properties File}">
-        <select class="setting-input" name="envInject.globalPropertiesFileName">
-            <j:forEach var="inst" items="${descriptor.installations}">
-                <f:option selected="${inst.name==instance.name}">${inst.name}</f:option>
-            </j:forEach>
-        </select>
-    </f:entry>
-
-
         <f:entry
                 title="${%Job Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
