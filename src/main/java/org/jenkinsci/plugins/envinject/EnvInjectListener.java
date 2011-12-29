@@ -7,7 +7,6 @@ import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
-import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;

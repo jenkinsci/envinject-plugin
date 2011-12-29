@@ -4,12 +4,14 @@ import hudson.Util;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectInfo implements Serializable {
 
+    protected List<String> globalPropertiesFilePathNames;
     protected String propertiesFilePath;
     protected String propertiesContent;
 

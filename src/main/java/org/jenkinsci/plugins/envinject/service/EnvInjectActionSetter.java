@@ -29,7 +29,7 @@ public class EnvInjectActionSetter implements Serializable {
         if (envInjectAction != null) {
             envInjectAction.overrideAll(envMap);
         } else {
-            envInjectAction = new EnvInjectAction(rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
+            envInjectAction = new EnvInjectAction(build.getRootDir(), rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
                 public Map<String, String> call() throws EnvInjectException {
                     HashMap<String, String> result = new HashMap<String, String>();
                     result.putAll(EnvVars.masterEnvVars);

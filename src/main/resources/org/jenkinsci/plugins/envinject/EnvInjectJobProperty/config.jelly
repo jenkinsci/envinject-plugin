@@ -19,28 +19,28 @@
         </f:entry>
 
         <f:entry
-                title="${%Job Properties File Path}"
+                title="${%Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
             <f:textbox
                     name="envInjectInfoJobProperty.propertiesFilePath"
                     value="${instance.info.propertiesFilePath}"/>
         </f:entry>
 
-        <f:entry title="${%Job Properties Content}"
+        <f:entry title="${%Properties Content}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
             <f:textarea
                     name="envInjectInfoJobProperty.propertiesContent"
                     value="${instance.info.propertiesContent}"/>
         </f:entry>
 
-        <f:entry title="${%Job Environment Script File Path}"
+        <f:entry title="${%Environment Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
             <f:textbox
                     name="envInjectInfoJobProperty.scriptFilePath"
                     value="${instance.info.scriptFilePath}"/>
         </f:entry>
 
-        <f:entry title="${%Job Environment Script Content}"
+        <f:entry title="${%Environment Script Content}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
             <f:textarea
                     name="envInjectInfoJobProperty.scriptContent"

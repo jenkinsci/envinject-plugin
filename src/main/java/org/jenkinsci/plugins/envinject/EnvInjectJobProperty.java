@@ -7,8 +7,6 @@ import hudson.model.JobPropertyDescriptor;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.util.List;
-
 /**
  * @author Gregory Boissinot
  */
@@ -66,8 +64,6 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     @SuppressWarnings("unused")
     public static final class DescriptorImpl extends JobPropertyDescriptor {
 
-        private EnvInjectSystemConfiguratorElement[] globalProperties = new EnvInjectSystemConfiguratorElement[0];
-
         @Override
         public String getDisplayName() {
             return "[Environment Inject] -" + Messages.envinject_set_displayName();
@@ -81,13 +77,6 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         @Override
         public String getHelpFile() {
             return "/plugin/envinject/help.html";
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            List<EnvInjectSystemConfiguratorElement> globalPropertiesList = req.bindParametersToList(EnvInjectSystemConfiguratorElement.class, "envinject.");
-            globalProperties = globalPropertiesList.toArray(new EnvInjectSystemConfiguratorElement[globalPropertiesList.size()]);
-            return true;
         }
 
         @Override
