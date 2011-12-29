@@ -80,12 +80,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                     final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
 
-                    //Retrieve triggered cause
-                    if (info.isPopulateTriggerCause()) {
-                        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                        resultVariables.putAll(triggerVariable);
-                    }
-
                     //Add an action
                     new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 

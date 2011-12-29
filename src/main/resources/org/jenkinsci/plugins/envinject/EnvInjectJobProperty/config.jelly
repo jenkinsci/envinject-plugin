@@ -18,29 +18,38 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
+    <f:entry title="${%Global System Properties File}">
+        <select class="setting-input" name="envInject.globalPropertiesFileName">
+            <j:forEach var="inst" items="${descriptor.installations}">
+                <f:option selected="${inst.name==instance.name}">${inst.name}</f:option>
+            </j:forEach>
+        </select>
+    </f:entry>
+
+
         <f:entry
-                title="${%Properties File Path}"
+                title="${%Job Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
             <f:textbox
                     name="envInjectInfoJobProperty.propertiesFilePath"
                     value="${instance.info.propertiesFilePath}"/>
         </f:entry>
 
-        <f:entry title="${%Properties Content}"
+        <f:entry title="${%Job Properties Content}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
             <f:textarea
                     name="envInjectInfoJobProperty.propertiesContent"
                     value="${instance.info.propertiesContent}"/>
         </f:entry>
 
-        <f:entry title="${%Environment Script File Path}"
+        <f:entry title="${%Job Environment Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
             <f:textbox
                     name="envInjectInfoJobProperty.scriptFilePath"
                     value="${instance.info.scriptFilePath}"/>
         </f:entry>
 
-        <f:entry title="${%Environment Script Content}"
+        <f:entry title="${%Job Environment Script Content}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
             <f:textarea
                     name="envInjectInfoJobProperty.scriptContent"
@@ -52,13 +61,6 @@
             <f:checkbox
                     name="envInjectInfoJobProperty.loadFilesFromMaster"
                     checked="${instance.info.loadFilesFromMaster}"/>
-        </f:entry>
-
-        <f:entry title="${%Populate build cause}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/populateCauseEnv">
-            <f:checkbox
-                    name="envInjectInfoJobProperty.populateTriggerCause"
-                    checked="${instance.info.populateTriggerCause}"/>
         </f:entry>
 
     </f:optionalBlock>

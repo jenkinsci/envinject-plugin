@@ -26,7 +26,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
     @DataBoundConstructor
     public EnvInjectBuilder(String propertiesFilePath, String propertiesContent) {
-        this.info = new EnvInjectInfo(propertiesFilePath, propertiesContent, false);
+        this.info = new EnvInjectInfo(propertiesFilePath, propertiesContent);
     }
 
     @SuppressWarnings("unused")

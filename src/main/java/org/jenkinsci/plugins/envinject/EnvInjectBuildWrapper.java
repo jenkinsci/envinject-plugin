@@ -53,12 +53,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 
-            // Retrieve triggered cause
-            if (info.isPopulateTriggerCause()) {
-                Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-                injectedEnvVars.putAll(triggerVariable);
-            }
-
             //Get result variables
             Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), injectedEnvVars);
 

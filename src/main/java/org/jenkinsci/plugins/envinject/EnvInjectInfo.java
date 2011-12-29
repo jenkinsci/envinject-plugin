@@ -11,16 +11,14 @@ import java.io.Serializable;
 public class EnvInjectInfo implements Serializable {
 
     protected String propertiesFilePath;
-
     protected String propertiesContent;
 
-    protected boolean populateTriggerCause;
+    protected transient boolean populateTriggerCause;
 
     @DataBoundConstructor
-    public EnvInjectInfo(String propertiesFilePath, String propertiesContent, boolean populateTriggerCause) {
+    public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
         this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
         this.propertiesContent = Util.fixEmpty(propertiesContent);
-        this.populateTriggerCause = populateTriggerCause;
     }
 
     public String getPropertiesFilePath() {
@@ -31,6 +29,7 @@ public class EnvInjectInfo implements Serializable {
         return propertiesContent;
     }
 
+    @Deprecated
     public boolean isPopulateTriggerCause() {
         return populateTriggerCause;
     }

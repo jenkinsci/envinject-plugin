@@ -9,14 +9,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
 
     private String scriptFilePath;
-
     private String scriptContent;
-
     private boolean loadFilesFromMaster;
 
     @DataBoundConstructor
-    public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean populateTriggerCause, boolean loadFilesFromMaster) {
-        super(propertiesFilePath, propertiesContent, populateTriggerCause);
+    public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, boolean loadFilesFromMaster) {
+        super(propertiesFilePath, propertiesContent);
         this.scriptFilePath = Util.fixEmpty(scriptFilePath);
         this.scriptContent = Util.fixEmpty(scriptContent);
         this.loadFilesFromMaster = loadFilesFromMaster;

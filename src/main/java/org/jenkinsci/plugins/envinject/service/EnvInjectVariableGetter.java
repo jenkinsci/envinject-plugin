@@ -71,6 +71,10 @@ public class EnvInjectVariableGetter {
             result.put("WORKSPACE", workspace);
         }
 
+        //Retrieve triggered cause
+        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
+        result.putAll(triggerVariable);
+
         return result;
     }
 
@@ -137,7 +141,7 @@ public class EnvInjectVariableGetter {
         }
     }
 
-    public Map<String, String> getCurrentInjectedEnvVars(AbstractBuild<?, ?> build) {
+    private Map<String, String> getCurrentInjectedEnvVars(AbstractBuild<?, ?> build) {
         EnvInjectAction envInjectAction = getEnvInjectAction(build);
         Map<String, String> result = new LinkedHashMap<String, String>();
         if (envInjectAction == null) {
