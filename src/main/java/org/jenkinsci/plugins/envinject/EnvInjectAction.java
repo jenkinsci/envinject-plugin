@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
 import org.jenkinsci.plugins.envinject.service.EnvInjectSaveable;
@@ -16,12 +17,17 @@ public class EnvInjectAction implements Action, StaplerProxy {
 
     public static String URL_NAME = "injectedEnvVars";
 
-    private File rootDir;
-
     private transient Map<String, String> envMap;
 
-    public EnvInjectAction(File rootDir, Map<String, String> envMap) {
-        this.rootDir = rootDir;
+    private AbstractBuild build;
+
+    /**
+     * Backward compatibility
+     */
+    private transient File rootDir;
+
+    public EnvInjectAction(AbstractBuild build, Map<String, String> envMap) {
+        this.build = build;
         this.envMap = envMap;
     }
 
@@ -54,6 +60,9 @@ public class EnvInjectAction implements Action, StaplerProxy {
     private Object writeReplace() throws ObjectStreamException {
         try {
             EnvInjectSaveable dao = new EnvInjectSaveable();
+            if (rootDir == null) {
+                dao.saveEnvironment(build.getRootDir(), envMap);
+            }
             dao.saveEnvironment(rootDir, envMap);
         } catch (EnvInjectException e) {
             e.printStackTrace();
@@ -66,8 +75,9 @@ public class EnvInjectAction implements Action, StaplerProxy {
         EnvInjectSaveable dao = new EnvInjectSaveable();
         Map<String, String> resultMap = null;
         try {
-            //Backward compatibility: the result is null, the map is maybe in the action itself; therefore no action
-            if (rootDir != null) {
+            if (build != null) {
+                resultMap = dao.getEnvironment(build.getRootDir());
+            } else if (rootDir != null) {
                 resultMap = dao.getEnvironment(rootDir);
             }
             if (resultMap != null) {
