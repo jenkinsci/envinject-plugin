@@ -59,7 +59,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                 result.putAll(loader.getVarsFromPropertiesContent(propertiesContentResolved));
             }
 
-             logger.info("Variables injected successfully.");
+            logger.info("Variables injected successfully.");
 
         } catch (EnvInjectException envEx) {
             throw new IOException(envEx);
