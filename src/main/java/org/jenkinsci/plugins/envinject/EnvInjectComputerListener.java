@@ -2,16 +2,21 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -25,16 +30,54 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
 
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+        //Get node path
+        FilePath nodePath = c.getNode().getRootPath();
+        if (nodePath == null) {
+            return;
+        }
+
         //Default value to false (even if no checked)
         boolean unsetSystemVariables = false;
+
+        //Default properties vars
+        Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
 
         //Global Properties
         for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
             if (nodeProperty instanceof EnvInjectNodeProperty) {
+
+                Map<String, String> masterEnvVars = new HashMap<String, String>();
+                try {
+                    masterEnvVars = Hudson.getInstance().getRootPath().act(
+                            new Callable<Map<String, String>, Throwable>() {
+                                public Map<String, String> call() throws Throwable {
+                                    return EnvVars.masterEnvVars;
+                                }
+                            }
+                    );
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
+
+                //Add global properties
+                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, masterEnvVars));
             }
         }
+
+
+        Map<String, String> nodeEnvVars = Hudson.getInstance().getRootPath().act(
+                new Callable<Map<String, String>, IOException>() {
+                    public Map<String, String> call() throws IOException {
+                        return EnvVars.masterEnvVars;
+                    }
+                }
+        );
 
         Node slave = Hudson.getInstance().getNode(c.getName());
         //Specific nodeProperties can overrides the value if this is a slave
@@ -43,21 +86,29 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
                 if (nodeProperty instanceof EnvInjectNodeProperty) {
                     EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                     unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
+
+                    //Add global properties
+                    globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+
                 }
             }
         }
 
-        //Remove System vars is necessary
-        if (unsetSystemVariables) {
-            try {
-                c.getNode().getRootPath().act(new EnvInjectMasterEnvVarsSetter(new EnvVars()));
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            } catch (EnvInjectException e) {
-                e.printStackTrace();
-            }
+        EnvVars envVars2Set = new EnvVars();
+        if (!unsetSystemVariables) {
+            envVars2Set.putAll(nodeEnvVars);
+        }
+        envVars2Set.putAll(globalPropertiesEnvVars);
+
+        //Set new env vars
+        try {
+            nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        } catch (EnvInjectException e) {
+            e.printStackTrace();
         }
     }
 }
