@@ -74,7 +74,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                             info.getScriptContent(),
                             rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, propertiesVariables, launcher, listener);
                     if (resultCode != 0) {
-                        logger.info(String.format("The exit code is '%s'. Fail the build.", resultCode));
+                        build.setResult(Result.FAILURE);
+                        throw new Run.RunnerAbortedException();
                     }
 
                     final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
@@ -91,10 +92,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 }
 
             } catch (EnvInjectException envEx) {
-                logger.error("SEVERE ERROR occurs: " + envEx.getCause().getMessage());
+                logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
+                throw new Run.RunnerAbortedException();
+            } catch (Run.RunnerAbortedException rre) {
+                logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
             } catch (Throwable throwable) {
-                logger.error("SEVERE ERROR occurs: " + throwable.getCause().getMessage());
+                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
                 throw new Run.RunnerAbortedException();
             }
         }
@@ -135,9 +139,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
 
         EnvVars envVars = new EnvVars();
-        for (EnvironmentContributor ec : EnvironmentContributor.all())
+        for (EnvironmentContributor ec : EnvironmentContributor.all()) {
             ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
-        result.putAll(envVars);
+            result.putAll(envVars);
+        }
 
         //Global properties
         for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {

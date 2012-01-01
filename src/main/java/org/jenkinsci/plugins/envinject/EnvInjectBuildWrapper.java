@@ -61,7 +61,9 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             //Execute script info
             int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
             if (resultCode != 0) {
-                logger.info(String.format("The exit code is '%s'. Fail the build.", resultCode));
+                logger.info("Fail the build.");
+                build.setResult(Result.FAILURE);
+                return null;
             }
 
             //Add or get the existing action to add new env vars
@@ -73,7 +75,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                     env.putAll(resultVariables);
                 }
             };
-
         } catch (Throwable throwable) {
             logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
