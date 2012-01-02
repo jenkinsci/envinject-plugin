@@ -22,6 +22,8 @@ import java.util.Map;
  */
 public class EnvInjectBuilder extends Builder implements Serializable {
 
+    public static final String ENV_CONTRIBUTING_ACTION_DISPLAY_NAME = "EnvInjectEnvironmentAction";
+
     private EnvInjectInfo info;
 
     @DataBoundConstructor
@@ -73,7 +75,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
                 }
 
                 public String getDisplayName() {
-                    return null;
+                    return ENV_CONTRIBUTING_ACTION_DISPLAY_NAME;
                 }
 
                 public String getUrlName() {

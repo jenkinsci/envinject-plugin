@@ -137,7 +137,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
         result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
 
-
         EnvVars envVars = new EnvVars();
         for (EnvironmentContributor ec : EnvironmentContributor.all()) {
             ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
@@ -184,4 +183,28 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
+    @Override
+    public void onCompleted(Run run, TaskListener listener) {
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvVars envVars = new EnvVars();
+        for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
+            if (!(a.getDisplayName().equals(EnvInjectBuilder.ENV_CONTRIBUTING_ACTION_DISPLAY_NAME))) {
+                a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
+            }
+        }
+
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
+        try {
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
+        } catch (EnvInjectException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (IOException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (InterruptedException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        }
+    }
 }
