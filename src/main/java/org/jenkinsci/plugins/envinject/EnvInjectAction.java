@@ -24,6 +24,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
     /**
      * Backward compatibility
      */
+    private transient Map<String, String> resultVariables;
     private transient File rootDir;
 
     public EnvInjectAction(AbstractBuild build, Map<String, String> envMap) {
@@ -72,6 +73,12 @@ public class EnvInjectAction implements Action, StaplerProxy {
 
     @SuppressWarnings("unused")
     private Object readResolve() throws ObjectStreamException {
+
+        if (resultVariables != null) {
+            envMap = resultVariables;
+            return this;
+        }
+
         EnvInjectSaveable dao = new EnvInjectSaveable();
         Map<String, String> resultMap = null;
         try {
