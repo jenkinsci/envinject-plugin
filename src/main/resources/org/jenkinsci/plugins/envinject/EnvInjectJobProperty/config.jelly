@@ -18,6 +18,20 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
+        <f:entry title="${%Environment Script File Path}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
+            <f:textbox
+                    name="envInjectInfoJobProperty.scriptFilePath"
+                    value="${instance.info.scriptFilePath}"/>
+        </f:entry>
+
+        <f:entry title="${%Environment Script Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+            <f:textarea
+                    name="envInjectInfoJobProperty.scriptContent"
+                    value="${instance.info.scriptContent}"/>
+        </f:entry>
+
         <f:entry
                 title="${%Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
@@ -31,20 +45,6 @@
             <f:textarea
                     name="envInjectInfoJobProperty.propertiesContent"
                     value="${instance.info.propertiesContent}"/>
-        </f:entry>
-
-        <f:entry title="${%Environment Script File Path}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
-            <f:textbox
-                    name="envInjectInfoJobProperty.scriptFilePath"
-                    value="${instance.info.scriptFilePath}"/>
-        </f:entry>
-
-        <f:entry title="${%Environment Script Content}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
-            <f:textarea
-                    name="envInjectInfoJobProperty.scriptContent"
-                    value="${instance.info.scriptContent}"/>
         </f:entry>
 
         <f:entry title="${%Load files from the master}"

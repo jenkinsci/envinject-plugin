@@ -64,19 +64,20 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 if (rootPath != null) {
 
                     EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
-                    final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
-                            logger, info.isLoadFilesFromMaster(),
-                            info.getPropertiesFilePath(), info.getPropertiesContent(),
-                            infraEnvVarsMaster, infraEnvVarsNode);
 
                     //Execute script
                     int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
                             info.getScriptContent(),
-                            rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, propertiesVariables, launcher, listener);
+                            rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, launcher, listener);
                     if (resultCode != 0) {
                         build.setResult(Result.FAILURE);
                         throw new Run.RunnerAbortedException();
                     }
+
+                    final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
+                            logger, info.isLoadFilesFromMaster(),
+                            info.getPropertiesFilePath(), info.getPropertiesContent(),
+                            infraEnvVarsMaster, infraEnvVarsNode);
 
                     final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
 
@@ -165,7 +166,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
         return result;
     }
-
 
     private Node getNode() {
         Computer computer = Computer.currentComputer();

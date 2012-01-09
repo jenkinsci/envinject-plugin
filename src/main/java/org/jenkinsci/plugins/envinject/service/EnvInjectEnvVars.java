@@ -31,12 +31,18 @@ public class EnvInjectEnvVars implements Serializable {
                                                                String propertiesFilePath,
                                                                String propertiesContent,
                                                                Map<String, String> infraEnvVarsMaster,
-                                                               Map<String, String> infraEnvVarsNode) throws IOException, InterruptedException {
+                                                               Map<String, String> infraEnvVarsNode) throws EnvInjectException {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
-        if (loadFilesFromMaster) {
-            resultMap.putAll(Hudson.getInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
-        } else {
-            resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
+        try {
+            if (loadFilesFromMaster) {
+                resultMap.putAll(Hudson.getInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
+            } else {
+                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
+            }
+        } catch (IOException e) {
+            throw new EnvInjectException(e);
+        } catch (InterruptedException e) {
+            throw new EnvInjectException(e);
         }
         return resultMap;
     }
@@ -45,9 +51,15 @@ public class EnvInjectEnvVars implements Serializable {
                                                             EnvInjectLogger logger,
                                                             String propertiesFilePath,
                                                             String propertiesContent,
-                                                            Map<String, String> currentEnvVars) throws IOException, InterruptedException {
+                                                            Map<String, String> currentEnvVars) throws EnvInjectException {
         Map<String, String> resultMap = new LinkedHashMap<String, String>();
-        resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, currentEnvVars, logger)));
+        try {
+            resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, currentEnvVars, logger)));
+        } catch (IOException e) {
+            throw new EnvInjectException(e);
+        } catch (InterruptedException e) {
+            throw new EnvInjectException(e);
+        }
         return resultMap;
     }
 
@@ -57,7 +69,6 @@ public class EnvInjectEnvVars implements Serializable {
                              String scriptFilePath,
                              Map<String, String> infraEnvVarsMaster,
                              Map<String, String> infraEnvVarsNode,
-                             Map<String, String> propertiesEnvVars,
                              Launcher launcher,
                              BuildListener listener) throws EnvInjectException {
 
@@ -66,12 +77,10 @@ public class EnvInjectEnvVars implements Serializable {
 
         Map<String, String> scriptExecutionEnvVars = new HashMap<String, String>();
         scriptExecutionEnvVars.putAll(infraEnvVarsNode);
-        scriptExecutionEnvVars.putAll(propertiesEnvVars);
 
         if (loadFromMaster) {
             Map<String, String> scriptPathExecutionEnvVars = new HashMap<String, String>();
             scriptPathExecutionEnvVars.putAll(infraEnvVarsMaster);
-            scriptPathExecutionEnvVars.putAll(propertiesEnvVars);
             return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
         } else {
             return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptExecutionEnvVars, scriptExecutionEnvVars);
