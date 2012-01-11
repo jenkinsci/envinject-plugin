@@ -16,13 +16,13 @@
     </f:entry>
 
     <f:entry field="scriptFilePath"
-             title="${%Environment Script File Path}">
+             title="${%Script File Path}">
         <f:textbox
                 name="envInjectInfoWrapper.scriptFilePath"
                 value="${instance.info.scriptFilePath}"/>
     </f:entry>
 
-    <f:entry title="${%Environment Script Content}"
+    <f:entry title="${%Script Content}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
         <f:textarea
                 name="envInjectInfoWrapper.scriptContent"
