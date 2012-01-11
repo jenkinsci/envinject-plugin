@@ -50,6 +50,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                 }
                 logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePathResolved));
                 result.putAll(loader.getVarsFromPropertiesFile(propertiesFile));
+                logger.info("Variables injected successfully.");
             }
 
             //Add the properties content
@@ -57,9 +58,8 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                 String propertiesContentResolved = Util.replaceMacro(propertiesContent, currentEnvVars);
                 logger.info(String.format("Injecting as environment variables the properties content \n%s\n", propertiesContentResolved));
                 result.putAll(loader.getVarsFromPropertiesContent(propertiesContentResolved));
+                logger.info("Variables injected successfully.");
             }
-
-            logger.info("Variables injected successfully.");
 
         } catch (EnvInjectException envEx) {
             throw new IOException(envEx);

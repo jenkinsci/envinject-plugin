@@ -64,7 +64,9 @@ public class EnvInjectScriptExecutor {
             cmds.addTokenized(scriptFilePath);
             int cmdCode = launcher.launch().cmds(cmds).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
-                logger.info(String.format("The exit code is %s.", cmdCode));
+                logger.info(String.format("Script executed. The exit code is %s.", cmdCode));
+            } else {
+                logger.info("Script executed successfully.");
             }
             return cmdCode;
         } catch (Throwable e) {
@@ -87,7 +89,9 @@ public class EnvInjectScriptExecutor {
             logger.info(String.format("Executing and processing the following script content: \n%s\n", scriptContent));
             int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
-                logger.error(String.format("The exit code is %s.", cmdCode));
+                logger.info(String.format("Script executed. The exit code is %s.", cmdCode));
+            } else {
+                logger.info("Script executed successfully.");
             }
             return cmdCode;
 
