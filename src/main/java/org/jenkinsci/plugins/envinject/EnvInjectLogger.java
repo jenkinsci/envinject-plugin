@@ -7,6 +7,7 @@ import java.io.Serializable;
 /**
  * @author Gregory Boissinot
  */
+@Deprecated
 public class EnvInjectLogger implements Serializable {
 
     private TaskListener listener;

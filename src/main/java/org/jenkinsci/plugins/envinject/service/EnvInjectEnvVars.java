@@ -5,8 +5,8 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.EnvInjectLogger;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
 import java.io.IOException;
 import java.io.Serializable;

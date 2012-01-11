@@ -10,6 +10,7 @@ import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;

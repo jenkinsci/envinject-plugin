@@ -11,8 +11,8 @@ import hudson.plugins.envfile.EnvFileBuildWrapper;
 import hudson.plugins.setenv.SetEnvBuildWrapper;
 import hudson.tasks.BuildWrapper;
 import hudson.util.DescribableList;
+import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
 
 import java.io.IOException;
 import java.util.Iterator;

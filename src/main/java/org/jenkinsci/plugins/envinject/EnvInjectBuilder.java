@@ -7,6 +7,7 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
@@ -95,6 +96,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         result.putAll(build.getBuildVariables());

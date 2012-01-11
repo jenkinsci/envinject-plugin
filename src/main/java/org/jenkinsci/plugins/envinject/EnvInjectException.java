@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject;
 /**
  * @author Gregory Boissinot
  */
+@Deprecated
 public class EnvInjectException extends Exception {
 
     public EnvInjectException(String s) {

@@ -10,6 +10,8 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 

@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.io.*;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import java.util.TreeMap;
 /**
  * @author Gregory Boissinot
  */
+@Deprecated
 public class EnvInjectSaveable {
 
     private static final String ENVINJECT_TXT_FILENAME = "injectedEnvVars.txt";
@@ -24,7 +25,7 @@ public class EnvInjectSaveable {
                 return null;
             }
             fileReader = new FileReader(f);
-            Map result = new HashMap();
+            Map<String, String> result = new HashMap<String, String>();
             fromTxt(fileReader, result);
             return result;
         } catch (FileNotFoundException fne) {

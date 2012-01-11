@@ -3,8 +3,8 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.EnvInjectLogger;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
 import java.io.File;
 import java.io.IOException;

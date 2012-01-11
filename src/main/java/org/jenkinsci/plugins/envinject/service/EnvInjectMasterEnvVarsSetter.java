@@ -4,7 +4,7 @@ import hudson.EnvVars;
 import hudson.Main;
 import hudson.Platform;
 import hudson.remoting.Callable;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

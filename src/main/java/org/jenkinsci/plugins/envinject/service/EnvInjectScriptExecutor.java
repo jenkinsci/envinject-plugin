@@ -7,8 +7,8 @@ import hudson.tasks.BatchFile;
 import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Shell;
 import hudson.util.ArgumentListBuilder;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.EnvInjectLogger;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
 import java.io.IOException;
 import java.util.Map;

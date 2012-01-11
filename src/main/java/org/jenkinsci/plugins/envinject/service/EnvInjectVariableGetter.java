@@ -1,12 +1,17 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
-import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
-import org.jenkinsci.plugins.envinject.*;
+import org.jenkinsci.lib.envinject.EnvInjectAction;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.lib.envinject.service.EnvInjectActionRetriever;
+import org.jenkinsci.lib.envinject.service.EnvInjectDetector;
+import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
+import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -55,7 +60,7 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-
+    @SuppressWarnings("unchecked")
     public Map<String, String> getBuildVariables(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
@@ -108,7 +113,7 @@ public class EnvInjectVariableGetter {
     }
 
     public boolean isEnvInjectJobPropertyActive(Job job) {
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
+        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(job);
         if (envInjectJobProperty != null) {
             EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
             if (info != null && envInjectJobProperty.isOn()) {
@@ -118,13 +123,15 @@ public class EnvInjectVariableGetter {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     public EnvInjectJobProperty getEnvInjectJobProperty(Job project) {
         return (EnvInjectJobProperty) project.getProperty(EnvInjectJobProperty.class);
     }
 
     public Map<String, String> getPreviousEnvVars(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
-        if (isEnvInjectActivated(build)) {
+        EnvInjectDetector detector = new EnvInjectDetector();
+        if (detector.isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
@@ -133,16 +140,9 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private boolean isEnvInjectActivated(AbstractBuild build) {
-        if (build instanceof MatrixRun) {
-            return (((MatrixRun) build).getParentBuild().getAction(EnvInjectAction.class)) != null;
-        } else {
-            return build.getAction(EnvInjectAction.class) != null;
-        }
-    }
-
     private Map<String, String> getCurrentInjectedEnvVars(AbstractBuild<?, ?> build) {
-        EnvInjectAction envInjectAction = getEnvInjectAction(build);
+        EnvInjectActionRetriever retriever = new EnvInjectActionRetriever();
+        EnvInjectAction envInjectAction = retriever.getEnvInjectAction(build);
         Map<String, String> result = new LinkedHashMap<String, String>();
         if (envInjectAction == null) {
             return result;
@@ -152,14 +152,5 @@ public class EnvInjectVariableGetter {
         }
     }
 
-    private EnvInjectAction getEnvInjectAction(AbstractBuild<?, ?> build) {
-        EnvInjectAction envInjectAction;
-        if (build instanceof MatrixRun) {
-            envInjectAction = ((MatrixRun) build).getParentBuild().getAction(EnvInjectAction.class);
-        } else {
-            envInjectAction = build.getAction(EnvInjectAction.class);
-        }
-        return envInjectAction;
-    }
 
 }

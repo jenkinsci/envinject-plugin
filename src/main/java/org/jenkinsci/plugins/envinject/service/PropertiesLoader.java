@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 
 import hudson.Util;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.util.SortedProperties;
 
 import java.io.File;

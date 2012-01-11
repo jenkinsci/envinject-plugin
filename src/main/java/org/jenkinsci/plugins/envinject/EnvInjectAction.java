@@ -3,7 +3,8 @@ package org.jenkinsci.plugins.envinject;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
-import org.jenkinsci.plugins.envinject.service.EnvInjectSaveable;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.service.EnvInjectSaveable;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.util.Map;
 /**
  * @author Gregory Boissinot
  */
+@Deprecated
 public class EnvInjectAction implements Action, StaplerProxy {
 
     public static String URL_NAME = "injectedEnvVars";
@@ -36,7 +38,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         envMap.putAll(all);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "unchecked"})
     public Map<String, String> getEnvMap() {
         return UnmodifiableMap.decorate(envMap);
     }

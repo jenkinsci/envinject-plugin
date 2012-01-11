@@ -4,8 +4,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.remoting.Callable;
-import org.jenkinsci.plugins.envinject.EnvInjectAction;
-import org.jenkinsci.plugins.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,11 +25,11 @@ public class EnvInjectActionSetter implements Serializable {
     }
 
     public void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) throws EnvInjectException, IOException, InterruptedException {
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
+        EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
             envInjectAction.overrideAll(envMap);
         } else {
-            envInjectAction = new EnvInjectAction(build, rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
+            envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
                 public Map<String, String> call() throws EnvInjectException {
                     HashMap<String, String> result = new HashMap<String, String>();
                     result.putAll(EnvVars.masterEnvVars);
