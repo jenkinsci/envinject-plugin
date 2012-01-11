@@ -18,14 +18,14 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
-        <f:entry title="${%Environment Script File Path}"
+        <f:entry title="${%Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
             <f:textbox
                     name="envInjectInfoJobProperty.scriptFilePath"
                     value="${instance.info.scriptFilePath}"/>
         </f:entry>
 
-        <f:entry title="${%Environment Script Content}"
+        <f:entry title="${%Script Content}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
             <f:textarea
                     name="envInjectInfoJobProperty.scriptContent"
