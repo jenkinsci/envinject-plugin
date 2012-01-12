@@ -190,7 +190,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvVars envVars = new EnvVars();
         for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
-            if (!(a.getDisplayName().equals(EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME))) {
+            if (!(EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
                 a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
             }
         }
