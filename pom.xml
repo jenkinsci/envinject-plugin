@@ -37,7 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
-        <envinject.lib.version>1.0</envinject.lib.version>
+        <envinject.lib.version>1.1</envinject.lib.version>
     </properties>
 
     <scm>
