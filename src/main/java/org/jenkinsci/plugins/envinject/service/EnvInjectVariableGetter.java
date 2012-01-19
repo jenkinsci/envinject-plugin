@@ -1,21 +1,17 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
-import hudson.Util;
-import hudson.model.ParameterValue;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Computer;
-import hudson.model.Hudson;
-import hudson.model.Job;
-import hudson.model.Node;
-import hudson.model.ParametersAction;
-import hudson.model.PasswordParameterValue;
-import hudson.slaves.NodeProperty;
+import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
+import org.jenkinsci.lib.envinject.EnvInjectAction;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.lib.envinject.service.EnvInjectActionRetriever;
+import org.jenkinsci.lib.envinject.service.EnvInjectDetector;
+import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
+import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,14 +20,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.lib.envinject.service.EnvInjectActionRetriever;
-import org.jenkinsci.lib.envinject.service.EnvInjectDetector;
-import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
-import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 
 /**
  * @author Gregory Boissinot
@@ -81,8 +69,7 @@ public class EnvInjectVariableGetter {
 
         //Add build variables such as parameters, plugins contributions, ...
         result.putAll(build.getBuildVariables());
-        result.putAll(addPasswordParameter(build));
-        
+
         //Add workspace variable
         String workspace = getWorkspaceWithCreation(build, logger);
         if (workspace != null) {
@@ -96,21 +83,26 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private Map<String, String> addPasswordParameter(AbstractBuild build){
-    	Map<String, String> r = new HashMap<String, String>();
-    	
-    	ParametersAction params = build.getAction(ParametersAction.class);
-    	if (params != null){
-    		for (ParameterValue p : params){
-    			if (p instanceof PasswordParameterValue){
-    				r.put(p.getName(),"******");
-    			}
-    		}
-    	}
-    	
-    	return r;
+    public Map<String, String> getParametersVariables(AbstractBuild build) {
+        Map<String, String> result = new HashMap<String, String>();
+        ParametersAction params = build.getAction(ParametersAction.class);
+        if (params != null) {
+            for (ParameterValue p : params) {
+                if (p instanceof PasswordParameterValue) {
+                    String value = p.createVariableResolver(build).resolve(p.getName());
+                    if (value != null) {
+                        StringBuffer password = new StringBuffer();
+                        for (int i = 1; i < value.length(); i++) {
+                            password.append('*');
+                        }
+                        result.put(p.getName(), password.toString());
+                    }
+                }
+            }
+        }
+        return result;
     }
-    
+
     private String getWorkspaceWithCreation(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
         try {
             Node node = build.getBuiltOn();
