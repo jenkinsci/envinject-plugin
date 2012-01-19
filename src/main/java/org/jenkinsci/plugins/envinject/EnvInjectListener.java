@@ -54,13 +54,17 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
                 }
 
-                //Add build variables (such as parameter variables).
+                //Add build variables
                 if (envInjectJobProperty.isKeepBuildVariables()) {
                     logger.info("Jenkins build variables are kept.");
                     Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
                     infraEnvVarsNode.putAll(buildVariables);
                     infraEnvVarsMaster.putAll(buildVariables);
                 }
+
+                //Add build parameters (or override)
+                Map<String, String> parametersVariables = variableGetter.getParametersVariables(build);
+                infraEnvVarsNode.putAll(parametersVariables);
 
                 final FilePath rootPath = getNodeRootPath();
                 if (rootPath != null) {
@@ -185,12 +189,28 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
+
+    private boolean parameter2exclude(EnvironmentContributingAction a) {
+
+        if ((EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
+            return true;
+        }
+
+        if (a instanceof ParametersAction) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onCompleted(Run run, TaskListener listener) {
         EnvInjectLogger logger = new EnvInjectLogger(listener);
+
+        //Add other plugins env vars contribution variables (exclude builder action and parameter actions already populated)
         EnvVars envVars = new EnvVars();
         for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
-            if (!(EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
+            if (!parameter2exclude(a)) {
                 a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
             }
         }
