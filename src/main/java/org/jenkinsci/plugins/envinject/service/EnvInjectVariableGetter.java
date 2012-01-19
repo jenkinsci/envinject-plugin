@@ -92,7 +92,7 @@ public class EnvInjectVariableGetter {
                     String value = p.createVariableResolver(build).resolve(p.getName());
                     if (value != null) {
                         StringBuffer password = new StringBuffer();
-                        for (int i = 1; i < value.length(); i++) {
+                        for (int i = 1; i <= value.length(); i++) {
                             password.append('*');
                         }
                         result.put(p.getName(), password.toString());
