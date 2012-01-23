@@ -9,12 +9,14 @@ import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -85,7 +87,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                             info.getPropertiesFilePath(), info.getPropertiesContent(),
                             infraEnvVarsMaster, infraEnvVarsNode);
 
-                    final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables);
+                    //Get variables get by contribution
+                    Map<String, String> contributionVariables = getEnvVarsByContribution(envInjectJobProperty, listener);
+
+                    final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
 
                     //Add an action
                     new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -189,7 +194,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-
     private boolean parameter2exclude(EnvironmentContributingAction a) {
 
         if ((EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
@@ -201,6 +205,20 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         return false;
+    }
+
+    private Map<String, String> getEnvVarsByContribution(EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
+
+        assert envInjectJobProperty != null;
+        Map<String, String> contributionVariables = new HashMap<String, String>();
+
+        EnvInjectJobPropertyContributor[] contributors = envInjectJobProperty.getContributors();
+        if (contributors != null) {
+            for (EnvInjectJobPropertyContributor contributor : contributors) {
+                contributionVariables.putAll(contributor.getEnvVars(listener));
+            }
+        }
+        return contributionVariables;
     }
 
     @Override
