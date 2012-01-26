@@ -100,10 +100,16 @@ public class EnvInjectEnvVars implements Serializable {
         return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, envVars, envVars);
     }
 
-
     public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars) {
         Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
         variables.putAll(propertiesEnvVars);
+        return filterEnvVars(variables, variables);
+    }
+
+    public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars, Map<String, String> contribEnvVars) {
+        Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
+        variables.putAll(propertiesEnvVars);
+        variables.putAll(contribEnvVars);
         return filterEnvVars(variables, variables);
     }
 

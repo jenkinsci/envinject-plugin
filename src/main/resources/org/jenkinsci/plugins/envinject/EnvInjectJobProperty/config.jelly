@@ -1,5 +1,4 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:u="/util">
 
     <f:optionalBlock name="on"
                      title="${%Prepare an environment for the job}"
@@ -52,6 +51,19 @@
             <f:checkbox
                     name="envInjectInfoJobProperty.loadFilesFromMaster"
                     checked="${instance.info.loadFilesFromMaster}"/>
+        </f:entry>
+
+        <f:entry title="${%EnvInject Contributions}">
+            <j:set var="jobPropertyContributors" value="${instance.contributors}"/>
+            <j:if test="${jobPropertyContributors == null}">
+                <j:set var="jobPropertyContributors" value="${descriptor.contributorsInstance}"/>
+            </j:if>
+            <u:hetero-list-readonly
+                    name="contributors"
+                    descriptors="${descriptor.envInjectContributors}"
+                    items="${jobPropertyContributors}"
+                    addCaption="${%Add a contribution}"
+                    deleteCaption="${%Delete a contribution}"/>
         </f:entry>
 
     </f:optionalBlock>
