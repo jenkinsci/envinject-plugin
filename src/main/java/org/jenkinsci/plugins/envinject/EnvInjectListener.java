@@ -35,66 +35,88 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        if (!isMatrixRun(build) && variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        try {
 
-            EnvInjectLogger logger = new EnvInjectLogger(listener);
-            logger.info("Preparing an environment for the job.");
-            try {
+            if (!isMatrixRun(build)) {
 
-                EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
-                assert envInjectJobProperty != null;
-                EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-                assert envInjectJobProperty != null && envInjectJobProperty.isOn();
+                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
+                    logger.info("Preparing an environment for the job.");
+                    EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
+                    assert envInjectJobProperty != null;
+                    EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+                    assert envInjectJobProperty != null && envInjectJobProperty.isOn();
 
-                Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>();
-                Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>();
+                    Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>();
+                    Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>();
 
-                //Add Jenkins System variables
-                if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-                    logger.info("Jenkins system variables are kept.");
-                    infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
-                    infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
-                }
-
-                //Add build variables
-                if (envInjectJobProperty.isKeepBuildVariables()) {
-                    logger.info("Jenkins build variables are kept.");
-                    Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
-                    infraEnvVarsNode.putAll(buildVariables);
-                    infraEnvVarsMaster.putAll(buildVariables);
-                }
-
-                //Add build parameters (or override)
-                Map<String, String> parametersVariables = variableGetter.getParametersVariables(build);
-                infraEnvVarsNode.putAll(parametersVariables);
-
-                final FilePath rootPath = getNodeRootPath();
-                if (rootPath != null) {
-
-                    EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
-
-                    //Execute script
-                    int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
-                            info.getScriptContent(),
-                            rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, launcher, listener);
-                    if (resultCode != 0) {
-                        build.setResult(Result.FAILURE);
-                        throw new Run.RunnerAbortedException();
+                    //Add Jenkins System variables
+                    if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
+                        logger.info("Jenkins system variables are kept.");
+                        infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
+                        infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
                     }
 
-                    final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
-                            logger, info.isLoadFilesFromMaster(),
-                            info.getPropertiesFilePath(), info.getPropertiesContent(),
-                            infraEnvVarsMaster, infraEnvVarsNode);
+                    //Add build variables
+                    if (envInjectJobProperty.isKeepBuildVariables()) {
+                        logger.info("Jenkins build variables are kept.");
+                        Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
+                        infraEnvVarsNode.putAll(buildVariables);
+                        infraEnvVarsMaster.putAll(buildVariables);
+                    }
 
-                    //Get variables get by contribution
-                    Map<String, String> contributionVariables = getEnvVarsByContribution(envInjectJobProperty, listener);
+                    //Add build parameters (or override)
+                    Map<String, String> parametersVariables = variableGetter.getParametersVariables(build);
+                    infraEnvVarsNode.putAll(parametersVariables);
 
-                    final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
+                    final FilePath rootPath = getNodeRootPath();
+                    if (rootPath != null) {
 
-                    //Add an action
-                    new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+                        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
+                        //Execute script
+                        int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
+                                info.getScriptContent(),
+                                rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, launcher, listener);
+                        if (resultCode != 0) {
+                            build.setResult(Result.FAILURE);
+                            throw new Run.RunnerAbortedException();
+                        }
+
+                        final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
+                                logger, info.isLoadFilesFromMaster(),
+                                info.getPropertiesFilePath(), info.getPropertiesContent(),
+                                infraEnvVarsMaster, infraEnvVarsNode);
+
+                        //Get variables get by contribution
+                        Map<String, String> contributionVariables = getEnvVarsByContribution(envInjectJobProperty, listener);
+
+                        final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
+
+                        //Add an action
+                        new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+
+                        return new Environment() {
+                            @Override
+                            public void buildEnvVars(Map<String, String> env) {
+                                env.putAll(resultVariables);
+                            }
+                        };
+                    }
+                }
+
+            } else {
+
+                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
+
+                    logger.info("Using environment variables injected by the matrix job.");
+                    final Map<String, String> resultVariables = variableGetter.getPreviousEnvVars(build, logger);
+                    final FilePath rootPath = getNodeRootPath();
+
+                    if (rootPath != null) {
+                        //Add an action
+                        new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+                    }
                     return new Environment() {
                         @Override
                         public void buildEnvVars(Map<String, String> env) {
@@ -102,17 +124,17 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                         }
                     };
                 }
-
-            } catch (EnvInjectException envEx) {
-                logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
-                throw new Run.RunnerAbortedException();
-            } catch (Run.RunnerAbortedException rre) {
-                logger.info("Fail the build.");
-                throw new Run.RunnerAbortedException();
-            } catch (Throwable throwable) {
-                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
-                throw new Run.RunnerAbortedException();
             }
+
+        } catch (EnvInjectException envEx) {
+            logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (Run.RunnerAbortedException rre) {
+            logger.info("Fail the build.");
+            throw new Run.RunnerAbortedException();
+        } catch (Throwable throwable) {
+            logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+            throw new Run.RunnerAbortedException();
         }
 
         return new Environment() {
@@ -122,7 +144,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     private boolean isMatrixRun(AbstractBuild build) {
         return build instanceof MatrixRun;
     }
-
 
     private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
 

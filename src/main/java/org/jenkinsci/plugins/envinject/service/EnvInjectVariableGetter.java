@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
+import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
@@ -132,7 +133,19 @@ public class EnvInjectVariableGetter {
         return n.getWorkspaceFor(item);
     }
 
-    public boolean isEnvInjectJobPropertyActive(Job job) {
+    public boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
+
+        if (build == null) {
+            throw new IllegalArgumentException("A build object must be set.");
+        }
+
+        Job job;
+        if (build instanceof MatrixRun) {
+            job = ((MatrixRun) build).getParentBuild().getParent();
+        } else {
+            job = build.getParent();
+        }
+
         EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(job);
         if (envInjectJobProperty != null) {
             EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
