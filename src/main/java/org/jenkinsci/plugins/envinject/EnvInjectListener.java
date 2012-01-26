@@ -31,8 +31,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+<<<<<<< HEAD
         if (!isMatrixRun(build) && variableGetter.isEnvInjectJobPropertyActive(build.getParent())) {
 
             EnvInjectLogger logger = new EnvInjectLogger(listener);
@@ -108,10 +108,120 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
                 throw new Run.RunnerAbortedException();
             }
+=======
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        try {
+            if (!isMatrixRun(build)) {
+                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
+                    return setUpEnvironmentNonMatrixProject(build, launcher, listener);
+                }
+            } else {
+                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
+                    return setUpEnvironmentMatrixProject(build, listener);
+                }
+            }
+        } catch (EnvInjectException envEx) {
+            logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (Run.RunnerAbortedException rre) {
+            logger.info("Fail the build.");
+            throw new Run.RunnerAbortedException();
+        } catch (Throwable throwable) {
+            logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+            throw new Run.RunnerAbortedException();
+>>>>>>> 9cfb7fe... Enhance
         }
-
         return new Environment() {
         };
+    }
+
+    private Environment setUpEnvironmentNonMatrixProject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Preparing an environment for the job.");
+        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
+        assert envInjectJobProperty != null;
+        EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
+        assert envInjectJobProperty != null && envInjectJobProperty.isOn();
+
+        Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>();
+        Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>();
+
+        //Add Jenkins System variables
+        if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
+            logger.info("Jenkins system variables are kept.");
+            infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
+            infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
+        }
+
+        //Add build variables
+        if (envInjectJobProperty.isKeepBuildVariables()) {
+            logger.info("Jenkins build variables are kept.");
+            Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
+            infraEnvVarsNode.putAll(buildVariables);
+            infraEnvVarsMaster.putAll(buildVariables);
+        }
+
+        //Add build parameters (or override)
+        Map<String, String> parametersVariables = variableGetter.getParametersVariables(build);
+        infraEnvVarsNode.putAll(parametersVariables);
+
+        final FilePath rootPath = getNodeRootPath();
+        if (rootPath != null) {
+
+            EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+            //Execute script
+            int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
+                    info.getScriptContent(),
+                    rootPath, info.getScriptFilePath(), infraEnvVarsMaster, infraEnvVarsNode, launcher, listener);
+            if (resultCode != 0) {
+                build.setResult(Result.FAILURE);
+                throw new Run.RunnerAbortedException();
+            }
+
+            final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
+                    logger, info.isLoadFilesFromMaster(),
+                    info.getPropertiesFilePath(), info.getPropertiesContent(),
+                    infraEnvVarsMaster, infraEnvVarsNode);
+
+            //Get variables get by contribution
+            Map<String, String> contributionVariables = getEnvVarsByContribution(envInjectJobProperty, listener);
+
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
+
+            //Add an action
+            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+
+            return new Environment() {
+                @Override
+                public void buildEnvVars(Map<String, String> env) {
+                    env.putAll(resultVariables);
+                }
+            };
+        }
+        return new Environment() {
+        };
+    }
+
+    private Environment setUpEnvironmentMatrixProject(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Using environment variables injected by the matrix job.");
+        final Map<String, String> resultVariables = variableGetter.getPreviousEnvVars(build, logger);
+        final FilePath rootPath = getNodeRootPath();
+
+        if (rootPath != null) {
+            //Add an action
+            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+        }
+        return new Environment() {
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                env.putAll(resultVariables);
+            }
+        };
+
     }
 
     private boolean isMatrixRun(AbstractBuild build) {
