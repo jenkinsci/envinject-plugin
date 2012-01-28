@@ -53,19 +53,20 @@
                     checked="${instance.info.loadFilesFromMaster}"/>
         </f:entry>
 
-        <f:entry title="${%EnvInject Contributions}">
+        <j:if test="${descriptor.envInjectContributionActivated}">
             <j:set var="jobPropertyContributors" value="${instance.contributors}"/>
             <j:if test="${jobPropertyContributors == null}">
                 <j:set var="jobPropertyContributors" value="${descriptor.contributorsInstance}"/>
             </j:if>
-            <u:hetero-list-readonly
-                    name="contributors"
-                    descriptors="${descriptor.envInjectContributors}"
-                    items="${jobPropertyContributors}"
-                    addCaption="${%Add a contribution}"
-                    deleteCaption="${%Delete a contribution}"/>
-        </f:entry>
-
+            <f:entry title="${%EnvInject Contributions}">
+                <u:hetero-list-readonly
+                        name="contributors"
+                        descriptors="${descriptor.envInjectContributors}"
+                        items="${jobPropertyContributors}"
+                        addCaption="${%Add a contribution}"
+                        deleteCaption="${%Delete a contribution}"/>
+            </f:entry>
+        </j:if>
     </f:optionalBlock>
 
 </j:jelly>
