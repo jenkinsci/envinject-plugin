@@ -10,7 +10,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributorDescriptor;
-import org.jenkinsci.plugins.envinject.service.EnvInjectContributorRetriever;
+import org.jenkinsci.plugins.envinject.service.EnvInjectContributorManagement;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
@@ -82,8 +82,8 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             return contributors;
         }
 
-        EnvInjectContributorRetriever contributorRetriever = new EnvInjectContributorRetriever();
-        EnvInjectJobPropertyContributor[] contributorsInstance = contributorRetriever.getNewContributorsInstance();
+        EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
+        EnvInjectJobPropertyContributor[] contributorsInstance = envInjectContributorManagement.getNewContributorsInstance();
 
         //No jobProperty Contributors ==> new configuration
         if (contributors == null) {
@@ -180,13 +180,18 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         }
 
         public EnvInjectJobPropertyContributor[] getContributorsInstance() {
-            EnvInjectContributorRetriever contributorRetriever = new EnvInjectContributorRetriever();
+            EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
             try {
-                return contributorRetriever.getNewContributorsInstance();
+                return envInjectContributorManagement.getNewContributorsInstance();
             } catch (org.jenkinsci.lib.envinject.EnvInjectException e) {
                 e.printStackTrace();
             }
             return null;
+        }
+
+        public boolean isEnvInjectContributionActivated() {
+            EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
+            return envInjectContributorManagement.isEnvInjectContributionActivated();
         }
 
     }

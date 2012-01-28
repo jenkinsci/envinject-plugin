@@ -12,7 +12,13 @@ import java.util.List;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectContributorRetriever {
+public class EnvInjectContributorManagement {
+
+    public boolean isEnvInjectContributionActivated() {
+        DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
+                descriptors = EnvInjectJobPropertyContributor.all();
+        return descriptors.size() != 0;
+    }
 
     public EnvInjectJobPropertyContributor[] getNewContributorsInstance() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
