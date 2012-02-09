@@ -24,7 +24,7 @@ public class PropertiesLoader implements Serializable {
      * @return a map containing all the file properties content
      * @throws EnvInjectException
      */
-    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile) throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException {
 
         if (propertiesFile == null) {
             throw new NullPointerException("The properties file object must be set.");
@@ -39,7 +39,8 @@ public class PropertiesLoader implements Serializable {
         try {
             String fileContent = Util.loadFile(propertiesFile);
             fileContent = processWindowsFilePath(fileContent);
-            properties.load(new StringReader(fileContent));
+            String fileContentResolved = Util.replaceMacro(fileContent, currentEnvVars);
+            properties.load(new StringReader(fileContentResolved));
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
         }

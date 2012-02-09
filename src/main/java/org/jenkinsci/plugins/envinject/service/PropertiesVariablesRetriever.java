@@ -49,7 +49,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
                     throw new EnvInjectException(message);
                 }
                 logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePathResolved));
-                result.putAll(loader.getVarsFromPropertiesFile(propertiesFile));
+                result.putAll(loader.getVarsFromPropertiesFile(propertiesFile, currentEnvVars));
                 logger.info("Variables injected successfully.");
             }
 
