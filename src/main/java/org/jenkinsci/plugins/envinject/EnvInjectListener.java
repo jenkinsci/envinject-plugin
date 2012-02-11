@@ -106,7 +106,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
             final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
                     logger, info.isLoadFilesFromMaster(),
-                    info.getPropertiesFilePath(), info.getPropertiesContent(),
+                    info.getPropertiesFilePath(), info.getPropertiesContentMap(),
                     infraEnvVarsMaster, infraEnvVarsNode);
 
             //Get variables get by contribution
@@ -155,7 +155,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
-        result.putAll(build.getCharacteristicEnvVars());
 
         Computer computer = Hudson.getInstance().toComputer();
         //test if there is at least one executor
@@ -251,16 +250,33 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     @Override
     public void onCompleted(Run run, TaskListener listener) {
+
+        EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-        //Add other plugins env vars contribution variables (exclude builder action and parameter actions already populated)
-        EnvVars envVars = new EnvVars();
-        for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
-            if (!parameter2exclude(a)) {
-                a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
+        EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
+        if (envInjectAction != null) {
+            //Add other plugins env vars contribution variables (exclude builder action and parameter actions already populated)
+            for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
+                if (!parameter2exclude(a)) {
+                    a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
+                }
+            }
+        } else {
+            //Keep classic injected env vars
+            AbstractBuild abstractBuild = (AbstractBuild) run;
+            try {
+                envVars.putAll(abstractBuild.getEnvironment(listener));
+            } catch (IOException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
+            } catch (InterruptedException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
             }
         }
 
+        //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
