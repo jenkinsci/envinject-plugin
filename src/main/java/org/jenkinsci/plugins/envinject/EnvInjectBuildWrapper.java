@@ -54,7 +54,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 
             //Get result variables
-            Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContent(), injectedEnvVars);
+            Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(), injectedEnvVars);
 
             //Resolve variables
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars);

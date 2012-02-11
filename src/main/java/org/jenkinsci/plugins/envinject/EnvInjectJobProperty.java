@@ -86,10 +86,9 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         EnvInjectJobPropertyContributor[] contributorsInstance = envInjectContributorManagement.getNewContributorsInstance();
 
         //No jobProperty Contributors ==> new configuration
-        if (contributors == null) {
+        if (contributors == null || contributors.length == 0) {
             return contributorsInstance;
         }
-
 
         List<EnvInjectJobPropertyContributor> result = new ArrayList<EnvInjectJobPropertyContributor>();
         for (EnvInjectJobPropertyContributor contributor1 : contributorsInstance) {
@@ -158,21 +157,29 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                     envInjectJobProperty.setKeepBuildVariables(((JSONObject) onObject).getBoolean("keepBuildVariables"));
 
                     //Process contributions
-                    JSON contribJSON;
-                    try {
-                        contribJSON = onJSONObject.getJSONArray("contributors");
-                    } catch (JSONException jsone) {
-                        contribJSON = onJSONObject.getJSONObject("contributors");
-                    }
-                    List<EnvInjectJobPropertyContributor> contributions = req.bindJSONToList(EnvInjectJobPropertyContributor.class, contribJSON);
-                    EnvInjectJobPropertyContributor[] contributionsArray = contributions.toArray(new EnvInjectJobPropertyContributor[contributions.size()]);
-                    envInjectJobProperty.setContributors(contributionsArray);
+                    setContributors(req, envInjectJobProperty, onJSONObject);
 
                     return envInjectJobProperty;
                 }
             }
 
             return null;
+        }
+
+        private void setContributors(StaplerRequest req, EnvInjectJobProperty envInjectJobProperty, JSONObject onJSONObject) {
+            if (!onJSONObject.containsKey("contributors")) {
+                envInjectJobProperty.setContributors(new EnvInjectJobPropertyContributor[0]);
+            } else {
+                JSON contribJSON;
+                try {
+                    contribJSON = onJSONObject.getJSONArray("contributors");
+                } catch (JSONException jsone) {
+                    contribJSON = onJSONObject.getJSONObject("contributors");
+                }
+                List<EnvInjectJobPropertyContributor> contributions = req.bindJSONToList(EnvInjectJobPropertyContributor.class, contribJSON);
+                EnvInjectJobPropertyContributor[] contributionsArray = contributions.toArray(new EnvInjectJobPropertyContributor[contributions.size()]);
+                envInjectJobProperty.setContributors(contributionsArray);
+            }
         }
 
         public DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> getEnvInjectContributors() {

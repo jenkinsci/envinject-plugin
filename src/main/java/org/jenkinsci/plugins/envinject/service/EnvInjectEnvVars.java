@@ -29,7 +29,7 @@ public class EnvInjectEnvVars implements Serializable {
                                                                EnvInjectLogger logger,
                                                                boolean loadFilesFromMaster,
                                                                String propertiesFilePath,
-                                                               String propertiesContent,
+                                                               Map<String, String> propertiesContent,
                                                                Map<String, String> infraEnvVarsMaster,
                                                                Map<String, String> infraEnvVarsNode) throws EnvInjectException {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
@@ -50,7 +50,7 @@ public class EnvInjectEnvVars implements Serializable {
     public Map<String, String> getEnvVarsPropertiesProperty(FilePath rootPath,
                                                             EnvInjectLogger logger,
                                                             String propertiesFilePath,
-                                                            String propertiesContent,
+                                                            Map<String, String> propertiesContent,
                                                             Map<String, String> currentEnvVars) throws EnvInjectException {
         Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {

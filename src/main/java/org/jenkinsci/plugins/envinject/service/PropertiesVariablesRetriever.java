@@ -18,13 +18,13 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
 
     private String propertiesFilePath;
 
-    private String propertiesContent;
+    private Map<String, String> propertiesContent;
 
     private Map<String, String> currentEnvVars;
 
     private EnvInjectLogger logger;
 
-    public PropertiesVariablesRetriever(String propertiesFilePath, String propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+    public PropertiesVariablesRetriever(String propertiesFilePath, Map<String, String> propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
         this.propertiesFilePath = propertiesFilePath;
         this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
@@ -55,9 +55,9 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
 
             //Add the properties content
             if (propertiesContent != null) {
-                String propertiesContentResolved = Util.replaceMacro(propertiesContent, currentEnvVars);
-                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", propertiesContentResolved));
-                result.putAll(loader.getVarsFromPropertiesContent(propertiesContentResolved));
+                PropertiesGetter propertiesGetter = new PropertiesGetter();
+                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", propertiesGetter.getPropertiesContent(propertiesContent)));
+                result.putAll(propertiesContent);
                 logger.info("Variables injected successfully.");
             }
 

@@ -53,20 +53,20 @@ public class PropertiesLoader implements Serializable {
     /**
      * Get a map environment variables from the content
      *
-     * @param fileContent
+     * @param content
      * @return
      * @throws EnvInjectException
      */
-    public Map<String, String> getVarsFromPropertiesContent(String fileContent) throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesContent(String content) throws EnvInjectException {
 
-        if (fileContent == null) {
+        if (content == null) {
             throw new NullPointerException("The file content object must be set.");
         }
 
-        fileContent = processWindowsFilePath(fileContent);
+        content = processWindowsFilePath(content);
 
         Map<String, String> result = new LinkedHashMap<String, String>();
-        StringReader stringReader = new StringReader(fileContent);
+        StringReader stringReader = new StringReader(content);
         SortedProperties properties = new SortedProperties();
         try {
             properties.load(stringReader);
