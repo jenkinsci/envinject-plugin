@@ -87,7 +87,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         //Add build parameters (or override)
-        Map<String, String> parametersVariables = variableGetter.getParametersVariables(build);
+        Map<String, String> parametersVariables = variableGetter.overrideParametersVariablesWithSecret(build);
         infraEnvVarsNode.putAll(parametersVariables);
 
         final FilePath rootPath = getNodeRootPath();

@@ -6,6 +6,7 @@ import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
+import hudson.util.Secret;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -15,6 +16,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -84,21 +86,33 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    public Map<String, String> getParametersVariables(AbstractBuild build) {
+    public Map<String, String> overrideParametersVariablesWithSecret(AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         ParametersAction params = build.getAction(ParametersAction.class);
         if (params != null) {
             for (ParameterValue p : params) {
-                if (p instanceof PasswordParameterValue) {
-                    String value = p.createVariableResolver(build).resolve(p.getName());
-                    if (value != null) {
-                        StringBuffer password = new StringBuffer();
-                        for (int i = 1; i <= value.length(); i++) {
-                            password.append('*');
-                        }
-                        result.put(p.getName(), password.toString());
+                try {
+                    Field valueField = p.getClass().getDeclaredField("value");
+                    valueField.setAccessible(true);
+                    Object valueObject = valueField.get(p);
+                    if (valueObject instanceof Secret) {
+                        Secret secretValue = (Secret) valueObject;
+                        result.put(p.getName(), secretValue.getEncryptedValue());
                     }
+                } catch (NoSuchFieldException e) {
+                    //the field doesn't exist
+                    //test the next param
+                    continue;
+                } catch (IllegalAccessException e) {
+                    continue;
                 }
+
+                /*
+                if (p instanceof PasswordParameterValue) {
+                    String value = (((PasswordParameterValue) p).getValue()).getEncryptedValue();
+                    result.put(p.getName(), value);
+                }
+                */
             }
         }
         return result;
