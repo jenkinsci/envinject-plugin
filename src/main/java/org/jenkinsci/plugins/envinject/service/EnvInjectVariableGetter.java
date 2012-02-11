@@ -106,13 +106,6 @@ public class EnvInjectVariableGetter {
                 } catch (IllegalAccessException e) {
                     continue;
                 }
-
-                /*
-                if (p instanceof PasswordParameterValue) {
-                    String value = (((PasswordParameterValue) p).getValue()).getEncryptedValue();
-                    result.put(p.getName(), value);
-                }
-                */
             }
         }
         return result;
@@ -175,10 +168,10 @@ public class EnvInjectVariableGetter {
         return (EnvInjectJobProperty) project.getProperty(EnvInjectJobProperty.class);
     }
 
-    public Map<String, String> getPreviousEnvVars(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
+    public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
-        EnvInjectDetector detector = new EnvInjectDetector();
-        if (detector.isEnvInjectActivated(build)) {
+        EnvInjectDetector envInjectDetector = new EnvInjectDetector();
+        if (envInjectDetector.isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));

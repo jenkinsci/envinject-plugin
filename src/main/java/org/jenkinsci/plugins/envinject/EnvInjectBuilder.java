@@ -50,7 +50,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         try {
 
             EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            Map<String, String> previousEnvVars = variableGetter.getPreviousEnvVars(build, logger);
+            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
 
             //Get current envVars
             Map<String, String> variables = new HashMap<String, String>(previousEnvVars);

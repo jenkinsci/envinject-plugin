@@ -74,16 +74,16 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
             logger.info("Jenkins system variables are kept.");
-            infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariablesCurrentNode(build));
-            infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build));
+            infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build, true));
+            infraEnvVarsNode.putAll(getJenkinsSystemVariablesMaster(build, false));
         }
 
         //Add build variables
         if (envInjectJobProperty.isKeepBuildVariables()) {
             logger.info("Jenkins build variables are kept.");
             Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
-            infraEnvVarsNode.putAll(buildVariables);
             infraEnvVarsMaster.putAll(buildVariables);
+            infraEnvVarsNode.putAll(buildVariables);
         }
 
         //Add build parameters (or override)
@@ -132,7 +132,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Using environment variables injected by the matrix job.");
-        final Map<String, String> resultVariables = variableGetter.getPreviousEnvVars(build, logger);
+        final Map<String, String> resultVariables = variableGetter.getEnvVarsPreviousSteps(build, logger);
         final FilePath rootPath = getNodeRootPath();
 
         if (rootPath != null) {
@@ -145,18 +145,23 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 env.putAll(resultVariables);
             }
         };
-
     }
 
     private boolean isMatrixRun(AbstractBuild build) {
         return build instanceof MatrixRun;
     }
 
-    private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build) throws IOException, InterruptedException {
+    private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build, boolean onMaster) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
 
-        Computer computer = Hudson.getInstance().toComputer();
+        Computer computer;
+        if (onMaster) {
+            computer = Hudson.getInstance().toComputer();
+        } else {
+            computer = Computer.currentComputer();
+        }
+
         //test if there is at least one executor
         if (computer != null) {
             result = computer.getEnvironment().overrideAll(result);
