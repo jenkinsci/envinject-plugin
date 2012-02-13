@@ -38,7 +38,7 @@ public class PropertiesLoader implements Serializable {
         SortedProperties properties = new SortedProperties();
         try {
             String fileContent = Util.loadFile(propertiesFile);
-            fileContent = processWindowsFilePath(fileContent);
+            fileContent = processFilePath(fileContent);
             String fileContentResolved = Util.replaceMacro(fileContent, currentEnvVars);
             properties.load(new StringReader(fileContentResolved));
         } catch (IOException ioe) {
@@ -63,7 +63,7 @@ public class PropertiesLoader implements Serializable {
             throw new NullPointerException("The file content object must be set.");
         }
 
-        content = processWindowsFilePath(content);
+        content = processFilePath(content);
 
         Map<String, String> result = new LinkedHashMap<String, String>();
         StringReader stringReader = new StringReader(content);
@@ -89,11 +89,10 @@ public class PropertiesLoader implements Serializable {
         return String.valueOf(prop).trim();
     }
 
-    private String processWindowsFilePath(String content) {
+    private String processFilePath(String content) {
         if (content == null) {
             return null;
         }
-        content = content.replace("\\\\", "\\");
         return content.replace("\\", "\\\\");
     }
 
