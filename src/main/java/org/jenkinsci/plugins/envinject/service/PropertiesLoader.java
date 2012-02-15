@@ -60,7 +60,11 @@ public class PropertiesLoader implements Serializable {
     public Map<String, String> getVarsFromPropertiesContent(String content) throws EnvInjectException {
 
         if (content == null) {
-            throw new NullPointerException("The file content object must be set.");
+            return null;
+        }
+
+        if (content.trim().length() == 0) {
+            return null;
         }
 
         content = processFilePath(content);
