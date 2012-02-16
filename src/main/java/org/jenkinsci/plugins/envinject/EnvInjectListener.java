@@ -74,8 +74,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
             logger.info("Jenkins system variables are kept.");
-            infraEnvVarsMaster.putAll(getJenkinsSystemVariablesMaster(build, true));
-            infraEnvVarsNode.putAll(getJenkinsSystemVariablesMaster(build, false));
+            infraEnvVarsMaster.putAll(getJenkinsSystemVariables(build, true));
+            infraEnvVarsNode.putAll(getJenkinsSystemVariables(build, false));
         }
 
         //Add build variables
@@ -151,7 +151,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return build instanceof MatrixRun;
     }
 
-    private Map<String, String> getJenkinsSystemVariablesMaster(AbstractBuild build, boolean onMaster) throws IOException, InterruptedException {
+    private Map<String, String> getJenkinsSystemVariables(AbstractBuild build, boolean onMaster) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
 
@@ -169,6 +169,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             if (n != null)
                 result.put("NODE_NAME", computer.getName());
             result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+
+            Executor e = build.getExecutor();
+            if (e != null) {
+                result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
+            }
         }
 
         String rootUrl = Hudson.getInstance().getRootUrl();
@@ -281,6 +286,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
+        //Mask global passwords if any
+        maskGlobalPasswordsIfAny(logger, envVars);
+
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
@@ -295,5 +303,24 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             logger.error("SEVERE ERROR occurs: " + e.getMessage());
             throw new Run.RunnerAbortedException();
         }
+    }
+
+    private void maskGlobalPasswordsIfAny(EnvInjectLogger logger, Map<String, String> envVars) {
+        XmlFile xmlFile = EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor.getConfigFile();
+        if (xmlFile.exists()) {
+            EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor desc = null;
+            try {
+                desc = (EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor) xmlFile.read();
+            } catch (IOException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
+            }
+            EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = desc.getEnvInjectGlobalPasswordEntries();
+            for (EnvInjectGlobalPasswordEntry globalPasswordEntry : envInjectGlobalPasswordEntries) {
+                envVars.put(globalPasswordEntry.getName(),
+                        globalPasswordEntry.getValue().getEncryptedValue());
+            }
+        }
+
     }
 }
