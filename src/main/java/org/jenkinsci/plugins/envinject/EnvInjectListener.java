@@ -286,9 +286,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
-        //Mask global passwords if any
-        maskGlobalPasswordsIfAny(logger, envVars);
-
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
@@ -305,22 +302,4 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private void maskGlobalPasswordsIfAny(EnvInjectLogger logger, Map<String, String> envVars) {
-        XmlFile xmlFile = EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor.getConfigFile();
-        if (xmlFile.exists()) {
-            EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor desc = null;
-            try {
-                desc = (EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor) xmlFile.read();
-            } catch (IOException e) {
-                logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                throw new Run.RunnerAbortedException();
-            }
-            EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = desc.getEnvInjectGlobalPasswordEntries();
-            for (EnvInjectGlobalPasswordEntry globalPasswordEntry : envInjectGlobalPasswordEntries) {
-                envVars.put(globalPasswordEntry.getName(),
-                        globalPasswordEntry.getValue().getEncryptedValue());
-            }
-        }
-
-    }
 }
