@@ -43,8 +43,11 @@ public class EnvInjectInfo implements Serializable {
 
     @SuppressWarnings("unused")
     public String getPropertiesContent() {
-        PropertiesGetter propertiesGetter = new PropertiesGetter();
-        return propertiesGetter.getPropertiesContent(propertiesContentMap);
+        if (propertiesContentMap != null) {
+            PropertiesGetter propertiesGetter = new PropertiesGetter();
+            return propertiesGetter.getPropertiesContent(propertiesContentMap);
+        }
+        return null;
     }
 
     private Object readResolve() throws IOException {
