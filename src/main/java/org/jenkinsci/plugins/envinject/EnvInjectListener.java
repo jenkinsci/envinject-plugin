@@ -12,6 +12,7 @@ import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 
 import java.io.IOException;
@@ -286,6 +287,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
         }
 
+        //Mask passwords
+        maskGlobalPasswordsIfAny(logger, envVars);
+
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
@@ -301,5 +305,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             throw new Run.RunnerAbortedException();
         }
     }
+
+    private void maskGlobalPasswordsIfAny(EnvInjectLogger logger, Map<String, String> envVars) {
+        try {
+            EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
+            EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
+            if (passwordEntries != null) {
+                for (EnvInjectGlobalPasswordEntry globalPasswordEntry : passwordEntries) {
+                    envVars.put(globalPasswordEntry.getName(),
+                            globalPasswordEntry.getValue().getEncryptedValue());
+                }
+            }
+        } catch (EnvInjectException ee) {
+            logger.error("Can't mask global password :" + ee.getMessage());
+        }
+    }
+
 
 }
