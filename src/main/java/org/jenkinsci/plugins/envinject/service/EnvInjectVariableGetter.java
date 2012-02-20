@@ -1,10 +1,12 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
+import hudson.slaves.WorkspaceList;
 import hudson.util.LogTaskListener;
 import hudson.util.Secret;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
@@ -74,7 +76,7 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getBuildVariables());
 
         //Add workspace variable
-        String workspace = getWorkspaceWithCreation(build, logger);
+        String workspace = getWorkspaceWithCreation(build, logger, result);
         if (workspace != null) {
             result.put("WORKSPACE", workspace);
         }
@@ -111,33 +113,30 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private String getWorkspaceWithCreation(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
+    private String getWorkspaceWithCreation(AbstractBuild build, EnvInjectLogger logger, Map<String, String> currentEnvVars) throws EnvInjectException {
+        Node node = build.getBuiltOn();
+        Job job = build.getParent();
         try {
-            Node node = build.getBuiltOn();
-            if (node != null) {
-                Job job = build.getParent();
-                if (job instanceof TopLevelItem) {
-                    FilePath workspace = decideWorkspace(build, (TopLevelItem) job, node, logger.getListener());
-                    workspace.mkdirs();
-                    return workspace.getRemote();
-                }
-            }
-            return null;
-        } catch (InterruptedException ie) {
-            throw new EnvInjectException(ie);
-        } catch (IOException ie) {
-            throw new EnvInjectException(ie);
+            final WorkspaceList.Lease lease = decideWorkspace((TopLevelItem) job, node, currentEnvVars, Computer.currentComputer().getWorkspaceList());
+            FilePath workspace = lease.path;
+            workspace.mkdirs();
+            return workspace.getRemote();
+        } catch (InterruptedException e) {
+            throw new EnvInjectException(e);
+        } catch (IOException e) {
+            throw new EnvInjectException(e);
         }
     }
 
-    private FilePath decideWorkspace(AbstractBuild build, TopLevelItem item, Node n, TaskListener listener) throws InterruptedException, IOException {
+    private WorkspaceList.Lease decideWorkspace(TopLevelItem item, Node n, Map<String, String> currentEnVars, WorkspaceList wsl) throws InterruptedException, IOException {
         if (item instanceof AbstractProject) {
             String customWorkspace = ((AbstractProject) item).getCustomWorkspace();
             if (customWorkspace != null) {
-                return n.getRootPath().child(build.getEnvironment(listener).expand(customWorkspace));
+                String customWorkspaceResolved = Util.replaceMacro(customWorkspace, currentEnVars);
+                return WorkspaceList.Lease.createDummyLease(n.getRootPath().child(customWorkspaceResolved));
             }
         }
-        return n.getWorkspaceFor(item);
+        return wsl.allocate(n.getWorkspaceFor(item));
     }
 
     public boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
