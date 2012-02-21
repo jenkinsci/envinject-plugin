@@ -2,10 +2,7 @@ package org.jenkinsci.plugins.envinject.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.io.Serializable;
@@ -21,7 +18,7 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
      */
     public abstract void init();
 
-    public abstract Map<String, String> getEnvVars(TaskListener listener) throws EnvInjectException;
+    public abstract Map<String, String> getEnvVars(AbstractBuild build, TaskListener listener) throws EnvInjectException;
 
     @Override
     public Descriptor<EnvInjectJobPropertyContributor> getDescriptor() {

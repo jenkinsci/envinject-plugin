@@ -111,7 +111,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     infraEnvVarsMaster, infraEnvVarsNode);
 
             //Get variables get by contribution
-            Map<String, String> contributionVariables = getEnvVarsByContribution(envInjectJobProperty, listener);
+            Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, listener);
 
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
 
@@ -245,7 +245,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return false;
     }
 
-    private Map<String, String> getEnvVarsByContribution(EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
+    private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
 
         assert envInjectJobProperty != null;
         Map<String, String> contributionVariables = new HashMap<String, String>();
@@ -253,7 +253,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectJobPropertyContributor[] contributors = envInjectJobProperty.getContributors();
         if (contributors != null) {
             for (EnvInjectJobPropertyContributor contributor : contributors) {
-                contributionVariables.putAll(contributor.getEnvVars(listener));
+                contributionVariables.putAll(contributor.getEnvVars(build, listener));
             }
         }
         return contributionVariables;
