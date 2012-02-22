@@ -39,11 +39,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         try {
             if (!isMatrixRun(build)) {
                 if (variableGetter.isEnvInjectJobPropertyActive(build)) {
-                    return setUpEnvironmentNonMatrixProject(build, launcher, listener);
+                    return setUpEnvironmentNonMatrixRun(build, launcher, listener);
                 }
             } else {
                 if (variableGetter.isEnvInjectJobPropertyActive(build)) {
-                    return setUpEnvironmentMatrixProject(build, listener);
+                    return setUpEnvironmentMatrixRun(build, listener);
                 }
             }
         } catch (EnvInjectException envEx) {
@@ -60,7 +60,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private Environment setUpEnvironmentNonMatrixProject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentNonMatrixRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Preparing an environment for the job.");
@@ -129,10 +129,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private Environment setUpEnvironmentMatrixProject(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentMatrixRun(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Using environment variables injected by the matrix job.");
+        logger.info("Using environment variables injected by the parent matrix job.");
         final Map<String, String> resultVariables = variableGetter.getEnvVarsPreviousSteps(build, logger);
         final FilePath rootPath = getNodeRootPath();
 
@@ -267,12 +267,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
+
             //Add other plugins env vars contribution variables (exclude builder action and parameter actions already populated)
             for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
                 if (!parameter2exclude(a)) {
                     a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
                 }
             }
+
+            //Add workspace if not set
+            AbstractBuild build = (AbstractBuild) run;
+            FilePath ws = build.getWorkspace();
+            if (ws != null) {
+                envVars.put("WORKSPACE", ws.getRemote());
+            }
+
         } else {
             //Keep classic injected env vars
             AbstractBuild abstractBuild = (AbstractBuild) run;

@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
 import hudson.Util;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -75,12 +76,6 @@ public class EnvInjectVariableGetter {
         //Add build variables such as parameters, plugins contributions, ...
         result.putAll(build.getBuildVariables());
 
-        //Add workspace variable
-        String workspace = getWorkspaceWithCreation(build, logger, result);
-        if (workspace != null) {
-            result.put("WORKSPACE", workspace);
-        }
-
         //Retrieve triggered cause
         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
         result.putAll(triggerVariable);
@@ -111,32 +106,6 @@ public class EnvInjectVariableGetter {
             }
         }
         return result;
-    }
-
-    private String getWorkspaceWithCreation(AbstractBuild build, EnvInjectLogger logger, Map<String, String> currentEnvVars) throws EnvInjectException {
-        Node node = build.getBuiltOn();
-        Job job = build.getParent();
-        try {
-            final WorkspaceList.Lease lease = decideWorkspace((TopLevelItem) job, node, currentEnvVars, Computer.currentComputer().getWorkspaceList());
-            FilePath workspace = lease.path;
-            workspace.mkdirs();
-            return workspace.getRemote();
-        } catch (InterruptedException e) {
-            throw new EnvInjectException(e);
-        } catch (IOException e) {
-            throw new EnvInjectException(e);
-        }
-    }
-
-    private WorkspaceList.Lease decideWorkspace(TopLevelItem item, Node n, Map<String, String> currentEnVars, WorkspaceList wsl) throws InterruptedException, IOException {
-        if (item instanceof AbstractProject) {
-            String customWorkspace = ((AbstractProject) item).getCustomWorkspace();
-            if (customWorkspace != null) {
-                String customWorkspaceResolved = Util.replaceMacro(customWorkspace, currentEnVars);
-                return WorkspaceList.Lease.createDummyLease(n.getRootPath().child(customWorkspaceResolved));
-            }
-        }
-        return wsl.allocate(n.getWorkspaceFor(item));
     }
 
     public boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
@@ -172,6 +141,11 @@ public class EnvInjectVariableGetter {
         EnvInjectDetector envInjectDetector = new EnvInjectDetector();
         if (envInjectDetector.isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
+            //Add workspace if not set
+            FilePath ws = build.getWorkspace();
+            if (ws != null) {
+                result.put("WORKSPACE", ws.getRemote());
+            }
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
             result.putAll(getBuildVariables(build, logger));
