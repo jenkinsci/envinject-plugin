@@ -7,8 +7,6 @@ import hudson.model.Hudson;
 import hudson.model.Result;
 import junit.framework.Assert;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
-import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.HashMap;
