@@ -2,12 +2,11 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.Util;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.service.PropertiesGetter;
 import org.jenkinsci.plugins.envinject.service.PropertiesLoader;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -16,49 +15,48 @@ import java.util.Map;
 public class EnvInjectInfo implements Serializable {
 
     protected String propertiesFilePath;
+    protected String propertiesContent;
 
-    private Map<String, String> propertiesContentMap;
+    @Deprecated
+    private transient Map<String, String> propertiesContentMap;
 
-    protected transient String propertiesContent;
+    @Deprecated
     protected transient boolean populateTriggerCause;
 
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
         this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
-        PropertiesLoader loader = new PropertiesLoader();
-        try {
-            propertiesContentMap = loader.getVarsFromPropertiesContent(propertiesContent);
-        } catch (EnvInjectException e) {
-            e.printStackTrace();
-        }
+        this.propertiesContent = Util.fixEmpty(propertiesContent);
     }
 
     public String getPropertiesFilePath() {
         return propertiesFilePath;
     }
 
-    public Map<String, String> getPropertiesContentMap() {
-        return propertiesContentMap;
-    }
-
     @SuppressWarnings("unused")
     public String getPropertiesContent() {
-        if (propertiesContentMap != null) {
-            PropertiesGetter propertiesGetter = new PropertiesGetter();
-            return propertiesGetter.getPropertiesContent(propertiesContentMap);
-        }
-        return null;
+        return propertiesContent;
     }
 
-    private Object readResolve() throws IOException {
+    @SuppressWarnings("deprecation")
+    public Map<String, String> getPropertiesContentMap() {
+
+        if (propertiesContentMap != null) {
+            return propertiesContentMap;
+        }
+
         if (propertiesContent != null) {
+            Map<String, String> contentMap = new HashMap<String, String>();
             PropertiesLoader loader = new PropertiesLoader();
             try {
-                propertiesContentMap = loader.getVarsFromPropertiesContent(propertiesContent);
+                contentMap = loader.getVarsFromPropertiesContent(propertiesContent);
             } catch (EnvInjectException e) {
                 e.printStackTrace();
             }
+            return contentMap;
         }
-        return this;
+
+        return null;
     }
+
 }
