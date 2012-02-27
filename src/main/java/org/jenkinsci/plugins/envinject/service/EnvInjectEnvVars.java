@@ -101,26 +101,28 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars) {
-        Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
-        variables.putAll(propertiesEnvVars);
-        return filterEnvVars(variables, variables);
+        return getMergedVariables(infraEnvVars, new HashMap<String, String>(), propertiesEnvVars);
     }
 
-    public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars, Map<String, String> contribEnvVars) {
+    public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars,
+                                                  Map<String, String> contribEnvVars,
+                                                  Map<String, String> propertiesEnvVars) {
+
+        //1--Resolve properties against infraEnvVars
+        resolveVars(propertiesEnvVars, infraEnvVars);
+
+        //2--Resolve properties against contribEnvVars
+        resolveVars(propertiesEnvVars, contribEnvVars);
+
+        //3-- Get All variables in order (infraEnvVars, contribEnvVars, properties)
         Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
-        variables.putAll(propertiesEnvVars);
         variables.putAll(contribEnvVars);
-        return filterEnvVars(variables, variables);
-    }
+        variables.putAll(propertiesEnvVars);
 
-    private Map<String, String> filterEnvVars(Map<String, String> previousEnvVars, Map<String, String> variables) {
-
-        //Resolve vars each other
-        resolveVars(variables, previousEnvVars);
-
-        //Remove unset variables
+        //4-- Remove unset variables and return the resullt
         return removeUnsetVars(variables);
     }
+
 
     private void resolveVars(Map<String, String> variables, Map<String, String> env) {
 

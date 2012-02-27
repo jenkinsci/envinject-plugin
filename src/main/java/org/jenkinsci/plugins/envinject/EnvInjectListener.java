@@ -113,7 +113,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Get variables get by contribution
             Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, listener);
 
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, propertiesVariables, contributionVariables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, contributionVariables, propertiesVariables);
 
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
