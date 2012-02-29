@@ -1,13 +1,10 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.FilePath;
-import hudson.Util;
-import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
-import hudson.slaves.WorkspaceList;
 import hudson.util.LogTaskListener;
 import hudson.util.Secret;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
