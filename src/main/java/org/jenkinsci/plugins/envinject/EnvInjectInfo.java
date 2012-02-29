@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.Util;
 import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.service.PropertiesGetter;
 import org.jenkinsci.plugins.envinject.service.PropertiesLoader;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -33,15 +34,21 @@ public class EnvInjectInfo implements Serializable {
         return propertiesFilePath;
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "deprecation"})
     public String getPropertiesContent() {
+
+        if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
+            PropertiesGetter propertiesGetter = new PropertiesGetter();
+            return propertiesGetter.getPropertiesContent(propertiesContentMap);
+        }
+
         return propertiesContent;
     }
 
     @SuppressWarnings("deprecation")
     public Map<String, String> getPropertiesContentMap() {
 
-        if (propertiesContentMap != null) {
+        if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
         }
 
