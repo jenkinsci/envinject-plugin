@@ -77,6 +77,10 @@ public class EnvInjectVariableGetter {
         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
         result.putAll(triggerVariable);
 
+        //Add workspace
+        FilePath ws = build.getWorkspace();
+        result.put("WORKSPACE", ws.getRemote());
+
         return result;
     }
 
@@ -105,8 +109,8 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    public boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
-
+    @SuppressWarnings("unchecked")
+    public EnvInjectJobProperty getEnvInjectJobProperty(AbstractBuild build) {
         if (build == null) {
             throw new IllegalArgumentException("A build object must be set.");
         }
@@ -118,19 +122,14 @@ public class EnvInjectVariableGetter {
             job = build.getParent();
         }
 
-        EnvInjectJobProperty envInjectJobProperty = getEnvInjectJobProperty(job);
+        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
         if (envInjectJobProperty != null) {
             EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
             if (info != null && envInjectJobProperty.isOn()) {
-                return true;
+                return envInjectJobProperty;
             }
         }
-        return false;
-    }
-
-    @SuppressWarnings("unchecked")
-    public EnvInjectJobProperty getEnvInjectJobProperty(Job project) {
-        return (EnvInjectJobProperty) project.getProperty(EnvInjectJobProperty.class);
+        return null;
     }
 
     public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
@@ -138,10 +137,16 @@ public class EnvInjectVariableGetter {
         EnvInjectDetector envInjectDetector = new EnvInjectDetector();
         if (envInjectDetector.isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
+
             //Add workspace if not set
             FilePath ws = build.getWorkspace();
             if (ws != null) {
                 result.put("WORKSPACE", ws.getRemote());
+            }
+
+            //Add build variables with axis for a MatrixRun
+            if (build instanceof MatrixRun) {
+                result.putAll(build.getBuildVariables());
             }
         } else {
             result.putAll(getJenkinsSystemVariablesCurrentNode(build));
