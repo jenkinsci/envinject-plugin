@@ -1,11 +1,14 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.*;
+import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -32,17 +35,25 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     private static Logger LOG = Logger.getLogger(EnvInjectListener.class.getName());
 
+    private TechnicalWorkspaceWrapper workspaceWrapper = new TechnicalWorkspaceWrapper();
+
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         try {
-            if (!isMatrixRun(build)) {
-                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
-                    return setUpEnvironmentNonMatrixRun(build, launcher, listener);
-                }
-            } else {
-                if (variableGetter.isEnvInjectJobPropertyActive(build)) {
+            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+            if (isEnvInjectJobPropertyActive(envInjectJobProperty)) {
+                if (!isMatrixRun(build)) {
+                    AbstractProject abstractProject = build.getProject();
+                    if (abstractProject instanceof MatrixProject) {
+                        MatrixProject project = (MatrixProject) abstractProject;
+                        project.getBuildWrappersList().add(workspaceWrapper);
+                    } else {
+                        Project project = (Project) abstractProject;
+                        project.getBuildWrappersList().add(workspaceWrapper);
+                    }
+                } else {
                     return setUpEnvironmentMatrixRun(build, listener);
                 }
             }
@@ -58,16 +69,62 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
         return new Environment() {
         };
+
+    }
+
+    private boolean isEnvInjectJobPropertyActive(EnvInjectJobProperty envInjectJobProperty) {
+        return envInjectJobProperty != null;
+    }
+
+
+    public static class TechnicalWorkspaceWrapper extends BuildWrapper {
+        @Override
+        public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            try {
+                new EnvInjectListener().setUpEnvironmentNonMatrixRun(build, launcher, listener);
+            } catch (EnvInjectException e) {
+                throw new IOException(e);
+            }
+        }
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            return new Environment() {
+            };
+        }
+
+        @Extension
+        public static class WorkspaceWrapperDescriptor extends BuildWrapperDescriptor {
+
+            public WorkspaceWrapperDescriptor() {
+            }
+
+            public WorkspaceWrapperDescriptor(Class<? extends BuildWrapper> clazz) {
+                super(TechnicalWorkspaceWrapper.class);
+            }
+
+            @Override
+            public boolean isApplicable(AbstractProject<?, ?> item) {
+                return false;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return null;
+            }
+        }
     }
 
     private Environment setUpEnvironmentNonMatrixRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Preparing an environment for the job.");
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build.getParent());
+        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         assert envInjectJobProperty != null;
         EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
         assert envInjectJobProperty != null && envInjectJobProperty.isOn();
+
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        logger.info("Preparing an environment for the job.");
 
         Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>();
         Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>();
@@ -135,7 +192,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         logger.info("Using environment variables injected by the parent matrix job.");
         final Map<String, String> resultVariables = variableGetter.getEnvVarsPreviousSteps(build, logger);
         final FilePath rootPath = getNodeRootPath();
-
         if (rootPath != null) {
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -274,12 +330,20 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
                 }
             }
+            //Remove technical wrapper
+            try {
+                AbstractProject abstractProject = (AbstractProject) run.getParent();
+                if (abstractProject instanceof MatrixProject) {
+                    MatrixProject project = (MatrixProject) abstractProject;
+                    project.getBuildWrappersList().remove(workspaceWrapper);
+                } else {
+                    Project project = (Project) abstractProject;
+                    project.getBuildWrappersList().remove(workspaceWrapper);
+                }
 
-            //Add workspace if not set
-            AbstractBuild build = (AbstractBuild) run;
-            FilePath ws = build.getWorkspace();
-            if (ws != null) {
-                envVars.put("WORKSPACE", ws.getRemote());
+            } catch (IOException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
             }
 
         } else {
