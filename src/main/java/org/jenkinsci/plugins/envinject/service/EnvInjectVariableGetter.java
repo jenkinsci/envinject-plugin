@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject.service;
 
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -69,6 +70,38 @@ public class EnvInjectVariableGetter {
 
         //Add build process variables
         result.putAll(build.getCharacteristicEnvVars());
+
+        try {
+            EnvVars envVars = new EnvVars();
+            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
+                result.putAll(envVars);
+            }
+
+            JDK jdk = build.getProject().getJDK();
+            if (jdk != null) {
+                Node node = build.getBuiltOn();
+                if (node != null) {
+                    jdk = jdk.forNode(node, logger.getListener());
+                }
+                jdk.buildEnvVars(result);
+            }
+        } catch (IOException ioe) {
+            throw new EnvInjectException(ioe);
+        } catch (InterruptedException ie) {
+            throw new EnvInjectException(ie);
+        }
+
+        Executor e = build.getExecutor();
+        if (e != null) {
+            result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
+        }
+
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if (rootUrl != null) {
+            result.put("BUILD_URL", rootUrl + build.getUrl());
+            result.put("JOB_URL", rootUrl + build.getParent().getUrl());
+        }
 
         //Add build variables such as parameters, plugins contributions, ...
         result.putAll(build.getBuildVariables());

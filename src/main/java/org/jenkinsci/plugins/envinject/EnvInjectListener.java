@@ -9,7 +9,6 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.util.LogTaskListener;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
@@ -24,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -132,8 +130,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
             logger.info("Jenkins system variables are kept.");
-            infraEnvVarsMaster.putAll(getJenkinsSystemVariables(build, true));
-            infraEnvVarsNode.putAll(getJenkinsSystemVariables(build, false));
+            infraEnvVarsMaster.putAll(getJenkinsSystemVariables(true));
+            infraEnvVarsNode.putAll(getJenkinsSystemVariables(false));
         }
 
         //Add build variables
@@ -208,7 +206,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return build instanceof MatrixRun;
     }
 
-    private Map<String, String> getJenkinsSystemVariables(AbstractBuild build, boolean onMaster) throws IOException, InterruptedException {
+    private Map<String, String> getJenkinsSystemVariables(boolean onMaster) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
 
@@ -226,28 +224,15 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             if (n != null)
                 result.put("NODE_NAME", computer.getName());
             result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
-
-            Executor e = build.getExecutor();
-            if (e != null) {
-                result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
-            }
         }
 
         String rootUrl = Hudson.getInstance().getRootUrl();
         if (rootUrl != null) {
             result.put("JENKINS_URL", rootUrl);
             result.put("HUDSON_URL", rootUrl); // Legacy compatibility
-            result.put("BUILD_URL", rootUrl + build.getUrl());
-            result.put("JOB_URL", rootUrl + build.getParent().getUrl());
         }
         result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
         result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
-
-        EnvVars envVars = new EnvVars();
-        for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-            ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
-            result.putAll(envVars);
-        }
 
         //Global properties
         for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
