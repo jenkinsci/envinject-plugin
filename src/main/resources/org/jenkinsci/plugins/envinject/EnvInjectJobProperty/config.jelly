@@ -17,6 +17,41 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
+        <f:entry field="injectGlobalPasswords"
+                 title="${%Inject global passwords as environment variables}"
+                 help="/plugin/envinject/help-buildWrapperGlobalPasswords.html">
+            <f:checkbox
+                    name="injectGlobalPasswords"
+                    checked="${instance.injectGlobalPasswords}" default="${false}"/>
+        </f:entry>
+
+        <f:entry title="Inject Job Passwords"
+            description="${%Passwords list}">
+
+            <f:repeatable var="passwordEntry" items="${instance.passwordEntries}">
+                <table width="100%">
+
+                    <f:entry title="Name"
+                             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
+                        <f:textbox name="envInjectPasswordEntry.name" value="${passwordEntry.name}"/>
+                    </f:entry>
+
+                    <f:entry title="Passowrd"
+                             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
+                        <f:password name="envInjectPasswordEntry.password" value="${passwordEntry.value}"  />
+                    </f:entry>
+
+                    <f:entry title="">
+                        <div align="right">
+                            <f:repeatableDeleteButton/>
+                        </div>
+                    </f:entry>
+
+                </table>
+            </f:repeatable>
+
+        </f:entry>
+
         <f:entry title="${%Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
             <f:textbox
@@ -46,7 +81,7 @@
                     value="${instance.info.propertiesContent}"/>
         </f:entry>
 
-        <f:entry title="${%Load files from the master}"
+        <f:entry title="${%Load script and properties files from the master}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/loadFilesFromMaster">
             <f:checkbox
                     name="envInjectInfoJobProperty.loadFilesFromMaster"

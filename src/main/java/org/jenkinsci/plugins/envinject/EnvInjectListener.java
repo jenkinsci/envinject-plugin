@@ -9,8 +9,10 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.util.DescribableList;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.buildwrapper.EnvInjectPasswordWrapper;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -19,11 +21,7 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.logging.Logger;
+import java.util.*;
 
 /**
  * @author Gregory Boissinot
@@ -31,26 +29,14 @@ import java.util.logging.Logger;
 @Extension
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
 
-    private static Logger LOG = Logger.getLogger(EnvInjectListener.class.getName());
-
-    private TechnicalWorkspaceWrapper workspaceWrapper = new TechnicalWorkspaceWrapper();
 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         try {
-            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
-            if (isEnvInjectJobPropertyActive(envInjectJobProperty)) {
+            if (isEnvInjectJobPropertyActive(build)) {
                 if (!isMatrixRun(build)) {
-                    AbstractProject abstractProject = build.getProject();
-                    if (abstractProject instanceof MatrixProject) {
-                        MatrixProject project = (MatrixProject) abstractProject;
-                        project.getBuildWrappersList().add(workspaceWrapper);
-                    } else {
-                        Project project = (Project) abstractProject;
-                        project.getBuildWrappersList().add(workspaceWrapper);
-                    }
+                    addBuildWrapper(build, new JobSetupEnvironmentWrapper());
                 } else {
                     return setUpEnvironmentMatrixRun(build, listener);
                 }
@@ -70,12 +56,48 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     }
 
-    private boolean isEnvInjectJobPropertyActive(EnvInjectJobProperty envInjectJobProperty) {
+    private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper) throws EnvInjectException {
+        try {
+            if (buildWrapper != null) {
+                AbstractProject abstractProject = build.getProject();
+                if (abstractProject instanceof MatrixProject) {
+                    MatrixProject project = (MatrixProject) abstractProject;
+                    project.getBuildWrappersList().add(buildWrapper);
+                } else {
+                    Project project = (Project) abstractProject;
+                    project.getBuildWrappersList().add(buildWrapper);
+                }
+            }
+        } catch (IOException ioe) {
+            throw new EnvInjectException(ioe);
+        }
+    }
+
+    private void removeBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper) throws EnvInjectException {
+        try {
+            if (buildWrapper != null) {
+                AbstractProject abstractProject = build.getProject();
+                if (abstractProject instanceof MatrixProject) {
+                    MatrixProject project = (MatrixProject) abstractProject;
+                    project.getBuildWrappersList().remove(buildWrapper);
+                } else {
+                    Project project = (Project) abstractProject;
+                    project.getBuildWrappersList().remove(buildWrapper);
+                }
+            }
+        } catch (IOException ioe) {
+            throw new EnvInjectException(ioe);
+        }
+    }
+
+    private boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         return envInjectJobProperty != null;
     }
 
 
-    public static class TechnicalWorkspaceWrapper extends BuildWrapper {
+    public static class JobSetupEnvironmentWrapper extends BuildWrapper {
         @Override
         public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             try {
@@ -92,13 +114,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         @Extension
-        public static class WorkspaceWrapperDescriptor extends BuildWrapperDescriptor {
+        public static class JobSetupEnvironmentWrapperDescriptor extends BuildWrapperDescriptor {
 
-            public WorkspaceWrapperDescriptor() {
+            public JobSetupEnvironmentWrapperDescriptor() {
             }
 
-            public WorkspaceWrapperDescriptor(Class<? extends BuildWrapper> clazz) {
-                super(TechnicalWorkspaceWrapper.class);
+            public JobSetupEnvironmentWrapperDescriptor(Class<? extends BuildWrapper> clazz) {
+                super(JobSetupEnvironmentWrapper.class);
             }
 
             @Override
@@ -129,18 +151,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-            logger.info("Jenkins system variables are kept.");
+            logger.info("Keep Jenkins system variables.");
             infraEnvVarsMaster.putAll(getJenkinsSystemVariables(true));
             infraEnvVarsNode.putAll(getJenkinsSystemVariables(false));
         }
 
         //Add build variables
         if (envInjectJobProperty.isKeepBuildVariables()) {
-            logger.info("Jenkins build variables are kept.");
+            logger.info("Keep Jenkins build variables.");
             Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
             infraEnvVarsMaster.putAll(buildVariables);
             infraEnvVarsNode.putAll(buildVariables);
         }
+
+        //Inject Passwords
+        injectPasswords(build, envInjectJobProperty, logger);
 
         //Add build parameters (or override)
         Map<String, String> parametersVariables = variableGetter.overrideParametersVariablesWithSecret(build);
@@ -182,6 +207,32 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
         return new Environment() {
         };
+    }
+
+    private void injectPasswords(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, EnvInjectLogger logger) throws EnvInjectException {
+
+        //--Process global passwords
+        List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
+        if (envInjectJobProperty.isInjectGlobalPasswords()) {
+            logger.info("Inject global passwords.");
+            EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
+            EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
+            if (passwordEntries != null) {
+                for (EnvInjectGlobalPasswordEntry entry : passwordEntries) {
+                    passwordList.add(entry);
+                }
+            }
+        }
+
+        //--Process job passwords
+        if (envInjectJobProperty.getPasswordEntries() != null && envInjectJobProperty.getPasswordEntries().length != 0) {
+            passwordList.addAll(Arrays.asList(envInjectJobProperty.getPasswordEntries()));
+        }
+        //--Inject passwords
+        if (passwordList.size() != 0) {
+            addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList));
+        }
+
     }
 
     private Environment setUpEnvironmentMatrixRun(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
@@ -305,6 +356,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
+        AbstractBuild build = (AbstractBuild) run;
 
         EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
@@ -315,18 +367,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
                 }
             }
-            //Remove technical wrapper
+            //Remove technical wrappers
             try {
-                AbstractProject abstractProject = (AbstractProject) run.getParent();
-                if (abstractProject instanceof MatrixProject) {
-                    MatrixProject project = (MatrixProject) abstractProject;
-                    project.getBuildWrappersList().remove(workspaceWrapper);
-                } else {
-                    Project project = (Project) abstractProject;
-                    project.getBuildWrappersList().remove(workspaceWrapper);
-                }
-
-            } catch (IOException e) {
+                removeTechnicalWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
+            } catch (EnvInjectException e) {
                 logger.error("SEVERE ERROR occurs: " + e.getMessage());
                 throw new Run.RunnerAbortedException();
             }
@@ -346,7 +390,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         //Mask passwords
-        maskGlobalPasswordsIfAny(logger, envVars);
+        maskPasswordsIfAny(build, logger, envVars);
 
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
@@ -364,16 +408,57 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private void maskGlobalPasswordsIfAny(EnvInjectLogger logger, Map<String, String> envVars) {
+    private void removeTechnicalWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
+
+        AbstractProject abstractProject = build.getProject();
+        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
+        if (abstractProject instanceof MatrixProject) {
+            MatrixProject project = (MatrixProject) abstractProject;
+            wrappersProject = project.getBuildWrappersList();
+        } else {
+            Project project = (Project) abstractProject;
+            wrappersProject = project.getBuildWrappersList();
+        }
+
+        Iterator<BuildWrapper> iterator = wrappersProject.iterator();
+        while (iterator.hasNext()) {
+            BuildWrapper buildWrapper = iterator.next();
+            if ((((jobSetupEnvironmentWrapperClass.getName()).equals(buildWrapper.getClass().getName()))
+                    || ((envInjectPasswordWrapperClass.getName()).equals(buildWrapper.getClass().getName())))) {
+                try {
+                    wrappersProject.remove(buildWrapper);
+                } catch (IOException ioe) {
+                    throw new EnvInjectException(ioe);
+                }
+            }
+        }
+    }
+
+    private void maskPasswordsIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
         try {
+
+            //Global passwords
             EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
-            EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
-            if (passwordEntries != null) {
-                for (EnvInjectGlobalPasswordEntry globalPasswordEntry : passwordEntries) {
+            EnvInjectGlobalPasswordEntry[] globalPasswordEntries = globalPasswordRetriever.getGlobalPasswords();
+            if (globalPasswordEntries != null) {
+                for (EnvInjectGlobalPasswordEntry globalPasswordEntry : globalPasswordEntries) {
                     envVars.put(globalPasswordEntry.getName(),
                             globalPasswordEntry.getValue().getEncryptedValue());
                 }
             }
+
+            //Job passwords
+            if (isEnvInjectJobPropertyActive(build)) {
+                EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+                EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+                EnvInjectPasswordEntry[] passwordEntries = envInjectJobProperty.getPasswordEntries();
+                if (passwordEntries != null) {
+                    for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
+                        envVars.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
+                    }
+                }
+            }
+
         } catch (EnvInjectException ee) {
             logger.error("Can't mask global password :" + ee.getMessage());
         }

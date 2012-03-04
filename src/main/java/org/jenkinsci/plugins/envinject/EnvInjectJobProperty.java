@@ -25,12 +25,13 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
-
-    private transient boolean keepSystemVariables;
-
+    private boolean injectGlobalPasswords;
+    private EnvInjectPasswordEntry[] passwordEntries;
     private EnvInjectJobPropertyContributor[] contributors;
-
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
+
+    @Deprecated
+    private transient boolean keepSystemVariables;
 
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
@@ -55,6 +56,16 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     @SuppressWarnings("unused")
     public boolean isKeepBuildVariables() {
         return keepBuildVariables;
+    }
+
+    @SuppressWarnings("unused")
+    public boolean isInjectGlobalPasswords() {
+        return injectGlobalPasswords;
+    }
+
+    @SuppressWarnings("unused")
+    public EnvInjectPasswordEntry[] getPasswordEntries() {
+        return passwordEntries;
     }
 
     @SuppressWarnings("unused")
@@ -119,6 +130,14 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.keepBuildVariables = keepBuildVariables;
     }
 
+    public void setInjectGlobalPasswords(boolean injectGlobalPasswords) {
+        this.injectGlobalPasswords = injectGlobalPasswords;
+    }
+
+    public void setPasswordEntries(EnvInjectPasswordEntry[] passwordEntries) {
+        this.passwordEntries = passwordEntries;
+    }
+
     public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
     }
@@ -153,8 +172,13 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                 envInjectJobProperty.setOn(true);
                 if (onObject instanceof JSONObject) {
                     JSONObject onJSONObject = (JSONObject) onObject;
-                    envInjectJobProperty.setKeepJenkinsSystemVariables(((JSONObject) onObject).getBoolean("keepJenkinsSystemVariables"));
-                    envInjectJobProperty.setKeepBuildVariables(((JSONObject) onObject).getBoolean("keepBuildVariables"));
+                    envInjectJobProperty.setKeepJenkinsSystemVariables(onJSONObject.getBoolean("keepJenkinsSystemVariables"));
+                    envInjectJobProperty.setKeepBuildVariables(onJSONObject.getBoolean("keepBuildVariables"));
+                    envInjectJobProperty.setInjectGlobalPasswords(onJSONObject.getBoolean("injectGlobalPasswords"));
+
+                    //Envinject passowrds
+                    List<EnvInjectPasswordEntry> passwordEntries = req.bindParametersToList(EnvInjectPasswordEntry.class, "envInjectPasswordEntry.");
+                    envInjectJobProperty.setPasswordEntries(passwordEntries.toArray(new EnvInjectPasswordEntry[passwordEntries.size()]));
 
                     //Process contributions
                     setContributors(req, envInjectJobProperty, onJSONObject);
