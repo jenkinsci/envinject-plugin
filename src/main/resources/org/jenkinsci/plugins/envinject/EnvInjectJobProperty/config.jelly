@@ -25,8 +25,9 @@
                     checked="${instance.injectGlobalPasswords}" default="${false}"/>
         </f:entry>
 
-        <f:entry title="Inject Job Passwords"
-            description="${%Passwords list}">
+        <f:entry title="Inject job passwords as environment variables"
+            description="${%Passwords list}"
+            help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/jobPasswords">
 
             <f:repeatable var="passwordEntry" items="${instance.passwordEntries}">
                 <table width="100%">
