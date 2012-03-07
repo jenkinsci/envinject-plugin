@@ -324,11 +324,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-    private boolean parameter2exclude(EnvironmentContributingAction a) {
-
-        if ((EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
-            return true;
-        }
+    private boolean isParameterAction(EnvironmentContributingAction a) {
 
         if (a instanceof ParametersAction) {
             return true;
@@ -336,6 +332,16 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         return false;
     }
+
+    private boolean isEnvInjectAction(EnvironmentContributingAction a) {
+
+        if ((EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
 
@@ -361,12 +367,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
 
-            //Add other plugins env vars contribution variables (exclude builder action and parameter actions already populated)
-            for (EnvironmentContributingAction a : Util.filter(run.getActions(), EnvironmentContributingAction.class)) {
-                if (!parameter2exclude(a)) {
-                    a.buildEnvVars((AbstractBuild<?, ?>) run, envVars);
-                }
-            }
             //Remove technical wrappers
             try {
                 removeTechnicalWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
