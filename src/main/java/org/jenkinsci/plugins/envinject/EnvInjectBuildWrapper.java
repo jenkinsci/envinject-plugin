@@ -49,9 +49,14 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
 
+            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
+
+            //Add workspace if not set
+            if (ws != null) {
+                injectedEnvVars.put("WORKSPACE", ws.getRemote());
+            }
 
             //Get result variables
             Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(), injectedEnvVars);

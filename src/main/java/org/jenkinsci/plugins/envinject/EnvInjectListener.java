@@ -37,6 +37,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             if (isEnvInjectJobPropertyActive(build)) {
                 if (!isMatrixRun(build)) {
                     addBuildWrapper(build, new JobSetupEnvironmentWrapper());
+                    return setUpEnvironmentNonMatrixRun(build, launcher, listener);
                 } else {
                     return setUpEnvironmentMatrixRun(build, listener);
                 }
@@ -73,23 +74,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private void removeBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper) throws EnvInjectException {
-        try {
-            if (buildWrapper != null) {
-                AbstractProject abstractProject = build.getProject();
-                if (abstractProject instanceof MatrixProject) {
-                    MatrixProject project = (MatrixProject) abstractProject;
-                    project.getBuildWrappersList().remove(buildWrapper);
-                } else {
-                    Project project = (Project) abstractProject;
-                    project.getBuildWrappersList().remove(buildWrapper);
-                }
-            }
-        } catch (IOException ioe) {
-            throw new EnvInjectException(ioe);
-        }
-    }
-
     private boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
@@ -98,21 +82,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
 
     public static class JobSetupEnvironmentWrapper extends BuildWrapper {
-        @Override
-        public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            try {
-                new EnvInjectListener().setUpEnvironmentNonMatrixRun(build, launcher, listener);
-            } catch (EnvInjectException e) {
-                throw new IOException(e);
-            }
-        }
 
-        @Override
-        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            return new Environment() {
-            };
-        }
-
+        @SuppressWarnings("unused")
         @Extension
         public static class JobSetupEnvironmentWrapperDescriptor extends BuildWrapperDescriptor {
 
@@ -132,6 +103,36 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             public String getDisplayName() {
                 return null;
             }
+        }
+
+        @Override
+        public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+
+            EnvInjectLogger envInjectLogger = new EnvInjectLogger(listener);
+            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+
+            assert envInjectJobProperty != null;
+
+            if (envInjectJobProperty.isKeepBuildVariables()) {
+                try {
+                    //Get previous
+                    Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, envInjectLogger);
+                    //Add workspace
+                    FilePath ws = build.getWorkspace();
+                    previousEnvVars.put("WORKSPACE", ws.getRemote());
+                    //Set new env vars
+                    new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, previousEnvVars);
+                } catch (EnvInjectException e) {
+                    throw new IOException(e);
+                }
+            }
+        }
+
+        @Override
+        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+            return new Environment() {
+            };
         }
     }
 
@@ -463,6 +464,5 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             logger.error("Can't mask global password :" + ee.getMessage());
         }
     }
-
 
 }

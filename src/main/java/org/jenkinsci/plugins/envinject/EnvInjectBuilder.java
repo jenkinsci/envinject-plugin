@@ -55,6 +55,11 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             //Get current envVars
             Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
 
+            //Add workspace if not set
+            if (ws != null) {
+                variables.put("WORKSPACE", ws.getRemote());
+            }
+
             //Always keep build variables (such as parameter variables).
             variables.putAll(getAndAddBuildVariables(build));
 

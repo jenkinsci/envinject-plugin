@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -110,10 +109,6 @@ public class EnvInjectVariableGetter {
         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
         result.putAll(triggerVariable);
 
-        //Add workspace
-        FilePath ws = build.getWorkspace();
-        result.put("WORKSPACE", ws.getRemote());
-
         return result;
     }
 
@@ -170,12 +165,6 @@ public class EnvInjectVariableGetter {
         EnvInjectDetector envInjectDetector = new EnvInjectDetector();
         if (envInjectDetector.isEnvInjectActivated(build)) {
             result.putAll(getCurrentInjectedEnvVars(build));
-
-            //Add workspace if not set
-            FilePath ws = build.getWorkspace();
-            if (ws != null) {
-                result.put("WORKSPACE", ws.getRemote());
-            }
 
             //Add build variables with axis for a MatrixRun
             if (build instanceof MatrixRun) {
