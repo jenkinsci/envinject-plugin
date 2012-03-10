@@ -1,8 +1,8 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.*;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -29,34 +29,28 @@ import java.util.*;
 @Extension
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
 
-
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
-        try {
-            if (isEnvInjectJobPropertyActive(build)) {
-                if (!isMatrixRun(build)) {
-                    addBuildWrapper(build, new JobSetupEnvironmentWrapper());
-                    return setUpEnvironmentNonMatrixRun(build, launcher, listener);
-                } else {
-                    return setUpEnvironmentMatrixRun(build, listener);
+        if (!(build instanceof MatrixBuild)) {
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
+            try {
+                if (isEnvInjectJobPropertyActive(build)) {
+                    return setUpEnvironmentRun(build, launcher, listener);
                 }
+            } catch (Run.RunnerAbortedException rre) {
+                logger.info("Fail the build.");
+                throw new Run.RunnerAbortedException();
+            } catch (Throwable throwable) {
+                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+                throw new Run.RunnerAbortedException();
             }
-        } catch (EnvInjectException envEx) {
-            logger.error("SEVERE ERROR occurs: " + envEx.getMessage());
-            throw new Run.RunnerAbortedException();
-        } catch (Run.RunnerAbortedException rre) {
-            logger.info("Fail the build.");
-            throw new Run.RunnerAbortedException();
-        } catch (Throwable throwable) {
-            logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
-            throw new Run.RunnerAbortedException();
         }
+
         return new Environment() {
         };
-
     }
 
+    @SuppressWarnings("unchecked")
     private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper) throws EnvInjectException {
         try {
             if (buildWrapper != null) {
@@ -79,7 +73,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         return envInjectJobProperty != null;
     }
-
 
     public static class JobSetupEnvironmentWrapper extends BuildWrapper {
 
@@ -136,7 +129,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentNonMatrixRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
@@ -234,28 +227,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList));
         }
 
-    }
-
-    private Environment setUpEnvironmentMatrixRun(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Using environment variables injected by the parent matrix job.");
-        final Map<String, String> resultVariables = variableGetter.getEnvVarsPreviousSteps(build, logger);
-        final FilePath rootPath = getNodeRootPath();
-        if (rootPath != null) {
-            //Add an action
-            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
-        }
-        return new Environment() {
-            @Override
-            public void buildEnvVars(Map<String, String> env) {
-                env.putAll(resultVariables);
-            }
-        };
-    }
-
-    private boolean isMatrixRun(AbstractBuild build) {
-        return build instanceof MatrixRun;
     }
 
     private Map<String, String> getJenkinsSystemVariables(boolean onMaster) throws IOException, InterruptedException {
@@ -361,26 +332,46 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public void onCompleted(Run run, TaskListener listener) {
 
-        EnvVars envVars = new EnvVars();
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
         AbstractBuild build = (AbstractBuild) run;
+        if (!(build instanceof MatrixBuild)) {
+            EnvVars envVars = new EnvVars();
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-        EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
-        if (envInjectAction != null) {
+            EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
+            if (envInjectAction != null) {
 
-            //Remove technical wrappers
+                //Remove technical wrappers
+                try {
+                    removeTechnicalWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
+                } catch (EnvInjectException e) {
+                    logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                    throw new Run.RunnerAbortedException();
+                }
+
+            } else {
+                //Keep classic injected env vars
+                AbstractBuild abstractBuild = (AbstractBuild) run;
+                try {
+                    envVars.putAll(abstractBuild.getEnvironment(listener));
+                } catch (IOException e) {
+                    logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                    throw new Run.RunnerAbortedException();
+                } catch (InterruptedException e) {
+                    logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                    throw new Run.RunnerAbortedException();
+                }
+            }
+
+            //Mask passwords
+            maskPasswordsIfAny(build, logger, envVars);
+
+            //Add or override EnvInject Action
+            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
             try {
-                removeTechnicalWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
+                envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
             } catch (EnvInjectException e) {
                 logger.error("SEVERE ERROR occurs: " + e.getMessage());
                 throw new Run.RunnerAbortedException();
-            }
-
-        } else {
-            //Keep classic injected env vars
-            AbstractBuild abstractBuild = (AbstractBuild) run;
-            try {
-                envVars.putAll(abstractBuild.getEnvironment(listener));
             } catch (IOException e) {
                 logger.error("SEVERE ERROR occurs: " + e.getMessage());
                 throw new Run.RunnerAbortedException();
@@ -389,26 +380,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 throw new Run.RunnerAbortedException();
             }
         }
-
-        //Mask passwords
-        maskPasswordsIfAny(build, logger, envVars);
-
-        //Add or override EnvInject Action
-        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
-        try {
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
-        } catch (EnvInjectException e) {
-            logger.error("SEVERE ERROR occurs: " + e.getMessage());
-            throw new Run.RunnerAbortedException();
-        } catch (IOException e) {
-            logger.error("SEVERE ERROR occurs: " + e.getMessage());
-            throw new Run.RunnerAbortedException();
-        } catch (InterruptedException e) {
-            logger.error("SEVERE ERROR occurs: " + e.getMessage());
-            throw new Run.RunnerAbortedException();
-        }
     }
 
+    @SuppressWarnings("unchecked")
     private void removeTechnicalWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
 
         AbstractProject abstractProject = build.getProject();
