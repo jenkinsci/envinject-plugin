@@ -5,6 +5,7 @@ import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
+import hudson.remoting.Callable;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildWrapper;
@@ -34,6 +35,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (!(build instanceof MatrixBuild)) {
             EnvInjectLogger logger = new EnvInjectLogger(listener);
             try {
+
+                //Process environment variables at node level
+                Node buildNode = build.getBuiltOn();
+                if (buildNode != null) {
+                    loadEnvironmentVariablesNode(build, buildNode, listener);
+                }
+
+                //Load job envinject job property
                 if (isEnvInjectJobPropertyActive(build)) {
                     return setUpEnvironmentRun(build, launcher, listener);
                 }
@@ -48,6 +57,62 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         return new Environment() {
         };
+    }
+
+    private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, BuildListener listener) throws EnvInjectException {
+
+        if (buildNode == null) {
+            return;
+        }
+
+        FilePath nodePath = buildNode.getRootPath();
+        if (nodePath == null) {
+            return;
+        }
+
+        try {
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
+            //Default node envVars
+            Map<String, String> configNodeEnvVars = new HashMap<String, String>();
+
+            //Get env vars for the current node
+            Map<String, String> nodeEnvVars = nodePath.act(
+                    new Callable<Map<String, String>, IOException>() {
+                        public Map<String, String> call() throws IOException {
+                            return EnvVars.masterEnvVars;
+                        }
+                    }
+            );
+
+
+            for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                    EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
+                    EnvVars envVars = variablesNodeProperty.getEnvVars();
+                    EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(logger);
+                    configNodeEnvVars.putAll(envVars);
+                    envInjectEnvVars.resolveVars(configNodeEnvVars, nodeEnvVars);
+                }
+            }
+
+            for (NodeProperty<?> nodeProperty : buildNode.getNodeProperties()) {
+                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                    EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
+                    EnvVars envVars = variablesNodeProperty.getEnvVars();
+                    EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(logger);
+                    configNodeEnvVars.putAll(envVars);
+                    envInjectEnvVars.resolveVars(configNodeEnvVars, nodeEnvVars);
+                }
+            }
+
+            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(nodePath);
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, configNodeEnvVars);
+
+        } catch (IOException ioe) {
+            throw new EnvInjectException(ioe);
+        } catch (InterruptedException ie) {
+            throw new EnvInjectException(ie);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -140,8 +205,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Preparing an environment for the job.");
 
-        Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>();
-        Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>();
+        //Init infra env vars
+        Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+        Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>(previousEnvVars);
+        Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>(previousEnvVars);
 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
@@ -295,25 +362,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
         return null;
     }
-
-    private boolean isParameterAction(EnvironmentContributingAction a) {
-
-        if (a instanceof ParametersAction) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isEnvInjectAction(EnvironmentContributingAction a) {
-
-        if ((EnvInjectBuilder.ENVINJECT_BUILDER_ACTION_NAME).equals(a.getDisplayName())) {
-            return true;
-        }
-
-        return false;
-    }
-
 
     private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
 

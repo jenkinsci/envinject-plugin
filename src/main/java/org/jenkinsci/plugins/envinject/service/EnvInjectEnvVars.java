@@ -124,7 +124,7 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
 
-    private void resolveVars(Map<String, String> variables, Map<String, String> env) {
+    public void resolveVars(Map<String, String> variables, Map<String, String> env) {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {

@@ -11,9 +11,9 @@ import org.jenkinsci.lib.envinject.EnvInjectAction;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.lib.envinject.service.EnvInjectActionRetriever;
-import org.jenkinsci.lib.envinject.service.EnvInjectDetector;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
+import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -162,10 +162,10 @@ public class EnvInjectVariableGetter {
 
     public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
-        EnvInjectDetector envInjectDetector = new EnvInjectDetector();
-        if (envInjectDetector.isEnvInjectActivated(build)) {
-            result.putAll(getCurrentInjectedEnvVars(build));
 
+        EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
+        if (envInjectAction != null) {
+            result.putAll(getCurrentInjectedEnvVars(build));
             //Add build variables with axis for a MatrixRun
             if (build instanceof MatrixRun) {
                 result.putAll(build.getBuildVariables());

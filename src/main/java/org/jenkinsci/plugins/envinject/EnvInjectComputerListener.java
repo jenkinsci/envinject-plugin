@@ -47,6 +47,16 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             //Default properties vars
             Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
 
+            //Get env vars for the current node
+            Map<String, String> nodeEnvVars = nodePath.act(
+                    new Callable<Map<String, String>, IOException>() {
+                        public Map<String, String> call() throws IOException {
+                            return EnvVars.masterEnvVars;
+                        }
+                    }
+            );
+
+
             //Global Properties
             for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
                 if (nodeProperty instanceof EnvInjectNodeProperty) {
@@ -73,14 +83,6 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             }
 
 
-            Map<String, String> nodeEnvVars = nodePath.act(
-                    new Callable<Map<String, String>, IOException>() {
-                        public Map<String, String> call() throws IOException {
-                            return EnvVars.masterEnvVars;
-                        }
-                    }
-            );
-
             Node slave = Hudson.getInstance().getNode(c.getName());
             //Specific nodeProperties can overrides the value if this is a slave
             if (slave != null) {
@@ -88,13 +90,13 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
                     if (nodeProperty instanceof EnvInjectNodeProperty) {
                         EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                         unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-
                         //Add global properties
                         globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
 
                     }
                 }
             }
+
 
             EnvVars envVars2Set = new EnvVars();
             if (!unsetSystemVariables) {
