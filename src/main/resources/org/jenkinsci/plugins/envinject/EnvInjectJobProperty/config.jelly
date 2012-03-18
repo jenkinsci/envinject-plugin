@@ -67,6 +67,13 @@
                     value="${instance.info.scriptContent}"/>
         </f:entry>
 
+        <f:entry title="${%Evaluated Groovy script}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContent">
+            <f:textarea
+                    name="envInjectInfoJobProperty.groovyScriptContent"
+                    value="${instance.info.groovyScriptContent}"/>
+        </f:entry>
+
         <f:entry
                 title="${%Properties File Path}"
                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">

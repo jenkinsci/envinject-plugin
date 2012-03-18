@@ -34,6 +34,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (!(build instanceof MatrixBuild)) {
             EnvInjectLogger logger = new EnvInjectLogger(listener);
+            logger.info("Preparing an environment for the build.");
             try {
 
                 //Process environment variables at node level
@@ -44,7 +45,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Load job envinject job property
                 if (isEnvInjectJobPropertyActive(build)) {
-                    return setUpEnvironmentRun(build, launcher, listener);
+                    return setUpEnvironmentJobPropertyObject(build, launcher, listener);
                 }
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
@@ -194,7 +195,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentRun(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
@@ -203,7 +204,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         assert envInjectJobProperty != null && envInjectJobProperty.isOn();
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        logger.info("Preparing an environment for the job.");
 
         //Init infra env vars
         Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
@@ -246,6 +246,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 throw new Run.RunnerAbortedException();
             }
 
+            //Evaluate Groovy script
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(info.getGroovyScriptContent(), infraEnvVarsNode);
+
             final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
                     logger, info.isLoadFilesFromMaster(),
                     info.getPropertiesFilePath(), info.getPropertiesContentMap(),
@@ -254,7 +257,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Get variables get by contribution
             Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, listener);
 
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(infraEnvVarsNode, contributionVariables, propertiesVariables);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(
+                    infraEnvVarsNode,
+                    propertiesVariables,
+                    groovyMapEnvVars,
+                    contributionVariables);
 
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
@@ -324,26 +331,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
         result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
 
-        //Global properties
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                result.putAll(environmentVariablesNodeProperty.getEnvVars());
-            }
-        }
-
-        //Node properties
-        if (computer != null) {
-            Node node = computer.getNode();
-            if (node != null) {
-                for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
-                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                        EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                        result.putAll(environmentVariablesNodeProperty.getEnvVars());
-                    }
-                }
-            }
-        }
         return result;
     }
 

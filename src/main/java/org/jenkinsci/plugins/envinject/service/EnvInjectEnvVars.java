@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject.service;
 
+import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -87,6 +88,38 @@ public class EnvInjectEnvVars implements Serializable {
         }
     }
 
+    public Map<String, String> executeAndGetMapGroovyScript(String scriptContent, Map<String, String> envVars) throws EnvInjectException {
+
+        if (scriptContent == null) {
+            return new HashMap<String, String>();
+        }
+
+        if (scriptContent.trim().length() == 0) {
+            return new HashMap<String, String>();
+        }
+
+        logger.info(String.format("Evaluation the following Groovy script content: \n%s\n", scriptContent));
+        GroovyShell shell = new GroovyShell();
+        for (Map.Entry<String, String> entryVariable : envVars.entrySet()) {
+            shell.setVariable(entryVariable.getKey(), entryVariable.getValue());
+        }
+        Object groovyResult = shell.evaluate(scriptContent);
+        if (groovyResult != null && !(groovyResult instanceof Map)) {
+            throw new EnvInjectException("The evaluated Groovy script must return a Map object.");
+        }
+
+        Map<String, String> result = new HashMap<String, String>();
+        if (groovyResult == null) {
+            return result;
+        }
+
+        for (Map.Entry entry : (((Map<Object, Object>) groovyResult).entrySet())) {
+            result.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return result;
+
+    }
+
     public int executeScript(
             String scriptContent,
             FilePath scriptExecutionRoot,
@@ -101,21 +134,26 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars) {
-        return getMergedVariables(infraEnvVars, new HashMap<String, String>(), propertiesEnvVars);
+        return getMergedVariables(infraEnvVars, propertiesEnvVars, new HashMap<String, String>(), new HashMap<String, String>());
     }
 
     public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars,
-                                                  Map<String, String> contribEnvVars,
-                                                  Map<String, String> propertiesEnvVars) {
+                                                  Map<String, String> propertiesEnvVars,
+                                                  Map<String, String> groovyMapEnvVars,
+                                                  Map<String, String> contribEnvVars) {
 
         //1--Resolve properties against infraEnvVars
         resolveVars(propertiesEnvVars, infraEnvVars);
 
-        //2--Resolve properties against contribEnvVars
+        //2--Resolve properties against groovyEnvVars
+        resolveVars(propertiesEnvVars, groovyMapEnvVars);
+
+        //3--Resolve properties against contribEnvVars
         resolveVars(propertiesEnvVars, contribEnvVars);
 
-        //3-- Get All variables in order (infraEnvVars, contribEnvVars, properties)
+        //4-- Get All variables in order (infraEnvVars, groovyEnvVars, contribEnvVars, properties)
         Map<String, String> variables = new LinkedHashMap<String, String>(infraEnvVars);
+        variables.putAll(groovyMapEnvVars);
         variables.putAll(contribEnvVars);
         variables.putAll(propertiesEnvVars);
 

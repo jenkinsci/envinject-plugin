@@ -28,7 +28,7 @@ public class EnvInjectBuildWrapperTest extends HudsonTestCase {
 
         String propertiesContent = customEnvVarName + "=" + customEnvVarValue;
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, null, false);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(jobPropertyInfo);
         project.getBuildWrappersList().add(envInjectBuildWrapper);

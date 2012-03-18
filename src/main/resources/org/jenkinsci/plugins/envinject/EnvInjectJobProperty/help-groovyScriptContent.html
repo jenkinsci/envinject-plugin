@@ -1,0 +1,27 @@
+<div>
+    <p>
+        Evaluate a Groovy script and inject a map result.<br/>
+        The groovy script must return a map Java object.<br/>
+        You can access parameters and other environment variables through variables in the Groovy script.<br/>
+        For example, the Groovy can compute environment variables from user input parameters, such as:<br/>
+        <i>
+            if (CASE==null){<br/>
+            return null; <br/>
+            } <br/>
+
+            def stringValue="StRinG"; <br/>
+
+            if ("upper".equals(CASE)){ <br/>
+            def map = [COMPUTE_VAR: stringValue.toUpperCase()]<br/>
+            return map <br/>
+            } <br/>
+            <br/>
+            if ("lower".equals(CASE)){ <br/>
+            def map = [COMPUTE_VAR: stringValue.toLowerCase()] <br/>
+            return map <br/>
+            } <br/>
+        </i>
+        <br/>
+        This script injects the COMPUTE_VAR environment variable according the CASE parameter value.
+    </p>
+</div>
