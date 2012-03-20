@@ -19,15 +19,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * @author Gregory Boissinot
  */
 @Extension
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
-
-    private static final Logger LOGGER = Logger.getLogger(EnvInjectComputerListener.class.getName());
 
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
@@ -96,7 +93,6 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
                     }
                 }
             }
-
 
             EnvVars envVars2Set = new EnvVars();
             if (!unsetSystemVariables) {

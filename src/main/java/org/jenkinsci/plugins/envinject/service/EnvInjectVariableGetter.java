@@ -1,10 +1,9 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.NodeProperty;
 import hudson.util.LogTaskListener;
 import hudson.util.Secret;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
@@ -31,37 +30,37 @@ public class EnvInjectVariableGetter {
 
     private static Logger LOG = Logger.getLogger(EnvInjectVariableGetter.class.getName());
 
-    public Map<String, String> getJenkinsSystemVariablesCurrentNode(AbstractBuild build) throws IOException, InterruptedException {
+    public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
 
-        //Environment variables
-        result.putAll(build.getEnvironment(new LogTaskListener(LOG, Level.ALL)));
-
-        //Global properties
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                result.putAll(environmentVariablesNodeProperty.getEnvVars());
-            }
+        Computer computer;
+        if (forceOnMaster) {
+            computer = Hudson.getInstance().toComputer();
+        } else {
+            computer = Computer.currentComputer();
         }
 
-        //Node properties
-        Computer computer = Computer.currentComputer();
+        //test if there is at least one executor
         if (computer != null) {
-            Node node = computer.getNode();
-            if (node != null) {
-                for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
-                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                        EnvironmentVariablesNodeProperty environmentVariablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                        result.putAll(environmentVariablesNodeProperty.getEnvVars());
-                    }
-                }
-            }
+            result = computer.getEnvironment().overrideAll(result);
+            Node n = computer.getNode();
+            if (n != null)
+                result.put("NODE_NAME", computer.getName());
+            result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
         }
+
+        String rootUrl = Hudson.getInstance().getRootUrl();
+        if (rootUrl != null) {
+            result.put("JENKINS_URL", rootUrl);
+            result.put("HUDSON_URL", rootUrl); // Legacy compatibility
+        }
+        result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
+        result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
 
         return result;
     }
+
 
     @SuppressWarnings("unchecked")
     public Map<String, String> getBuildVariables(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
@@ -171,7 +170,7 @@ public class EnvInjectVariableGetter {
                 result.putAll(build.getBuildVariables());
             }
         } else {
-            result.putAll(getJenkinsSystemVariablesCurrentNode(build));
+            result.putAll(getJenkinsSystemVariables(false));
             result.putAll(getBuildVariables(build, logger));
         }
         return result;

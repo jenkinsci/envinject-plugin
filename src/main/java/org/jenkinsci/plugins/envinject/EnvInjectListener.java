@@ -1,6 +1,9 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.*;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.model.*;
@@ -46,7 +49,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 //Load job envinject job property
                 if (isEnvInjectJobPropertyActive(build)) {
                     return setUpEnvironmentJobPropertyObject(build, launcher, listener);
+                } else {
+                    return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
                 }
+
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
@@ -213,8 +219,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
             logger.info("Keep Jenkins system variables.");
-            infraEnvVarsMaster.putAll(getJenkinsSystemVariables(true));
-            infraEnvVarsNode.putAll(getJenkinsSystemVariables(false));
+            infraEnvVarsMaster.putAll(variableGetter.getJenkinsSystemVariables(true));
+            infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariables(false));
         }
 
         //Add build variables
@@ -277,6 +283,31 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
+    private Environment setUpEnvironmentWithoutJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+
+        final Map<String, String> resultVariables = new HashMap<String, String>();
+
+        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+        resultVariables.putAll(previousEnvVars);
+
+        resultVariables.putAll(variableGetter.getJenkinsSystemVariables(false));
+        resultVariables.putAll(variableGetter.getBuildVariables(build, logger));
+
+        final FilePath rootPath = getNodeRootPath();
+        if (rootPath != null) {
+            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+        }
+
+        return new Environment() {
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                env.putAll(resultVariables);
+            }
+        };
+    }
+
     private void injectPasswords(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, EnvInjectLogger logger) throws EnvInjectException {
 
         //--Process global passwords
@@ -301,37 +332,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList));
         }
 
-    }
-
-    private Map<String, String> getJenkinsSystemVariables(boolean onMaster) throws IOException, InterruptedException {
-
-        Map<String, String> result = new TreeMap<String, String>();
-
-        Computer computer;
-        if (onMaster) {
-            computer = Hudson.getInstance().toComputer();
-        } else {
-            computer = Computer.currentComputer();
-        }
-
-        //test if there is at least one executor
-        if (computer != null) {
-            result = computer.getEnvironment().overrideAll(result);
-            Node n = computer.getNode();
-            if (n != null)
-                result.put("NODE_NAME", computer.getName());
-            result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
-        }
-
-        String rootUrl = Hudson.getInstance().getRootUrl();
-        if (rootUrl != null) {
-            result.put("JENKINS_URL", rootUrl);
-            result.put("HUDSON_URL", rootUrl); // Legacy compatibility
-        }
-        result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
-        result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
-
-        return result;
     }
 
     private Node getNode() {
