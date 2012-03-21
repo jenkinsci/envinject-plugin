@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
+import hudson.maven.MavenModuleSet;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Callable;
@@ -123,16 +124,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
     @SuppressWarnings("unchecked")
-    private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper) throws EnvInjectException {
+    private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper, EnvInjectLogger logger) throws EnvInjectException {
         try {
             if (buildWrapper != null) {
                 AbstractProject abstractProject = build.getProject();
                 if (abstractProject instanceof MatrixProject) {
                     MatrixProject project = (MatrixProject) abstractProject;
                     project.getBuildWrappersList().add(buildWrapper);
-                } else {
+                } else if (abstractProject instanceof FreeStyleProject) {
                     Project project = (Project) abstractProject;
                     project.getBuildWrappersList().add(buildWrapper);
+                } else if (abstractProject instanceof MavenModuleSet) {
+                    MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
+                    moduleSet.getBuildWrappersList().add(buildWrapper);
+                } else {
+                    logger.error(String.format("Job type %s is not supported by the EnvInject plugin.", abstractProject));
                 }
             }
         } catch (IOException ioe) {
@@ -272,6 +278,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
+            addBuildWrapper(build, new JobSetupEnvironmentWrapper(), logger);
+
             return new Environment() {
                 @Override
                 public void buildEnvVars(Map<String, String> env) {
@@ -329,7 +337,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
         //--Inject passwords
         if (passwordList.size() != 0) {
-            addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList));
+            addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList), logger);
         }
 
     }
@@ -377,7 +385,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Remove technical wrappers
                 try {
-                    removeTechnicalWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
+                    removeTechnicalBuildWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
                 } catch (EnvInjectException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
@@ -418,16 +426,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
     @SuppressWarnings("unchecked")
-    private void removeTechnicalWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
+    private void removeTechnicalBuildWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
 
         AbstractProject abstractProject = build.getProject();
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
         if (abstractProject instanceof MatrixProject) {
             MatrixProject project = (MatrixProject) abstractProject;
             wrappersProject = project.getBuildWrappersList();
-        } else {
+        } else if (abstractProject instanceof FreeStyleProject) {
             Project project = (Project) abstractProject;
             wrappersProject = project.getBuildWrappersList();
+        } else if (abstractProject instanceof MavenModuleSet) {
+            MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
+            wrappersProject = moduleSet.getBuildWrappersList();
+        } else {
+            throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
         }
 
         Iterator<BuildWrapper> iterator = wrappersProject.iterator();
