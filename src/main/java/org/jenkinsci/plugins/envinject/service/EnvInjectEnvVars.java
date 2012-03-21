@@ -166,7 +166,8 @@ public class EnvInjectEnvVars implements Serializable {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
-            entry.setValue(Util.replaceMacro(entry.getValue(), env));
+            String value = Util.replaceMacro(entry.getValue(), env);
+            entry.setValue(value);
         }
 
         //Resolve variables against variables itself
@@ -193,7 +194,7 @@ public class EnvInjectEnvVars implements Serializable {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             if (!isUnresolvedVar(entry.getValue())) {
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey(), removeEscapeDollar(entry.getValue()));
             } else {
                 logger.info(String.format("Unset unresolved '%s' variable.", entry.getKey()));
             }
@@ -202,7 +203,11 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     private boolean isUnresolvedVar(String value) {
-        return value != null && value.contains("$");
+        return value != null && value.contains("$") && !value.contains("\\$");
+    }
+
+    private String removeEscapeDollar(String value) {
+        return value.replace("\\$", "$");
     }
 
 }
