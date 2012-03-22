@@ -92,7 +92,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     }
             );
 
-
             for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
                 if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                     EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
