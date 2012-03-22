@@ -7,6 +7,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
+import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
@@ -56,6 +57,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             //Add workspace if not set
             if (ws != null) {
                 injectedEnvVars.put("WORKSPACE", ws.getRemote());
+            }
+
+            //Add SCM variables if not set
+            SCM scm = build.getProject().getScm();
+            if (scm != null) {
+                scm.buildEnvVars(build, injectedEnvVars);
             }
 
             //Get result variables

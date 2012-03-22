@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -58,6 +59,12 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             //Add workspace if not set
             if (ws != null) {
                 variables.put("WORKSPACE", ws.getRemote());
+            }
+
+            //Add SCM variables if not set
+            SCM scm = build.getProject().getScm();
+            if (scm != null) {
+                scm.buildEnvVars(build, variables);
             }
 
             //Always keep build variables (such as parameter variables).
