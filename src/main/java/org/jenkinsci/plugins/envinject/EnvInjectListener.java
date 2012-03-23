@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
 import hudson.maven.MavenModuleSet;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
@@ -126,18 +127,20 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper, EnvInjectLogger logger) throws EnvInjectException {
         try {
             if (buildWrapper != null) {
-                AbstractProject abstractProject = build.getProject();
-                if (abstractProject instanceof MatrixProject) {
-                    MatrixProject project = (MatrixProject) abstractProject;
+                if (build instanceof MatrixRun) {
+                    MatrixProject project = ((MatrixRun) build).getParentBuild().getProject();
                     project.getBuildWrappersList().add(buildWrapper);
-                } else if (abstractProject instanceof FreeStyleProject) {
-                    Project project = (Project) abstractProject;
-                    project.getBuildWrappersList().add(buildWrapper);
-                } else if (abstractProject instanceof MavenModuleSet) {
-                    MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
-                    moduleSet.getBuildWrappersList().add(buildWrapper);
                 } else {
-                    logger.error(String.format("Job type %s is not supported by the EnvInject plugin.", abstractProject));
+                    AbstractProject abstractProject = build.getProject();
+                    if (abstractProject instanceof FreeStyleProject) {
+                        Project project = (Project) abstractProject;
+                        project.getBuildWrappersList().add(buildWrapper);
+                    } else if (abstractProject instanceof MavenModuleSet) {
+                        MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
+                        moduleSet.getBuildWrappersList().add(buildWrapper);
+                    } else {
+                        logger.error(String.format("Job type %s is not supported by the EnvInject plugin.", abstractProject));
+                    }
                 }
             }
         } catch (IOException ioe) {
@@ -427,19 +430,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @SuppressWarnings("unchecked")
     private void removeTechnicalBuildWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
 
-        AbstractProject abstractProject = build.getProject();
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
-        if (abstractProject instanceof MatrixProject) {
-            MatrixProject project = (MatrixProject) abstractProject;
+        if (build instanceof MatrixRun) {
+            MatrixProject project = ((MatrixRun) build).getParentBuild().getProject();
             wrappersProject = project.getBuildWrappersList();
-        } else if (abstractProject instanceof FreeStyleProject) {
-            Project project = (Project) abstractProject;
-            wrappersProject = project.getBuildWrappersList();
-        } else if (abstractProject instanceof MavenModuleSet) {
-            MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
-            wrappersProject = moduleSet.getBuildWrappersList();
         } else {
-            throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
+            AbstractProject abstractProject = build.getProject();
+            if (abstractProject instanceof FreeStyleProject) {
+                Project project = (Project) abstractProject;
+                wrappersProject = project.getBuildWrappersList();
+            } else if (abstractProject instanceof MavenModuleSet) {
+                MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
+                wrappersProject = moduleSet.getBuildWrappersList();
+            } else {
+                throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
+            }
         }
 
         Iterator<BuildWrapper> iterator = wrappersProject.iterator();
