@@ -18,16 +18,10 @@ public class EnvInjectInfo implements Serializable {
     protected String propertiesFilePath;
     protected String propertiesContent;
 
-    @Deprecated
-    private transient Map<String, String> propertiesContentMap;
-
-    @Deprecated
-    protected transient boolean populateTriggerCause;
-
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
         this.propertiesFilePath = Util.fixEmpty(propertiesFilePath);
-        this.propertiesContent = Util.fixEmpty(propertiesContent);
+        this.propertiesContent = fixCrLf(Util.fixEmpty(propertiesContent));
     }
 
     public String getPropertiesFilePath() {
@@ -65,5 +59,25 @@ public class EnvInjectInfo implements Serializable {
 
         return null;
     }
+
+    /**
+     * Fix CR/LF and always make it Unix style.
+     */
+    protected String fixCrLf(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        // eliminate CR
+        int idx;
+        while ((idx = s.indexOf("\r\n")) != -1)
+            s = s.substring(0, idx) + s.substring(idx + 1);
+        return s;
+    }
+
+    @Deprecated
+    private transient Map<String, String> propertiesContentMap;
+    @Deprecated
+    protected transient boolean populateTriggerCause;
 
 }

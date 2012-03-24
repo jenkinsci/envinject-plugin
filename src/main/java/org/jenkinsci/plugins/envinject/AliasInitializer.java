@@ -14,6 +14,8 @@ public class AliasInitializer {
     public static void addAliases() {
         Items.XSTREAM.alias("EnvInjectJobProperty", EnvInjectJobProperty.class);
         Items.XSTREAM.alias("EnvInjectBuildWrapper", EnvInjectBuildWrapper.class);
+        Items.XSTREAM.alias("EnvInjectPasswordWrapper", EnvInjectPasswordWrapper.class);
+        Items.XSTREAM.alias("EnvInjectPasswordEntry", EnvInjectPasswordEntry.class);
         Items.XSTREAM.alias("EnvInjectBuilder", EnvInjectBuilder.class);
     }
 }

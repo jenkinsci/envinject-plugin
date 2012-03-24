@@ -5,9 +5,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixProject;
-import hudson.matrix.MatrixRun;
-import hudson.maven.MavenModuleSet;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Callable;
@@ -15,19 +12,16 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.util.DescribableList;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.buildwrapper.EnvInjectPasswordWrapper;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.envinject.service.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author Gregory Boissinot
@@ -123,30 +117,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void addBuildWrapper(AbstractBuild build, BuildWrapper buildWrapper, EnvInjectLogger logger) throws EnvInjectException {
-        try {
-            if (buildWrapper != null) {
-                if (build instanceof MatrixRun) {
-                    MatrixProject project = ((MatrixRun) build).getParentBuild().getProject();
-                    project.getBuildWrappersList().add(buildWrapper);
-                } else {
-                    AbstractProject abstractProject = build.getProject();
-                    if (abstractProject instanceof FreeStyleProject) {
-                        Project project = (Project) abstractProject;
-                        project.getBuildWrappersList().add(buildWrapper);
-                    } else if (abstractProject instanceof MavenModuleSet) {
-                        MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
-                        moduleSet.getBuildWrappersList().add(buildWrapper);
-                    } else {
-                        logger.error(String.format("Job type %s is not supported by the EnvInject plugin.", abstractProject));
-                    }
-                }
-            }
-        } catch (IOException ioe) {
-            throw new EnvInjectException(ioe);
-        }
-    }
 
     private boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
@@ -239,8 +209,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             infraEnvVarsNode.putAll(buildVariables);
         }
 
-        //Inject Passwords
-        injectPasswords(build, envInjectJobProperty, logger);
 
         //Add build parameters (or override)
         Map<String, String> parametersVariables = variableGetter.overrideParametersVariablesWithSecret(build);
@@ -280,7 +248,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
-            addBuildWrapper(build, new JobSetupEnvironmentWrapper(), logger);
+            BuildWrapperService wrapperService = new BuildWrapperService();
+            wrapperService.addBuildWrapper(build, new JobSetupEnvironmentWrapper());
 
             return new Environment() {
                 @Override
@@ -316,32 +285,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 env.putAll(resultVariables);
             }
         };
-    }
-
-    private void injectPasswords(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, EnvInjectLogger logger) throws EnvInjectException {
-
-        //--Process global passwords
-        List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
-        if (envInjectJobProperty.isInjectGlobalPasswords()) {
-            logger.info("Inject global passwords.");
-            EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
-            EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
-            if (passwordEntries != null) {
-                for (EnvInjectGlobalPasswordEntry entry : passwordEntries) {
-                    passwordList.add(entry);
-                }
-            }
-        }
-
-        //--Process job passwords
-        if (envInjectJobProperty.getPasswordEntries() != null && envInjectJobProperty.getPasswordEntries().length != 0) {
-            passwordList.addAll(Arrays.asList(envInjectJobProperty.getPasswordEntries()));
-        }
-        //--Inject passwords
-        if (passwordList.size() != 0) {
-            addBuildWrapper(build, new EnvInjectPasswordWrapper(passwordList), logger);
-        }
-
     }
 
     private Node getNode() {
@@ -387,7 +330,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                 //Remove technical wrappers
                 try {
-                    removeTechnicalBuildWrappers(build, JobSetupEnvironmentWrapper.class, EnvInjectPasswordWrapper.class);
+                    BuildWrapperService wrapperService = new BuildWrapperService();
+                    wrapperService.removeBuildWrappers(build, JobSetupEnvironmentWrapper.class);
                 } catch (EnvInjectException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
@@ -408,7 +352,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
 
             //Mask passwords
-            maskPasswordsIfAny(build, logger, envVars);
+            EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
+            passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
 
             //Add or override EnvInject Action
             EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
@@ -424,70 +369,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 logger.error("SEVERE ERROR occurs: " + e.getMessage());
                 throw new Run.RunnerAbortedException();
             }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void removeTechnicalBuildWrappers(AbstractBuild build, Class<JobSetupEnvironmentWrapper> jobSetupEnvironmentWrapperClass, Class<EnvInjectPasswordWrapper> envInjectPasswordWrapperClass) throws EnvInjectException {
-
-        DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
-        if (build instanceof MatrixRun) {
-            MatrixProject project = ((MatrixRun) build).getParentBuild().getProject();
-            wrappersProject = project.getBuildWrappersList();
-        } else {
-            AbstractProject abstractProject = build.getProject();
-            if (abstractProject instanceof FreeStyleProject) {
-                Project project = (Project) abstractProject;
-                wrappersProject = project.getBuildWrappersList();
-            } else if (abstractProject instanceof MavenModuleSet) {
-                MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
-                wrappersProject = moduleSet.getBuildWrappersList();
-            } else {
-                throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
-            }
-        }
-
-        Iterator<BuildWrapper> iterator = wrappersProject.iterator();
-        while (iterator.hasNext()) {
-            BuildWrapper buildWrapper = iterator.next();
-            if ((((jobSetupEnvironmentWrapperClass.getName()).equals(buildWrapper.getClass().getName()))
-                    || ((envInjectPasswordWrapperClass.getName()).equals(buildWrapper.getClass().getName())))) {
-                try {
-                    wrappersProject.remove(buildWrapper);
-                } catch (IOException ioe) {
-                    throw new EnvInjectException(ioe);
-                }
-            }
-        }
-    }
-
-    private void maskPasswordsIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
-        try {
-
-            //Global passwords
-            EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
-            EnvInjectGlobalPasswordEntry[] globalPasswordEntries = globalPasswordRetriever.getGlobalPasswords();
-            if (globalPasswordEntries != null) {
-                for (EnvInjectGlobalPasswordEntry globalPasswordEntry : globalPasswordEntries) {
-                    envVars.put(globalPasswordEntry.getName(),
-                            globalPasswordEntry.getValue().getEncryptedValue());
-                }
-            }
-
-            //Job passwords
-            if (isEnvInjectJobPropertyActive(build)) {
-                EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-                EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
-                EnvInjectPasswordEntry[] passwordEntries = envInjectJobProperty.getPasswordEntries();
-                if (passwordEntries != null) {
-                    for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
-                        envVars.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
-                    }
-                }
-            }
-
-        } catch (EnvInjectException ee) {
-            logger.error("Can't mask global password :" + ee.getMessage());
         }
     }
 

@@ -17,8 +17,8 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
     public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, String groovyScriptContent, boolean loadFilesFromMaster) {
         super(propertiesFilePath, propertiesContent);
         this.scriptFilePath = Util.fixEmpty(scriptFilePath);
-        this.scriptContent = Util.fixEmpty(scriptContent);
-        this.groovyScriptContent = Util.fixEmpty(groovyScriptContent);
+        this.scriptContent = fixCrLf(Util.fixEmpty(scriptContent));
+        this.groovyScriptContent = fixCrLf(Util.fixEmpty(groovyScriptContent));
         this.loadFilesFromMaster = loadFilesFromMaster;
     }
 

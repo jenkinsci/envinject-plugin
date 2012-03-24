@@ -3,10 +3,7 @@ package org.jenkinsci.plugins.envinject;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -18,6 +15,7 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +34,11 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
+    }
+
+    @Override
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
+        return super.decorateLogger(build, logger);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override
