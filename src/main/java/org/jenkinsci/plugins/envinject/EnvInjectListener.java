@@ -33,18 +33,18 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (!(build instanceof MatrixBuild)) {
             EnvInjectLogger logger = new EnvInjectLogger(listener);
-            logger.info("Preparing an environment for the build.");
+
             try {
 
                 //Process environment variables at node level
                 Node buildNode = build.getBuiltOn();
                 if (buildNode != null) {
-                    loadEnvironmentVariablesNode(build, buildNode, listener);
+                    loadEnvironmentVariablesNode(build, buildNode, logger);
                 }
 
                 //Load job envinject job property
                 if (isEnvInjectJobPropertyActive(build)) {
-                    return setUpEnvironmentJobPropertyObject(build, launcher, listener);
+                    return setUpEnvironmentJobPropertyObject(build, launcher, listener, logger);
                 } else {
                     return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
                 }
@@ -62,7 +62,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, BuildListener listener) throws EnvInjectException {
+    private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, EnvInjectLogger logger) throws EnvInjectException {
+
+        logger.info("Loading node environment variables.");
 
         if (buildNode == null) {
             return;
@@ -74,7 +76,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         try {
-            EnvInjectLogger logger = new EnvInjectLogger(listener);
+
             //Default node envVars
             Map<String, String> configNodeEnvVars = new HashMap<String, String>();
 
@@ -179,15 +181,15 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
+
+        logger.info("Preparing an environment for the build.");
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         assert envInjectJobProperty != null;
         EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
         assert envInjectJobProperty != null && envInjectJobProperty.isOn();
-
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
 
         //Init infra env vars
         Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
