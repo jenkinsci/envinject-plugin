@@ -39,6 +39,38 @@ public class EnvInjectVarList implements Serializable {
     @SuppressWarnings("unused")
     public void doExport(StaplerRequest request, StaplerResponse response) throws IOException {
 
+        String path = request.getPathInfo();
+        if (path != null) {
+            doExportWithPath(path, request, response);
+            return;
+        }
+
+        doExportHeaders(request, response);
+    }
+
+
+    private void doExportWithPath(String path, StaplerRequest request, StaplerResponse response) throws IOException {
+
+        if (path.endsWith("text")) {
+            writeTextResponse(response);
+            return;
+        }
+
+        if (path.endsWith("xml")) {
+            writeXmlResponse(response);
+            return;
+        }
+
+        if (path.endsWith("json")) {
+            writeJsonResponse(response);
+            return;
+        }
+
+        doExportHeaders(request, response);
+    }
+
+    private void doExportHeaders(StaplerRequest request, StaplerResponse response) throws IOException {
+
         String acceptHeader = request.getHeader("Accept");
 
         if (acceptHeader == null) {
