@@ -327,9 +327,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             EnvVars envVars = new EnvVars();
             EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-            EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
-            if (envInjectAction != null) {
-
+            //Load job envinject job property
+            if (isEnvInjectJobPropertyActive(build)) {
                 //Remove technical wrappers
                 try {
                     BuildWrapperService wrapperService = new BuildWrapperService();
