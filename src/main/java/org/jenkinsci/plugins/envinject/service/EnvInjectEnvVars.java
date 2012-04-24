@@ -9,6 +9,7 @@ import hudson.model.Hudson;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -157,7 +158,7 @@ public class EnvInjectEnvVars implements Serializable {
         variables.putAll(contribEnvVars);
         variables.putAll(propertiesEnvVars);
 
-        //4-- Remove unset variables and return the resullt
+        //4-- Remove unset variables
         return removeUnsetVars(variables);
     }
 
@@ -207,7 +208,11 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     private String removeEscapeDollar(String value) {
-        return value.replace("\\$", "$");
+        //We replace escaped $ unless we are on Windows (Unix only)
+        if ('/' == File.separatorChar) { //unix test
+            return value.replace("\\$", "$");
+        }
+        return value;
     }
 
 }
