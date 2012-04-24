@@ -61,10 +61,20 @@ public class EnvInjectAction implements Action, StaplerProxy {
 
     @SuppressWarnings("unused")
     private Object writeReplace() throws ObjectStreamException {
+
+        if (envMap == null) {
+            return this;
+        }
+
+        if (envMap.size() == 0) {
+            return this;
+        }
+
         try {
             EnvInjectSaveable dao = new EnvInjectSaveable();
             if (rootDir == null) {
                 dao.saveEnvironment(build.getRootDir(), envMap);
+                return this;
             }
             dao.saveEnvironment(rootDir, envMap);
         } catch (EnvInjectException e) {
