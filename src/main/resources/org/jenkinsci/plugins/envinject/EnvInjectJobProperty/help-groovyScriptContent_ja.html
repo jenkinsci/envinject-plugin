@@ -1,0 +1,29 @@
+<div>
+    <p>
+        Groovyスクリプトを評価しMapをインジェクトしますので、JavaのMapを戻り値とする必要があります。
+    </p>
+    <p>
+        Groovyスクリプトでは、パラメータや他の環境変数にGroovyの変数経由でアクセスすることができます。
+        例えば、次のようにユーザーの入力から環境変数を設定することができます。 
+    </p>    
+    <pre><code>
+            if (CASE==null) {
+              return null; 
+            } 
+
+            def stringValue="StRinG"; 
+
+            if ("upper".equals(CASE)) { 
+              def map = [COMPUTE_VAR: stringValue.toUpperCase()]
+              return map 
+            } 
+
+            if ("lower".equals(CASE)) { 
+              def map = [COMPUTE_VAR: stringValue.toLowerCase()] 
+              return map 
+            } 
+        </code></pre>
+    <p>
+        このスクリプトは、パラメータ<code>CASE</code>の値によって、環境変数<code>COMPUTE_VAR</code>をインジェクトします。
+    </p>
+</div>

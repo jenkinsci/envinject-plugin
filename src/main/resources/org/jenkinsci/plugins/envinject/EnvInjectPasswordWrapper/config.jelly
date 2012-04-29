@@ -9,19 +9,19 @@
                 checked="${instance.injectGlobalPasswords}" default="${false}"/>
     </f:entry>
 
-    <f:entry title="Job passwords"
+    <f:entry title="${%Job passwords}"
              description="${%Passwords list}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/jobPasswords">
 
         <f:repeatable var="passwordEntry" items="${instance.passwordEntries}">
             <table width="100%">
 
-                <f:entry title="Name"
+                <f:entry title="${%Name}"
                          help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
                     <f:textbox name="envInjectPasswordEntry.name" value="${passwordEntry.name}"/>
                 </f:entry>
 
-                <f:entry title="Passowrd"
+                <f:entry title="${%Passowrd}"
                          help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
                     <f:password name="envInjectPasswordEntry.password" value="${passwordEntry.value}"/>
                 </f:entry>

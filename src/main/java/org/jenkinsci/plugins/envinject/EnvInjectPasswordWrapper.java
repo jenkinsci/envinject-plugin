@@ -185,7 +185,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
         @Override
         public String getDisplayName() {
-            return "Inject passwords to the build as environment variables";
+            return Messages.EnvInjectPasswordWrapper_DisplayName();
         }
 
         @Override
