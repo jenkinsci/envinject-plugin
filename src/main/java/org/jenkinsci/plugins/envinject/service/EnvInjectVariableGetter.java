@@ -6,10 +6,8 @@ import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.util.LogTaskListener;
 import hudson.util.Secret;
-import org.jenkinsci.lib.envinject.EnvInjectAction;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.lib.envinject.service.EnvInjectActionRetriever;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
@@ -17,7 +15,6 @@ import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -164,7 +161,7 @@ public class EnvInjectVariableGetter {
 
         EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
-            result.putAll(getCurrentInjectedEnvVars(build));
+            result.putAll(getCurrentInjectedEnvVars(envInjectAction));
             //Add build variables with axis for a MatrixRun
             if (build instanceof MatrixRun) {
                 result.putAll(build.getBuildVariables());
@@ -176,16 +173,9 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private Map<String, String> getCurrentInjectedEnvVars(AbstractBuild<?, ?> build) {
-        EnvInjectActionRetriever retriever = new EnvInjectActionRetriever();
-        EnvInjectAction envInjectAction = retriever.getEnvInjectAction(build);
-        Map<String, String> result = new LinkedHashMap<String, String>();
-        if (envInjectAction == null) {
-            return result;
-        } else {
-            result.putAll(envInjectAction.getEnvMap());
-            return result;
-        }
+    private Map<String, String> getCurrentInjectedEnvVars(EnvInjectPluginAction envInjectPluginAction) {
+        Map<String, String> envVars = envInjectPluginAction.getEnvMap();
+        return (envVars) == null ? new HashMap<String, String>() : envVars;
     }
 
 }
