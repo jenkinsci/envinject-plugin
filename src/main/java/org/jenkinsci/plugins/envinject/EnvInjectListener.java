@@ -218,14 +218,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
-            logger.info("Keep Jenkins system variables.");
+            logger.info("Keeping Jenkins system variables.");
             infraEnvVarsMaster.putAll(variableGetter.getJenkinsSystemVariables(true));
             infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariables(false));
         }
 
         //Add build variables
         if (envInjectJobProperty.isKeepBuildVariables()) {
-            logger.info("Keep Jenkins build variables.");
+            logger.info("Keeping Jenkins build variables.");
             Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
             infraEnvVarsMaster.putAll(buildVariables);
             infraEnvVarsNode.putAll(buildVariables);
@@ -233,6 +233,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
 
         //Add build parameters (or override)
+        logger.info("Adding build parameters as variables.");
         Map<String, String> parametersVariables = variableGetter.overrideParametersVariablesWithSecret(build);
         infraEnvVarsNode.putAll(parametersVariables);
 
@@ -259,7 +260,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     infraEnvVarsMaster, infraEnvVarsNode);
 
             //Get variables get by contribution
-            Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, listener);
+            Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, logger, listener);
 
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(
                     infraEnvVarsNode,
@@ -325,13 +326,15 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-    private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty, BuildListener listener) throws EnvInjectException {
+    private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty,
+                                                         EnvInjectLogger logger, BuildListener listener) throws EnvInjectException {
 
         assert envInjectJobProperty != null;
         Map<String, String> contributionVariables = new HashMap<String, String>();
 
         EnvInjectJobPropertyContributor[] contributors = envInjectJobProperty.getContributors();
         if (contributors != null) {
+            logger.info("Injecting contributions.");
             for (EnvInjectJobPropertyContributor contributor : contributors) {
                 contributionVariables.putAll(contributor.getEnvVars(build, listener));
             }
