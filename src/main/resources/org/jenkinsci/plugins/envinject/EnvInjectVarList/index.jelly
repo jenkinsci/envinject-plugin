@@ -12,11 +12,18 @@
             <h1>${%Build} #${build.number}</h1>
             <h2>${%Injected environment variables}</h2>
             <j:choose>
-                <j:when test="${it.envMap.isEmpty()}">
-                    ${%No environment variables were been injected}.
+                <j:when test="${build.isBuilding()}">
+                    ${%The job is building. Waiting for the end of the build to display environment variables}.
                 </j:when>
                 <j:otherwise>
-                    <t:propertyTable items="${it.envMap}"/>
+                    <j:choose>
+                        <j:when test="${it.envMap.isEmpty()}">
+                            ${%No environment variables were been injected}.
+                        </j:when>
+                        <j:otherwise>
+                            <t:propertyTable items="${it.envMap}"/>
+                        </j:otherwise>
+                    </j:choose>
                 </j:otherwise>
             </j:choose>
         </l:main-panel>
