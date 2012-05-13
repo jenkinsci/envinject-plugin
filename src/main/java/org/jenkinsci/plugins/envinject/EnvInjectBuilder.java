@@ -1,10 +1,12 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -23,8 +25,6 @@ import java.util.Map;
  * @author Gregory Boissinot
  */
 public class EnvInjectBuilder extends Builder implements Serializable {
-
-    public static final String ENVINJECT_BUILDER_ACTION_NAME = "EnvInjectBuilderaction";
 
     private EnvInjectInfo info;
 
@@ -78,23 +78,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(variables, propertiesEnvVars);
 
             //Set the new build variables map
-            build.addAction(new EnvironmentContributingAction() {
-                public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-                    env.putAll(resultVariables);
-                }
-
-                public String getIconFileName() {
-                    return null;
-                }
-
-                public String getDisplayName() {
-                    return ENVINJECT_BUILDER_ACTION_NAME;
-                }
-
-                public String getUrlName() {
-                    return null;
-                }
-            });
+            build.addAction(new EnvInjectBuilderContributionAction(resultVariables));
 
             //Add or get the existing action to add new env vars
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
