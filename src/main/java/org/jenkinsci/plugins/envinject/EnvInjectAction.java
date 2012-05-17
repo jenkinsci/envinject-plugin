@@ -70,6 +70,10 @@ public class EnvInjectAction implements Action, StaplerProxy {
             return this;
         }
 
+        if (build==null){
+            return this;
+        }
+
         try {
             EnvInjectSaveable dao = new EnvInjectSaveable();
             if (rootDir == null) {
