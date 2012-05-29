@@ -189,7 +189,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     //Set new env vars
                     new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, previousEnvVars);
                 } catch (EnvInjectException e) {
-                    throw new IOException(e);
+                    throw new IOException(e.getMessage());
                 }
             }
         }
