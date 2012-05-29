@@ -20,9 +20,8 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
 
     public abstract Map<String, String> getEnvVars(AbstractBuild build, TaskListener listener) throws EnvInjectException;
 
-    @Override
     public Descriptor<EnvInjectJobPropertyContributor> getDescriptor() {
-        return (Descriptor<EnvInjectJobPropertyContributor>) Hudson.getInstance().getDescriptor(getClass());
+        return Hudson.getInstance().getDescriptor(getClass());
     }
 
     @SuppressWarnings("unused")

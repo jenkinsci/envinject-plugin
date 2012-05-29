@@ -62,7 +62,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             }
 
         } catch (EnvInjectException envEx) {
-            throw new IOException(envEx);
+            throw new IOException(envEx.getMessage());
         }
 
         return result;
