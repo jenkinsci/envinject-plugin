@@ -268,6 +268,33 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     groovyMapEnvVars,
                     contributionVariables);
 
+            // Execute Groovy script content variables
+            String[] groovyScriptContentVariableNames = split(info.getGroovyScriptContentEnvVariables());
+            for (String groovyScriptContentVar : groovyScriptContentVariableNames) {
+            	if (groovyScriptContentVar.trim().length() > 0) {
+            		String scriptContent = resultVariables.get(groovyScriptContentVar);
+            		Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(scriptContent, resultVariables);
+            		resultVariables.putAll(newEnvVars);
+            	}
+            }
+            
+            // Execute Groovy script file variables
+            String[] groovyScriptFiles = split(info.getGroovyScriptFiles());
+            for (String groovyScriptFile : groovyScriptFiles) {
+            	if (groovyScriptFile.trim().length() > 0) {
+            		Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScriptFile(
+            				groovyScriptFile,
+            				info.isLoadFilesFromMaster(),
+            				rootPath,
+            				resultVariables,
+            				infraEnvVarsMaster,
+            				infraEnvVarsNode);
+            		resultVariables.putAll(newEnvVars);
+            	}
+            }
+            
+            envInjectEnvVarsService.resolveVars(resultVariables, new HashMap<String, String>());
+            
             //Add an action
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
@@ -284,6 +311,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return new Environment() {
         };
     }
+    
+    private String[] split(String commaOrSpaceSeparated) {
+    	return commaOrSpaceSeparated != null ? commaOrSpaceSeparated.split(",| ") : new String[0];
+	}
 
     private Environment setUpEnvironmentWithoutJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
 
