@@ -1,8 +1,8 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.EnvVars;
-import hudson.model.EnvironmentContributingAction;
 import hudson.model.AbstractBuild;
+import hudson.model.EnvironmentContributingAction;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 
 import java.util.Map;
@@ -21,7 +21,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
     }
 
     public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-      EnvInjectVarList varList = (EnvInjectVarList) getTarget();
-      env.putAll(varList.getEnvMap());
+        EnvInjectVarList varList = (EnvInjectVarList) getTarget();
+        env.putAll(varList.getEnvMap());
     }
 }
