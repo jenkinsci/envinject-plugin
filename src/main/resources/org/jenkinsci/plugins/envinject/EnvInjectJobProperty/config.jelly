@@ -37,6 +37,20 @@
                     name="envInjectInfoJobProperty.groovyScriptContent"
                     value="${instance.info.groovyScriptContent}"/>
         </f:entry>
+        
+        <f:entry title="${%Evaluated Groovy script content environment variables}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContentEnvVariables">
+            <f:textbox
+                    name="envInjectInfoJobProperty.groovyScriptContentEnvVariables"
+                    value="${instance.info.groovyScriptContentEnvVariables}"/>
+        </f:entry>
+        
+        <f:entry title="${%Evaluated Groovy script files}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptFiles">
+            <f:textbox
+                    name="envInjectInfoJobProperty.groovyScriptFiles"
+                    value="${instance.info.groovyScriptFiles}"/>
+        </f:entry>
 
         <f:entry
                 title="${%Properties File Path}"

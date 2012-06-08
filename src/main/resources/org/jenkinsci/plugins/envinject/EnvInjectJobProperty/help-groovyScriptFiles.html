@@ -1,0 +1,15 @@
+<div>
+    <p>
+        Evaluate Groovy script files and inject the
+        key value pairs returned in their result maps into the environment variable pool.<br/>
+        Enter a comma/space separated list of paths, possibly including variable macros.
+        Example: ${path_to_script_foo}, ${path_to_script_bar}, path_relative_to_hudson_home_on_the_node_or_master/script.groovy, /absolute_path_on_the_node_or_the_master/script.groovy<br/>
+        Paths may be relative to the Hudson home directory or be absolute paths, and are
+        evaluated on the node or on the master depending on the "Load script and properties files from the master"
+        option.<br/>
+        The Groovy scripts must return a Java map object.<br/>
+        You can access parameters and other environment variables through variables in the Groovy script.<br/>
+        This is especially useful to trigger Groovy scripts set by the SharedObjects plugin.<br/> 
+        Note: the scripts are expected to be UTF-8 encoded.
+    </p>
+</div>

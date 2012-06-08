@@ -9,6 +9,7 @@ import hudson.model.Hudson;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -119,6 +120,34 @@ public class EnvInjectEnvVars implements Serializable {
         }
         return result;
 
+    }
+    
+    public Map<String, String> executeAndGetMapGroovyScriptFile(
+    		String scriptFile,
+    		boolean loadFromMaster,
+    		FilePath nodeRootPath,
+    		Map<String, String> scriptEnvVars,
+    		Map<String, String> masterEnvVars,
+    		Map<String, String> nodeEnvVars) throws EnvInjectException {
+
+    	if (scriptFile.trim().length() == 0) {
+    		return new HashMap<String, String>();
+    	}
+    	String resolvedScriptFile = Util.replaceMacro(scriptFile, loadFromMaster ? masterEnvVars : nodeEnvVars);
+    	resolvedScriptFile = Util.replaceMacro(resolvedScriptFile, scriptEnvVars);
+        logger.info(String.format("Evaluating the following Groovy script file: \n%s\n", resolvedScriptFile));
+        FilePath root = loadFromMaster ? Hudson.getInstance().getRootPath() : nodeRootPath;
+		FilePath groovyScriptPath = new FilePath(root, resolvedScriptFile);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			groovyScriptPath.copyTo(baos);
+			String scriptContent = new String(baos.toByteArray(), "UTF-8");
+			return executeAndGetMapGroovyScript(scriptContent, scriptEnvVars);
+		} catch (IOException e) {
+			throw new EnvInjectException(e);
+        } catch (InterruptedException e) {
+            throw new EnvInjectException(e);
+        }
     }
 
     public int executeScript(
