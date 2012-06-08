@@ -268,30 +268,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     groovyMapEnvVars,
                     contributionVariables);
 
-            // Execute Groovy script content variables
-            String[] groovyScriptContentVariableNames = split(info.getGroovyScriptContentEnvVariables());
-            for (String groovyScriptContentVar : groovyScriptContentVariableNames) {
-            	if (groovyScriptContentVar.trim().length() > 0) {
-            		String scriptContent = resultVariables.get(groovyScriptContentVar);
-            		Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(scriptContent, resultVariables);
-            		resultVariables.putAll(newEnvVars);
-            	}
-            }
+            executeGroovyScriptContentVariables(logger, info, envInjectEnvVarsService, resultVariables);
             
-            // Execute Groovy script file variables
-            String[] groovyScriptFiles = split(info.getGroovyScriptFiles());
-            for (String groovyScriptFile : groovyScriptFiles) {
-            	if (groovyScriptFile.trim().length() > 0) {
-            		Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScriptFile(
-            				groovyScriptFile,
-            				info.isLoadFilesFromMaster(),
-            				rootPath,
-            				resultVariables,
-            				infraEnvVarsMaster,
-            				infraEnvVarsNode);
-            		resultVariables.putAll(newEnvVars);
-            	}
-            }
+            executeGroovyScriptFileVariables(info, infraEnvVarsNode, infraEnvVarsMaster, rootPath,
+					envInjectEnvVarsService, resultVariables);
             
             envInjectEnvVarsService.resolveVars(resultVariables, new HashMap<String, String>());
             
@@ -311,6 +291,53 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return new Environment() {
         };
     }
+
+	private void executeGroovyScriptFileVariables(
+			EnvInjectJobPropertyInfo info,
+			Map<String, String> infraEnvVarsNode,
+			Map<String, String> infraEnvVarsMaster,
+			FilePath rootPath,
+			EnvInjectEnvVars envInjectEnvVarsService,
+			Map<String, String> resultVariables) throws EnvInjectException {
+		
+		String[] groovyScriptFiles = split(info.getGroovyScriptFiles());
+		for (String groovyScriptFile : groovyScriptFiles) {
+			if (groovyScriptFile.trim().length() > 0) {
+				Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScriptFile(
+						groovyScriptFile,
+						info.isLoadFilesFromMaster(),
+						rootPath,
+						resultVariables,
+						infraEnvVarsMaster,
+						infraEnvVarsNode);
+				resultVariables.putAll(newEnvVars);
+			}
+		}
+	}
+
+	private void executeGroovyScriptContentVariables(
+			EnvInjectLogger logger,
+			EnvInjectJobPropertyInfo info,
+			EnvInjectEnvVars envInjectEnvVarsService,
+			Map<String, String> resultVariables) throws EnvInjectException {
+		
+		String[] groovyScriptContentVariableNames = split(info.getGroovyScriptContentEnvVariables());
+		for (String groovyScriptContentVar : groovyScriptContentVariableNames) {
+			if (groovyScriptContentVar.trim().length() > 0) {
+				if (!resultVariables.containsKey(groovyScriptContentVar)) {
+					logger.info("Missing Groovy script content environment variable: " +  groovyScriptContentVar);
+				} else {
+					String scriptContent = resultVariables.get(groovyScriptContentVar);
+					if (scriptContent == null || scriptContent.trim().length() == 0) {
+						logger.info("Empty Groovy script content environment variable: " +  groovyScriptContentVar);
+					} else {
+						Map<String, String> newEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(scriptContent, resultVariables);
+						resultVariables.putAll(newEnvVars);
+					}
+				}
+			}
+		}
+	}
     
     private String[] split(String commaOrSpaceSeparated) {
     	return commaOrSpaceSeparated != null ? commaOrSpaceSeparated.split(",| ") : new String[0];
