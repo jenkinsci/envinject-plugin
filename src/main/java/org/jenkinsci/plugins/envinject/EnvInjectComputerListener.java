@@ -9,6 +9,7 @@ import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -56,6 +57,11 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
             //Global Properties
             for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+
+                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                    globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
+                }
+
                 if (nodeProperty instanceof EnvInjectNodeProperty) {
 
                     Map<String, String> masterEnvVars = new HashMap<String, String>();
@@ -84,12 +90,15 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             //Specific nodeProperties can overrides the value if this is a slave
             if (slave != null) {
                 for (NodeProperty<?> nodeProperty : c.getNode().getNodeProperties()) {
+
+                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                        globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
+                    }
+
                     if (nodeProperty instanceof EnvInjectNodeProperty) {
                         EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                         unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                        //Add global properties
                         globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
-
                     }
                 }
             }
