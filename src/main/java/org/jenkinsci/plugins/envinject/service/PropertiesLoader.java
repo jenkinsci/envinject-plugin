@@ -39,7 +39,6 @@ public class PropertiesLoader implements Serializable {
         try {
             String fileContent = Util.loadFile(propertiesFile);
             String fileContentResolved = Util.replaceMacro(fileContent, currentEnvVars);
-            fileContentResolved = processPath(fileContentResolved);
             properties.load(new StringReader(fileContentResolved));
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
@@ -67,8 +66,6 @@ public class PropertiesLoader implements Serializable {
             return null;
         }
 
-        content = processPath(content);
-
         Map<String, String> result = new LinkedHashMap<String, String>();
         StringReader stringReader = new StringReader(content);
         SortedProperties properties = new SortedProperties();
@@ -90,7 +87,7 @@ public class PropertiesLoader implements Serializable {
         if (prop == null) {
             return null;
         }
-        return String.valueOf(prop).trim();
+        return processPath(String.valueOf(prop).trim());
     }
 
     private String processPath(String content) {
