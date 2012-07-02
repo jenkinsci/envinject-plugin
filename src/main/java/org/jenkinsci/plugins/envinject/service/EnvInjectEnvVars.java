@@ -143,6 +143,9 @@ public class EnvInjectEnvVars implements Serializable {
                                                   Map<String, String> groovyMapEnvVars,
                                                   Map<String, String> contribEnvVars) {
 
+        //0-- Pre-resolve infraEnv vars
+        resolveVars(infraEnvVars, infraEnvVars);
+
         //1--Resolve properties against infraEnvVars
         resolveVars(propertiesEnvVars, infraEnvVars);
 
