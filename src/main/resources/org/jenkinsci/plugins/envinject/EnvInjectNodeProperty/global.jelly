@@ -14,7 +14,7 @@
 
                     <f:entry title="${%Passowrd}"
                              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
-                        <f:password name="envInject.password" value="${inst.value}"  />
+                        <f:password name="envInject.password" value="${inst.value}"/>
                     </f:entry>
 
                     <f:entry title="">

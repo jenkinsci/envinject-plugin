@@ -70,7 +70,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
             return this;
         }
 
-        if (build==null){
+        if (build == null) {
             return this;
         }
 
