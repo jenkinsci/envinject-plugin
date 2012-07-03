@@ -60,6 +60,9 @@ public class EnvInjectPasswordsMasker implements Serializable {
             } else if (abstractProject instanceof MavenModuleSet) {
                 MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
                 wrappersProject = moduleSet.getBuildWrappersList();
+            } else if (Hudson.getInstance().getPlugin("ivy") != null && abstractProject instanceof hudson.ivy.IvyModuleSet) {
+                hudson.ivy.IvyModuleSet ivyModuleSet = (hudson.ivy.IvyModuleSet) abstractProject;
+                wrappersProject = ivyModuleSet.getBuildWrappersList();
             } else {
                 throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
             }

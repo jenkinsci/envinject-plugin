@@ -69,6 +69,9 @@ public class BuildWrapperService implements Serializable {
             } else if (abstractProject instanceof MavenModuleSet) {
                 MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
                 return moduleSet.getBuildWrappersList();
+            } else if (Hudson.getInstance().getPlugin("ivy") != null && abstractProject instanceof hudson.ivy.IvyModuleSet) {
+                hudson.ivy.IvyModuleSet ivyModuleSet = (hudson.ivy.IvyModuleSet) abstractProject;
+                return ivyModuleSet.getBuildWrappersList();
             } else {
                 throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
             }
