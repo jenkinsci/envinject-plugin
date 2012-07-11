@@ -54,7 +54,6 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
                     }
             );
 
-
             //Global Properties
             for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
 
@@ -87,6 +86,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
 
             Node slave = Hudson.getInstance().getNode(c.getName());
+
             //Specific nodeProperties can overrides the value if this is a slave
             if (slave != null) {
                 for (NodeProperty<?> nodeProperty : c.getNode().getNodeProperties()) {
@@ -102,6 +102,9 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
                     }
                 }
             }
+
+            //Resolve against node env vars
+            envInjectEnvVarsService.resolveVars(globalPropertiesEnvVars, nodeEnvVars);
 
             EnvVars envVars2Set = new EnvVars();
             if (!unsetSystemVariables) {
