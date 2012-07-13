@@ -19,8 +19,10 @@ public class EnvInjectBuilderContributionAction implements EnvironmentContributi
         this.resultVariables = resultVariables;
     }
 
-    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-        env.putAll(resultVariables);
+    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars envVars) {
+        if (envVars != null) {
+            envVars.putAll(resultVariables);
+        }
     }
 
     public String getIconFileName() {
