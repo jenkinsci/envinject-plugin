@@ -20,8 +20,21 @@ public class EnvInjectBuilderContributionAction implements EnvironmentContributi
     }
 
     public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars envVars) {
-        if (envVars != null) {
-            envVars.putAll(resultVariables);
+
+        if (envVars == null) {
+            return;
+        }
+
+        if (resultVariables == null) {
+            return;
+        }
+
+        for (Map.Entry<String, String> entry : resultVariables.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key != null && value != null) {
+                envVars.put(key, value);
+            }
         }
     }
 
