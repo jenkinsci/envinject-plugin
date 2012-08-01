@@ -348,50 +348,34 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     @Override
     public void onCompleted(Run run, TaskListener listener) {
+
+        if (!(run instanceof AbstractBuild)) {
+            return;
+        }
+
         AbstractBuild build = (AbstractBuild) run;
-        if (isEligibleJobType(build)) {
+        if (!isEligibleJobType(build)) {
+            return;
+        }
 
-            if (!(build instanceof MatrixBuild)) {
-                EnvVars envVars = new EnvVars();
-                EnvInjectLogger logger = new EnvInjectLogger(listener);
+        if (!(build instanceof MatrixBuild)) {
+            EnvVars envVars = new EnvVars();
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-                EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
-                if (envInjectAction != null) {
+            EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
+            if (envInjectAction != null) {
 
-                    //Remove technical wrappers
-                    try {
-                        BuildWrapperService wrapperService = new BuildWrapperService();
-                        wrapperService.removeBuildWrappers(build, JobSetupEnvironmentWrapper.class);
-                    } catch (EnvInjectException e) {
-                        logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                        throw new Run.RunnerAbortedException();
-                    }
-
-                } else {
-                    //Keep classic injected env vars
-                    AbstractBuild abstractBuild = (AbstractBuild) run;
-                    try {
-                        envVars.putAll(abstractBuild.getEnvironment(listener));
-                    } catch (IOException e) {
-                        logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                        throw new Run.RunnerAbortedException();
-                    } catch (InterruptedException e) {
-                        logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                        throw new Run.RunnerAbortedException();
-                    }
-                }
-
-                //Mask passwords
-                EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-                passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
-
-                //Add or override EnvInject Action
-                EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
+                //Remove technical wrappers
                 try {
-                    envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
+                    BuildWrapperService wrapperService = new BuildWrapperService();
+                    wrapperService.removeBuildWrappers(build, JobSetupEnvironmentWrapper.class);
                 } catch (EnvInjectException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
+                }
+            } else {
+                try {
+                    envVars.putAll(build.getEnvironment(listener));
                 } catch (IOException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
@@ -399,6 +383,25 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
                 }
+            }
+
+            //Mask passwords
+            EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
+            passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
+
+            //Add or override EnvInject Action
+            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
+            try {
+                envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
+            } catch (EnvInjectException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
+            } catch (IOException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
+            } catch (InterruptedException e) {
+                logger.error("SEVERE ERROR occurs: " + e.getMessage());
+                throw new Run.RunnerAbortedException();
             }
         }
     }
