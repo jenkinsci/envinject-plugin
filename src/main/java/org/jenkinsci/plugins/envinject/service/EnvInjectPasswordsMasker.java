@@ -13,6 +13,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectPasswordEntry;
 import org.jenkinsci.plugins.envinject.EnvInjectPasswordWrapper;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,7 +21,24 @@ import java.util.Map;
  */
 public class EnvInjectPasswordsMasker implements Serializable {
 
+
     public void maskPasswordsIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
+        maskPasswordsJobParameterIfAny(build, logger, envVars);
+        maskPasswordsEnvInjectIfAny(build, logger, envVars);
+    }
+
+    private void maskPasswordsJobParameterIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
+        ParametersAction parametersAction = build.getAction(ParametersAction.class);
+        List<ParameterValue> parameters = parametersAction.getParameters();
+        for (ParameterValue parameter : parameters) {
+            if (parameter instanceof PasswordParameterValue) {
+                PasswordParameterValue passwordParameterValue = ((PasswordParameterValue) parameter);
+                envVars.put(passwordParameterValue.getName(), passwordParameterValue.getValue().getEncryptedValue());
+            }
+        }
+    }
+
+    private void maskPasswordsEnvInjectIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
         try {
 
             EnvInjectPasswordWrapper envInjectPasswordWrapper = getEnvInjectPasswordWrapper(build);
