@@ -29,11 +29,15 @@ public class EnvInjectPasswordsMasker implements Serializable {
 
     private void maskPasswordsJobParameterIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
         ParametersAction parametersAction = build.getAction(ParametersAction.class);
-        List<ParameterValue> parameters = parametersAction.getParameters();
-        for (ParameterValue parameter : parameters) {
-            if (parameter instanceof PasswordParameterValue) {
-                PasswordParameterValue passwordParameterValue = ((PasswordParameterValue) parameter);
-                envVars.put(passwordParameterValue.getName(), passwordParameterValue.getValue().getEncryptedValue());
+        if (parametersAction != null) {
+            List<ParameterValue> parameters = parametersAction.getParameters();
+            if (parameters != null) {
+                for (ParameterValue parameter : parameters) {
+                    if (parameter instanceof PasswordParameterValue) {
+                        PasswordParameterValue passwordParameterValue = ((PasswordParameterValue) parameter);
+                        envVars.put(passwordParameterValue.getName(), passwordParameterValue.getValue().getEncryptedValue());
+                    }
+                }
             }
         }
     }
