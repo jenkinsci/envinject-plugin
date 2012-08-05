@@ -40,24 +40,28 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @SuppressWarnings("deprecation")
-    public Map<String, String> getPropertiesContentMap() {
+    public Map<String, String> getPropertiesContentMap(Map<String, String> currentEnvVars) {
 
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
         }
 
-        if (propertiesContent != null) {
-            Map<String, String> contentMap = new HashMap<String, String>();
-            PropertiesLoader loader = new PropertiesLoader();
-            try {
-                contentMap = loader.getVarsFromPropertiesContent(propertiesContent);
-            } catch (EnvInjectException e) {
-                e.printStackTrace();
-            }
-            return contentMap;
+        if (propertiesContent == null) {
+            return null;
         }
 
-        return null;
+        if (propertiesContent.trim().length() == 0) {
+            return null;
+        }
+
+        Map<String, String> contentMap = new HashMap<String, String>();
+        PropertiesLoader loader = new PropertiesLoader();
+        try {
+            contentMap = loader.getVarsFromPropertiesContent(propertiesContent, currentEnvVars);
+        } catch (EnvInjectException e) {
+            e.printStackTrace();
+        }
+        return contentMap;
     }
 
     /**

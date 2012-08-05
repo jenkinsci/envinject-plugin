@@ -18,10 +18,11 @@ import java.util.Map;
 public class PropertiesLoader implements Serializable {
 
     /**
-     * Get a map environment variables from a properties file path
+     * Get environment variables from a properties file path
      *
      * @param propertiesFile the properties file
-     * @return a map containing all the file properties content
+     * @param currentEnvVars the current environment variables to resolve against
+     * @return the environment variables
      * @throws EnvInjectException
      */
     public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException {
@@ -30,7 +31,7 @@ public class PropertiesLoader implements Serializable {
             throw new NullPointerException("The properties file object must be set.");
         }
         if (!propertiesFile.exists()) {
-            throw new NullPointerException("The properties file object must be exist.");
+            throw new IllegalArgumentException("The properties file object must be exist.");
         }
 
         Map<String, String> result = new LinkedHashMap<String, String>();
@@ -45,7 +46,7 @@ public class PropertiesLoader implements Serializable {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
         }
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            result.put(processProperty(entry.getKey()), processProperty(entry.getValue()));
+            result.put(processElement(entry.getKey()), processElement(entry.getValue()));
         }
         return result;
     }
@@ -53,24 +54,25 @@ public class PropertiesLoader implements Serializable {
     /**
      * Get a map environment variables from the content
      *
-     * @param content
-     * @return
+     * @param content        the properties content to parse
+     * @param currentEnvVars the current environment variables to resolve against
+     * @return the environment variables
      * @throws EnvInjectException
      */
-    public Map<String, String> getVarsFromPropertiesContent(String content) throws EnvInjectException {
+    public Map<String, String> getVarsFromPropertiesContent(String content, Map<String, String> currentEnvVars) throws EnvInjectException {
 
         if (content == null) {
-            return null;
+            throw new NullPointerException("A properties content must be set.");
         }
-
         if (content.trim().length() == 0) {
-            return null;
+            throw new IllegalArgumentException("A properties content must be not empty.");
         }
 
         content = processPath(content);
+        String contentResolved = Util.replaceMacro(content, currentEnvVars);
 
         Map<String, String> result = new LinkedHashMap<String, String>();
-        StringReader stringReader = new StringReader(content);
+        StringReader stringReader = new StringReader(contentResolved);
         SortedProperties properties = new SortedProperties();
         try {
             properties.load(stringReader);
@@ -81,12 +83,12 @@ public class PropertiesLoader implements Serializable {
         }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            result.put(processProperty(entry.getKey()), processProperty(entry.getValue()));
+            result.put(processElement(entry.getKey()), processElement(entry.getValue()));
         }
         return result;
     }
 
-    private String processProperty(Object prop) {
+    private String processElement(Object prop) {
         if (prop == null) {
             return null;
         }

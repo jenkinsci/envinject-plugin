@@ -260,7 +260,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
             final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
                     logger, info.isLoadFilesFromMaster(),
-                    info.getPropertiesFilePath(), info.getPropertiesContentMap(),
+                    info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars),
                     infraEnvVarsMaster, infraEnvVarsNode);
 
             //Get variables get by contribution

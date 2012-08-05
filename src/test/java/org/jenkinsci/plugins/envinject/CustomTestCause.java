@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.envinject.service;
+package org.jenkinsci.plugins.envinject;
 
 import hudson.model.Cause;
 
@@ -11,4 +11,5 @@ public class CustomTestCause extends Cause {
     public String getShortDescription() {
         return "Short Custom Cause";
     }
+
 }
