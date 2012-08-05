@@ -18,12 +18,12 @@ public class PropertiesGetterTest {
 
     @Test
     public void getPropertiesContentNullArg() {
-        assertNull(propertiesGetter.getPropertiesContent(null));
+        assertNull(propertiesGetter.getPropertiesContentFromMapObject(null));
     }
 
     @Test
     public void getPropertiesContentEmptyMap() {
-        String content = propertiesGetter.getPropertiesContent(Collections.<String, String>emptyMap());
+        String content = propertiesGetter.getPropertiesContentFromMapObject(Collections.<String, String>emptyMap());
         assertNotNull(content);
         assertTrue(content.trim().length() == 0);
     }
@@ -32,7 +32,7 @@ public class PropertiesGetterTest {
     public void getPropertiesContentOneElement() {
         Map<String, String> entryMap = new HashMap<String, String>();
         entryMap.put("someKey", "someValue");
-        String content = propertiesGetter.getPropertiesContent(entryMap);
+        String content = propertiesGetter.getPropertiesContentFromMapObject(entryMap);
         assertNotNull(content);
         assertEquals("someKey=someValue", content);
     }
@@ -43,7 +43,7 @@ public class PropertiesGetterTest {
         entryMap.put("key1", "value1");
         entryMap.put("key2", "value2");
         entryMap.put("key3", "value3");
-        String content = propertiesGetter.getPropertiesContent(entryMap);
+        String content = propertiesGetter.getPropertiesContentFromMapObject(entryMap);
         assertNotNull(content);
         assertEquals("key3=value3\nkey2=value2\nkey1=value1", content);
     }

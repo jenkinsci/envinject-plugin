@@ -33,7 +33,7 @@ public class EnvInjectInfo implements Serializable {
 
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             PropertiesGetter propertiesGetter = new PropertiesGetter();
-            return propertiesGetter.getPropertiesContent(propertiesContentMap);
+            return propertiesGetter.getPropertiesContentFromMapObject(propertiesContentMap);
         }
 
         return propertiesContent;

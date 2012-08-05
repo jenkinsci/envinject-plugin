@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class PropertiesGetter implements Serializable {
 
-    public String getPropertiesContent(Map<String, String> propertiesContent) {
+    public String getPropertiesContentFromMapObject(Map<String, String> propertiesContent) {
 
         if (propertiesContent == null) {
             return null;
