@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,7 +54,7 @@ public class EnvInjectVariableGetterTest {
 
     @Test
     public void getEnvVarsPreviousStepsWithEnvInjectActionMatrixRun() throws Exception {
-        build=mock(MatrixRun.class);
+        build = mock(MatrixRun.class);
         EnvInjectPluginAction envInjectPluginAction = new EnvInjectPluginAction(build, envVarsSample1);
         when(build.getAction(EnvInjectPluginAction.class)).thenReturn(envInjectPluginAction);
         when(build.getBuildVariables()).thenReturn(buildEnvVarsSample1);
@@ -81,7 +80,7 @@ public class EnvInjectVariableGetterTest {
             return false;
         }
 
-        if (expectedMap.size() != actualMap.size()){
+        if (expectedMap.size() != actualMap.size()) {
             return false;
         }
 
