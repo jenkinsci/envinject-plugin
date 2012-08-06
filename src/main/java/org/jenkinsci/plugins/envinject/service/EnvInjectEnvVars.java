@@ -100,11 +100,11 @@ public class EnvInjectEnvVars implements Serializable {
         }
 
         logger.info(String.format("Evaluation the following Groovy script content: \n%s\n", scriptContent));
-        GroovyShell shell = new GroovyShell();
+        GroovyShell groovyShell = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader);
         for (Map.Entry<String, String> entryVariable : envVars.entrySet()) {
-            shell.setVariable(entryVariable.getKey(), entryVariable.getValue());
+            groovyShell.setVariable(entryVariable.getKey(), entryVariable.getValue());
         }
-        Object groovyResult = shell.evaluate(scriptContent);
+        Object groovyResult = groovyShell.evaluate(scriptContent);
         if (groovyResult != null && !(groovyResult instanceof Map)) {
             throw new EnvInjectException("The evaluated Groovy script must return a Map object.");
         }
