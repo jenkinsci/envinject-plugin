@@ -68,8 +68,8 @@ public class PropertiesLoader implements Serializable {
             throw new IllegalArgumentException("A properties content must be not empty.");
         }
 
-        content = processPath(content);
         String contentResolved = Util.replaceMacro(content, currentEnvVars);
+        contentResolved = processPath(contentResolved);
 
         Map<String, String> result = new LinkedHashMap<String, String>();
         StringReader stringReader = new StringReader(contentResolved);
