@@ -161,9 +161,11 @@ public class EnvInjectVariableGetter {
         Map<String, String> result = new HashMap<String, String>();
 
         List<Environment> environmentList = build.getEnvironments();
-        for (Environment e : environmentList) {
-            if (e != null) {
-                e.buildEnvVars(result);
+        if (environmentList != null) {
+            for (Environment e : environmentList) {
+                if (e != null) {
+                    e.buildEnvVars(result);
+                }
             }
         }
 
