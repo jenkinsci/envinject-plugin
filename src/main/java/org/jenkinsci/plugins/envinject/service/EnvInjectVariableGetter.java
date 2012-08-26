@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -158,6 +159,13 @@ public class EnvInjectVariableGetter {
 
     public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
+
+        List<Environment> environmentList = build.getEnvironments();
+        for (Environment e : environmentList) {
+            if (e != null) {
+                e.buildEnvVars(result);
+            }
+        }
 
         EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
