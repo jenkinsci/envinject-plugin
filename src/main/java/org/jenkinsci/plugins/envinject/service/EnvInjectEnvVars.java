@@ -6,6 +6,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.Hudson;
+import hudson.util.VariableResolver;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -197,8 +198,13 @@ public class EnvInjectEnvVars implements Serializable {
     private Map<String, String> removeUnsetVars(Map<String, String> envVars) {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            if (!isUnresolvedVar(entry.getValue())) {
-                result.put(entry.getKey(), removeEscapeDollar(entry.getValue()));
+
+            String value = entry.getValue();
+
+            value = removeUnsetVars(value);
+
+            if (!isUnresolvedVar(value)) {
+                result.put(entry.getKey(), removeEscapeDollar(value));
             } else {
                 logger.info(String.format("Unset unresolved '%s' variable.", entry.getKey()));
             }
@@ -206,8 +212,40 @@ public class EnvInjectEnvVars implements Serializable {
         return result;
     }
 
+    private String removeUnsetVars(String value) {
+
+        if (value == null) {
+            return null;
+        }
+
+        if (value.length() == 0) {
+            return value;
+        }
+
+        if (!value.contains("$") || value.contains("\\$")) {
+            return value;
+        }
+
+        return Util.replaceMacro(value, new VariableResolver<String>() {
+
+            public String resolve(String name) {
+                return "";
+            }
+        });
+
+    }
+
     private boolean isUnresolvedVar(String value) {
-        return value != null && value.contains("$") && !value.contains("\\$");
+
+        if (value == null) {
+            return true;
+        }
+
+        if (value.trim().length() == 0) {
+            return true;
+        }
+
+        return value.contains("$") && !value.contains("\\$");
     }
 
     private String removeEscapeDollar(String value) {
