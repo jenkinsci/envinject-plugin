@@ -4,7 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.service.EnvInjectSaveable;
+import org.jenkinsci.lib.envinject.service.EnvInjectSavable;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
@@ -75,7 +75,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         }
 
         try {
-            EnvInjectSaveable dao = new EnvInjectSaveable();
+            EnvInjectSavable dao = new EnvInjectSavable();
             if (rootDir == null) {
                 dao.saveEnvironment(build.getRootDir(), envMap);
                 return this;
@@ -95,7 +95,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
             return this;
         }
 
-        EnvInjectSaveable dao = new EnvInjectSaveable();
+        EnvInjectSavable dao = new EnvInjectSavable();
         Map<String, String> resultMap = null;
         try {
             if (build != null) {
