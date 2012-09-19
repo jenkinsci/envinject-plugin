@@ -63,15 +63,9 @@ public class BuildWrapperService implements Serializable {
             return project.getBuildWrappersList();
         } else {
             AbstractProject abstractProject = build.getProject();
-            if (abstractProject instanceof FreeStyleProject) {
-                Project project = (Project) abstractProject;
+            if (abstractProject instanceof BuildableItemWithBuildWrappers) {
+                BuildableItemWithBuildWrappers project = (BuildableItemWithBuildWrappers) abstractProject;
                 return project.getBuildWrappersList();
-            } else if (abstractProject instanceof MavenModuleSet) {
-                MavenModuleSet moduleSet = (MavenModuleSet) abstractProject;
-                return moduleSet.getBuildWrappersList();
-            } else if (Hudson.getInstance().getPlugin("ivy") != null && abstractProject instanceof hudson.ivy.IvyModuleSet) {
-                hudson.ivy.IvyModuleSet ivyModuleSet = (hudson.ivy.IvyModuleSet) abstractProject;
-                return ivyModuleSet.getBuildWrappersList();
             } else {
                 throw new EnvInjectException(String.format("Job type %s is not supported", abstractProject));
             }

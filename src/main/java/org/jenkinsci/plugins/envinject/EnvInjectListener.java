@@ -79,10 +79,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             job = build.getParent();
         }
 
-        return job instanceof FreeStyleProject
-                || job instanceof MatrixProject
-                || job instanceof AbstractMavenProject
-                || (Hudson.getInstance().getPlugin("ivy") != null && job instanceof hudson.ivy.IvyModuleSet);
+        return job instanceof BuildableItemWithBuildWrappers;
 
     }
 
