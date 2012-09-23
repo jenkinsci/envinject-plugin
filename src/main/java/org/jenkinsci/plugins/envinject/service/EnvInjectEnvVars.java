@@ -241,8 +241,9 @@ public class EnvInjectEnvVars implements Serializable {
             return true;
         }
 
+        //Empty environment variables are acceptable
         if (value.trim().length() == 0) {
-            return true;
+            return false;
         }
 
         return value.contains("$") && !value.contains("\\$");
