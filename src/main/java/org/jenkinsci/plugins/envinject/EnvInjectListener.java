@@ -5,9 +5,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
-import hudson.maven.AbstractMavenProject;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.remoting.Callable;
@@ -35,32 +33,32 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (isEligibleJobType(build)) {
-            if (!(build instanceof MatrixBuild)) {
-                EnvInjectLogger logger = new EnvInjectLogger(listener);
+            //if (!(build instanceof MatrixBuild)) {
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
 
-                try {
+            try {
 
-                    //Process environment variables at node level
-                    Node buildNode = build.getBuiltOn();
-                    if (buildNode != null) {
-                        loadEnvironmentVariablesNode(build, buildNode, logger);
-                    }
-
-                    //Load job envinject job property
-                    if (isEnvInjectJobPropertyActive(build)) {
-                        return setUpEnvironmentJobPropertyObject(build, launcher, listener, logger);
-                    } else {
-                        return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
-                    }
-
-                } catch (Run.RunnerAbortedException rre) {
-                    logger.info("Fail the build.");
-                    throw new Run.RunnerAbortedException();
-                } catch (Throwable throwable) {
-                    logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
-                    throw new Run.RunnerAbortedException();
+                //Process environment variables at node level
+                Node buildNode = build.getBuiltOn();
+                if (buildNode != null) {
+                    loadEnvironmentVariablesNode(build, buildNode, logger);
                 }
+
+                //Load job envinject job property
+                if (isEnvInjectJobPropertyActive(build)) {
+                    return setUpEnvironmentJobPropertyObject(build, launcher, listener, logger);
+                } else {
+                    return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
+                }
+
+            } catch (Run.RunnerAbortedException rre) {
+                logger.info("Fail the build.");
+                throw new Run.RunnerAbortedException();
+            } catch (Throwable throwable) {
+                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+                throw new Run.RunnerAbortedException();
             }
+            //}
         }
 
         return new Environment() {
