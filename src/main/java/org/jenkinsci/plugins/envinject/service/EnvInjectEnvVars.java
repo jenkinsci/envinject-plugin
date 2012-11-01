@@ -162,8 +162,7 @@ public class EnvInjectEnvVars implements Serializable {
         variables.putAll(contribEnvVars);
         variables.putAll(propertiesEnvVars);
 
-        //4-- Remove unset variables
-        return removeUnsetVars(variables);
+        return variables;
     }
 
 
@@ -195,7 +194,7 @@ public class EnvInjectEnvVars implements Serializable {
         }
     }
 
-    private Map<String, String> removeUnsetVars(Map<String, String> envVars) {
+    public Map<String, String> removeUnsetVars(Map<String, String> envVars) {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
 

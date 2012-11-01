@@ -182,11 +182,21 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 try {
                     //Get previous
                     Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, envInjectLogger);
+
                     //Add workspace
                     FilePath ws = build.getWorkspace();
                     previousEnvVars.put("WORKSPACE", ws.getRemote());
+
+                    //Resolve variables each other and with WORKSPACE
+                    EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(envInjectLogger);
+                    envInjectEnvVars.resolveVars(previousEnvVars, previousEnvVars);
+
+                    //Remove unused variables
+                    Map<String, String> cleanVariables = envInjectEnvVars.removeUnsetVars(previousEnvVars);
+
                     //Set new env vars
-                    new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, previousEnvVars);
+                    new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
+
                 } catch (EnvInjectException e) {
                     throw new IOException(e.getMessage());
                 }
@@ -239,7 +249,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         final FilePath rootPath = getNodeRootPath();
         if (rootPath != null) {
 
-            EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+            final EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
             //Execute script
             int resultCode = envInjectEnvVarsService.executeScript(info.isLoadFilesFromMaster(),
@@ -261,22 +271,26 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Get variables get by contribution
             Map<String, String> contributionVariables = getEnvVarsByContribution(build, envInjectJobProperty, logger, listener);
 
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(
+            final Map<String, String> mergedVariables = envInjectEnvVarsService.getMergedVariables(
                     infraEnvVarsNode,
                     propertiesVariables,
                     groovyMapEnvVars,
                     contributionVariables);
 
-            //Add an action
-            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            //Add an action to share injected environment variables
+            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, mergedVariables);
 
+            //Add a wrapper to intercept the preCheckout event and add specific variables such as WORKSPACE variable
             BuildWrapperService wrapperService = new BuildWrapperService();
             wrapperService.addBuildWrapper(build, new JobSetupEnvironmentWrapper());
+
 
             return new Environment() {
                 @Override
                 public void buildEnvVars(Map<String, String> env) {
-                    env.putAll(resultVariables);
+                    envInjectEnvVarsService.resolveVars(mergedVariables, mergedVariables); //resolve variables each other
+                    //however, here preCheckout of EnvBuildWrapper is not yet performed
+                    env.putAll(mergedVariables);
                 }
             };
         }
