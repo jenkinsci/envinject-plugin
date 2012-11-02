@@ -13,6 +13,10 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
     private String groovyScriptContent;
     private boolean loadFilesFromMaster;
 
+    public EnvInjectJobPropertyInfo() {
+        super(null, null);
+    }
+
     @DataBoundConstructor
     public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, String groovyScriptContent, boolean loadFilesFromMaster) {
         super(propertiesFilePath, propertiesContent);

@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
-    private EnvInjectJobPropertyInfo info;
+    private EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo();
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
