@@ -12,7 +12,7 @@
                         <f:textbox name="envInject.name" value="${inst.name}"/>
                     </f:entry>
 
-                    <f:entry title="${%Passowrd}"
+                    <f:entry title="${%Password}"
                              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
                         <f:password name="envInject.password" value="${inst.value}"/>
                     </f:entry>
