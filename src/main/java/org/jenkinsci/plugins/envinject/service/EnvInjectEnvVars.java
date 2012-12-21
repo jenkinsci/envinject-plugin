@@ -1,12 +1,13 @@
 package org.jenkinsci.plugins.envinject.service;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.BuildListener;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.util.VariableResolver;
+import jenkins.model.Jenkins;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -101,10 +102,24 @@ public class EnvInjectEnvVars implements Serializable {
         }
 
         logger.info(String.format("Evaluation the following Groovy script content: \n%s\n", scriptContent));
-        GroovyShell groovyShell = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader);
+
+        Binding binding = new Binding();
+        String jobName = envVars.get("JOB_NAME");
+        if (jobName != null) {
+            Item job = Jenkins.getInstance().getItemByFullName(jobName);
+            binding.setProperty("currentJob", job);
+            String b = envVars.get("BUILD_NUMBER");
+            if (b != null && job instanceof AbstractProject) {
+                Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
+                binding.setProperty("currentBuild", r);
+            }
+        }
+
+        GroovyShell groovyShell = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader, binding);
         for (Map.Entry<String, String> entryVariable : envVars.entrySet()) {
             groovyShell.setVariable(entryVariable.getKey(), entryVariable.getValue());
         }
+
         Object groovyResult = groovyShell.evaluate(scriptContent);
         if (groovyResult != null && !(groovyResult instanceof Map)) {
             throw new EnvInjectException("The evaluated Groovy script must return a Map object.");
@@ -118,8 +133,8 @@ public class EnvInjectEnvVars implements Serializable {
         for (Map.Entry entry : (((Map<Object, Object>) groovyResult).entrySet())) {
             result.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
-        return result;
 
+        return result;
     }
 
     public int executeScript(
