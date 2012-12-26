@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
-import hudson.maven.MavenModuleSet;
 import hudson.model.*;
 import hudson.tasks.BuildWrapper;
 import hudson.util.DescribableList;
