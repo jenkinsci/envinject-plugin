@@ -2,8 +2,10 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
-import hudson.maven.MavenModuleSet;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.Descriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.util.DescribableList;
 import org.jenkinsci.lib.envinject.EnvInjectException;
