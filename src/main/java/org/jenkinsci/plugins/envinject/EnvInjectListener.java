@@ -367,9 +367,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             return;
         }
 
+        //Mask passwords
+        EnvVars envVars = new EnvVars();
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
+        passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
+
         if (!(build instanceof MatrixBuild)) {
-            EnvVars envVars = new EnvVars();
-            EnvInjectLogger logger = new EnvInjectLogger(listener);
 
             EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
             if (envInjectAction != null) {
@@ -393,26 +397,23 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     throw new Run.RunnerAbortedException();
                 }
             }
-
-            //Mask passwords
-            EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-            passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
-
-            //Add or override EnvInject Action
-            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
-            try {
-                envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
-            } catch (EnvInjectException e) {
-                logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                throw new Run.RunnerAbortedException();
-            } catch (IOException e) {
-                logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                throw new Run.RunnerAbortedException();
-            } catch (InterruptedException e) {
-                logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                throw new Run.RunnerAbortedException();
-            }
         }
+
+        //Add or override EnvInject Action
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
+        try {
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
+        } catch (EnvInjectException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (IOException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        } catch (InterruptedException e) {
+            logger.error("SEVERE ERROR occurs: " + e.getMessage());
+            throw new Run.RunnerAbortedException();
+        }
+
     }
 
 }
