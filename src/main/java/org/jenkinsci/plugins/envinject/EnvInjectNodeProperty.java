@@ -2,8 +2,6 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.XmlFile;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -11,11 +9,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Gregory Boissinot
@@ -43,10 +37,8 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
     @Extension
     public static class EnvInjectNodePropertyDescriptor extends NodePropertyDescriptor {
 
-        private static final Logger LOGGER = Logger.getLogger(EnvInjectNodePropertyDescriptor.class.getName());
-
         private EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = new EnvInjectGlobalPasswordEntry[0];
-        private static final String ENVINJECT_CONFIG = "envInject.xml";
+        public static final String ENVINJECT_CONFIG = "envInject";
 
         @SuppressWarnings("unused")
         public EnvInjectNodePropertyDescriptor() {
@@ -83,29 +75,9 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
         }
 
         @Override
-        public void save() {
-            try {
-                getConfigFile().write(this);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to save global passwords ", e);
-            }
+        public String getId() {
+            return ENVINJECT_CONFIG;
         }
 
-        @Override
-        public synchronized void load() {
-            XmlFile file = getConfigFile();
-            if (!file.exists())
-                return;
-
-            try {
-                file.unmarshal(this);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to load " + file, e);
-            }
-        }
-
-        public static XmlFile getConfigFile() {
-            return new XmlFile(new File(Hudson.getInstance().getRootDir(), ENVINJECT_CONFIG));
-        }
     }
 }
