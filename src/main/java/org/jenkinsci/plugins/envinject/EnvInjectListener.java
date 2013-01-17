@@ -33,9 +33,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (isEligibleJobType(build)) {
-            //if (!(build instanceof MatrixBuild)) {
             EnvInjectLogger logger = new EnvInjectLogger(listener);
-
             try {
 
                 //Process environment variables at node level
@@ -58,7 +56,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
                 throw new Run.RunnerAbortedException();
             }
-            //}
         }
 
         return new Environment() {
