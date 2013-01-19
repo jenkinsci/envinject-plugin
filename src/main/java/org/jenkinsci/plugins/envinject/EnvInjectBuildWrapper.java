@@ -59,7 +59,9 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             //Add workspace if not set
             if (ws != null) {
-                injectedEnvVars.put("WORKSPACE", ws.getRemote());
+                if (injectedEnvVars.get("WORKSPACE") == null) {
+                    injectedEnvVars.put("WORKSPACE", ws.getRemote());
+                }
             }
 
             //Add SCM variables if not set

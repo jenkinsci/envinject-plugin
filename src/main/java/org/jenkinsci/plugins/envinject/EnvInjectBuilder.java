@@ -58,7 +58,9 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Add workspace if not set
             if (ws != null) {
-                variables.put("WORKSPACE", ws.getRemote());
+                if (variables.get("WORKSPACE") == null) {
+                    variables.put("WORKSPACE", ws.getRemote());
+                }
             }
 
             //Add SCM variables if not set
@@ -98,7 +100,9 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         result.putAll(build.getBuildVariables());
         FilePath ws = build.getWorkspace();
         if (ws != null) {
-            result.put("WORKSPACE", ws.getRemote());
+            if (result.get("WORKSPACE") == null) {
+                result.put("WORKSPACE", ws.getRemote());
+            }
         }
         return result;
     }

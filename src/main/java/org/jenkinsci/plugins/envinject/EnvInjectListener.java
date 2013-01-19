@@ -182,7 +182,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
                     //Add workspace
                     FilePath ws = build.getWorkspace();
-                    previousEnvVars.put("WORKSPACE", ws.getRemote());
+                    if (previousEnvVars.get("WORKSPACE") == null) {
+                        previousEnvVars.put("WORKSPACE", ws.getRemote());
+                    }
 
                     //Resolve variables each other and with WORKSPACE
                     EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(envInjectLogger);

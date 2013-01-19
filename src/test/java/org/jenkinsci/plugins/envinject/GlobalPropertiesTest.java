@@ -57,4 +57,37 @@ public class GlobalPropertiesTest extends HudsonTestCase {
 
         assertEquals(workspaceProcessed, testWorkspaceProcessed);
     }
+
+    //Specific use case: We set a global workspace at job level
+    public void testGlobalPropertiesSetWORKSPACE() throws Exception {
+
+        final String testGlobalVariableName = "WORKSPACE";
+        final String testGlobalVariableValue = "WORKSPACE_VALUE";
+        final String testJobVariableName = "TEST_JOB_WORKSPACE";
+        final String testJobVariableExprValue = "${WORKSPACE}";
+
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testGlobalVariableName, testGlobalVariableValue)));
+
+        StringBuffer propertiesContent = new StringBuffer();
+        propertiesContent.append(testJobVariableName).append("=").append(testJobVariableExprValue);
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(
+                null, propertiesContent.toString(), null, null, null, true);
+        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
+        envInjectBuildWrapper.setInfo(info);
+        project.getBuildWrappersList().add(envInjectBuildWrapper);
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        Assert.assertEquals(Result.SUCCESS, build.getResult());
+
+        org.jenkinsci.lib.envinject.EnvInjectAction action = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
+        Map<String, String> envVars = action.getEnvMap();
+
+        String result_testGlobalVariableName = envVars.get(testGlobalVariableName);
+        assertNotNull(result_testGlobalVariableName);
+        String result_testJobVariableName = envVars.get(testJobVariableName);
+        assertNotNull(result_testJobVariableName);
+
+        assertEquals(result_testGlobalVariableName, result_testJobVariableName);
+    }
 }
