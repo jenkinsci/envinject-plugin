@@ -8,7 +8,7 @@
         <st:include page="sidepanel.jelly" it="${build}"/>
         <l:main-panel>
             <h1>${%Build} #${build.number}</h1>
-            <h2>${%Injected environment variables}</h2>
+            <h2>${%Environment variables}</h2>
             <j:choose>
                 <j:when test="${build.isBuilding()}">
                     ${%The job is building. Waiting for the end of the build to display environment variables}.

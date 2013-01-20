@@ -48,7 +48,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
     }
 
     public String getDisplayName() {
-        return "Injected Environment Variables";
+        return "Environment Variables";
     }
 
     public String getUrlName() {
