@@ -8,9 +8,6 @@ import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
-import hudson.remoting.Callable;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.NodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import org.jenkinsci.lib.envinject.EnvInjectException;
@@ -80,52 +77,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, EnvInjectLogger logger) throws EnvInjectException {
 
-        logger.info("Loading node environment variables.");
-
-        if (buildNode == null) {
-            return;
-        }
-
-        FilePath nodePath = buildNode.getRootPath();
-        if (nodePath == null) {
-            return;
-        }
-
+        EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
+        Map<String, String> configNodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, buildNode, logger);
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(buildNode.getRootPath());
         try {
-
-            //Default node envVars
-            Map<String, String> configNodeEnvVars = new HashMap<String, String>();
-
-            //Get env vars for the current node
-            Map<String, String> nodeEnvVars = nodePath.act(
-                    new Callable<Map<String, String>, IOException>() {
-                        public Map<String, String> call() throws IOException {
-                            return EnvVars.masterEnvVars;
-                        }
-                    }
-            );
-
-            for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                    EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                    EnvVars envVars = variablesNodeProperty.getEnvVars();
-                    EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(logger);
-                    configNodeEnvVars.putAll(envVars);
-                    envInjectEnvVars.resolveVars(configNodeEnvVars, nodeEnvVars);
-                }
-            }
-
-            for (NodeProperty<?> nodeProperty : buildNode.getNodeProperties()) {
-                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                    EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
-                    EnvVars envVars = variablesNodeProperty.getEnvVars();
-                    EnvInjectEnvVars envInjectEnvVars = new EnvInjectEnvVars(logger);
-                    configNodeEnvVars.putAll(envVars);
-                    envInjectEnvVars.resolveVars(configNodeEnvVars, nodeEnvVars);
-                }
-            }
-
-            EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(nodePath);
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, configNodeEnvVars);
 
         } catch (IOException ioe) {
