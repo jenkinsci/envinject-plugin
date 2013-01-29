@@ -172,7 +172,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         assert envInjectJobProperty != null;
         EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-        assert envInjectJobProperty != null && envInjectJobProperty.isOn();
+        assert envInjectJobProperty.isOn();
 
         //Init infra env vars
         Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
@@ -193,12 +193,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             infraEnvVarsMaster.putAll(buildVariables);
             infraEnvVarsNode.putAll(buildVariables);
         }
-
-
-        //Add build parameters (or override)
-        logger.info("Adding build parameters as variables.");
-        Map<String, String> parametersVariables = variableGetter.overrideParametersVariablesWithSecret(build);
-        infraEnvVarsNode.putAll(parametersVariables);
 
         final FilePath rootPath = getNodeRootPath();
         if (rootPath != null) {

@@ -5,7 +5,6 @@ import hudson.Util;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
 import hudson.util.LogTaskListener;
-import hudson.util.Secret;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
@@ -13,7 +12,6 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,31 +104,6 @@ public class EnvInjectVariableGetter {
         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
         result.putAll(triggerVariable);
 
-        return result;
-    }
-
-    public Map<String, String> overrideParametersVariablesWithSecret(AbstractBuild build) {
-        Map<String, String> result = new HashMap<String, String>();
-        ParametersAction params = build.getAction(ParametersAction.class);
-        if (params != null) {
-            for (ParameterValue p : params) {
-                try {
-                    Field valueField = p.getClass().getDeclaredField("value");
-                    valueField.setAccessible(true);
-                    Object valueObject = valueField.get(p);
-                    if (valueObject instanceof Secret) {
-                        Secret secretValue = (Secret) valueObject;
-                        result.put(p.getName(), secretValue.getEncryptedValue());
-                    }
-                } catch (NoSuchFieldException e) {
-                    //the field doesn't exist
-                    //test the next param
-                    continue;
-                } catch (IllegalAccessException e) {
-                    continue;
-                }
-            }
-        }
         return result;
     }
 
