@@ -22,7 +22,9 @@ public class EnvInjectVarList implements Serializable {
     private Map<String, String> envVars = new TreeMap<String, String>();
 
     public EnvInjectVarList(Map<String, String> envMap) {
-        this.envVars.putAll(envMap);
+        if (envMap != null) {
+            this.envVars.putAll(envMap);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -89,7 +91,6 @@ public class EnvInjectVarList implements Serializable {
         }
 
         writeTextResponse(response);
-        return;
     }
 
 
@@ -116,7 +117,7 @@ public class EnvInjectVarList implements Serializable {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", entry.getKey(), entry.getValue()));
         }

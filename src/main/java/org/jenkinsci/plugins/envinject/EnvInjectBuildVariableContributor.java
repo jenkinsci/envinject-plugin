@@ -39,6 +39,9 @@ public class EnvInjectBuildVariableContributor extends BuildVariableContributor 
                 for (ParameterValue p : parameters) {
                     String key = p.getName();
                     Map<String, String> injectedEnvVars = envInjectAction.getEnvMap();
+                    if (injectedEnvVars == null) {
+                        return;
+                    }
 
                     //---INPUTS
                     //GLOBAL envVars, parameters envVars, injectedEnvVars (with global)

@@ -22,6 +22,9 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
         EnvInjectVarList varList = (EnvInjectVarList) getTarget();
-        env.putAll(varList.getEnvMap());
+        Map<String, String> envMap = varList.getEnvMap();
+        if (envMap != null) {
+            env.putAll(envMap);
+        }
     }
 }
