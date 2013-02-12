@@ -51,11 +51,11 @@ public class EnvInjectEnvVars implements Serializable {
         return resultMap;
     }
 
-    public Map<String, String> getEnvVarsPropertiesProperty(FilePath rootPath,
-                                                            EnvInjectLogger logger,
-                                                            String propertiesFilePath,
-                                                            Map<String, String> propertiesContent,
-                                                            Map<String, String> currentEnvVars) throws EnvInjectException {
+    public Map<String, String> getEnvVarsPropertiesFileProperty(FilePath rootPath,
+                                                                EnvInjectLogger logger,
+                                                                String propertiesFilePath,
+                                                                Map<String, String> propertiesContent,
+                                                                Map<String, String> currentEnvVars) throws EnvInjectException {
         Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {
             resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, currentEnvVars, logger)));
@@ -91,6 +91,7 @@ public class EnvInjectEnvVars implements Serializable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, String> executeAndGetMapGroovyScript(String scriptContent, Map<String, String> envVars) throws EnvInjectException {
 
         if (scriptContent == null) {

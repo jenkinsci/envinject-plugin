@@ -11,6 +11,8 @@ import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.util.DescribableList;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -27,100 +29,152 @@ import java.util.Map;
 @Extension
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
 
+
+    private EnvVars getNewMasterEnvironmentVariables(Computer c, FilePath nodePath, TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+
+        //Get env vars for the current node
+        Map<String, String> nodeEnvVars = nodePath.act(
+                new Callable<Map<String, String>, IOException>() {
+                    public Map<String, String> call() throws IOException {
+                        return EnvVars.masterEnvVars;
+                    }
+                });
+
+
+        // -- Retrieve Environment variables from master
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+        boolean unsetSystemVariables = false;
+        Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
+        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+
+            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
+            }
+
+            if (nodeProperty instanceof EnvInjectNodeProperty) {
+                EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
+                unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
+                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+            }
+
+        }
+
+        //Resolve against node env vars
+        envInjectEnvVarsService.resolveVars(globalPropertiesEnvVars, nodeEnvVars);
+
+        EnvVars envVars2Set = new EnvVars();
+        if (!unsetSystemVariables) {
+            envVars2Set.putAll(nodeEnvVars);
+        }
+        envVars2Set.putAll(globalPropertiesEnvVars);
+
+        return envVars2Set;
+    }
+
+    private EnvVars getNewSlaveEnvironmentVariables(Computer c, FilePath nodePath, TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+
+        Map<String, String> currentEnvVars = new HashMap<String, String>();
+
+        // -- Retrieve Environment variables from master
+        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                currentEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
+            }
+        }
+
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+        //Get env vars for the current node
+        Map<String, String> nodeEnvVars = nodePath.act(
+                new Callable<Map<String, String>, IOException>() {
+                    public Map<String, String> call() throws IOException {
+                        return EnvVars.masterEnvVars;
+                    }
+                });
+
+        // -- Process slave properties
+        boolean unsetSystemVariables = false;
+        for (NodeProperty<?> nodeProperty : c.getNode().getNodeProperties()) {
+
+            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
+                currentEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
+            }
+
+            if (nodeProperty instanceof EnvInjectNodeProperty) {
+                EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
+                unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
+                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+            }
+        }
+
+        //Resolve against node env vars
+        envInjectEnvVarsService.resolveVars(currentEnvVars, nodeEnvVars);
+
+        EnvVars envVars2Set = new EnvVars();
+        if (!unsetSystemVariables) {
+            envVars2Set.putAll(nodeEnvVars);
+        }
+        envVars2Set.putAll(currentEnvVars);
+
+        return envVars2Set;
+
+    }
+
+
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
-        try {
-            EnvInjectLogger logger = new EnvInjectLogger(listener);
-            EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
-            //Get node path
-            FilePath nodePath = c.getNode().getRootPath();
-            if (nodePath == null) {
-                return;
+        //Get node path
+        FilePath nodePath = c.getNode().getRootPath();
+        if (nodePath == null) {
+            return;
+        }
+
+
+        //use case : it is a slave
+        if (isActiveSlave(c)) {
+
+            try {
+                EnvVars envVars2Set = getNewSlaveEnvironmentVariables(c, nodePath, listener);
+                nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
+            } catch (EnvInjectException e) {
+                throw new IOException(e);
             }
 
-            //Default value to false (even if no checked)
-            boolean unsetSystemVariables = false;
+        }
 
-            //Default properties vars
-            Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
-
-            //Get env vars for the current node
-            Map<String, String> nodeEnvVars = nodePath.act(
-                    new Callable<Map<String, String>, IOException>() {
-                        public Map<String, String> call() throws IOException {
-                            return EnvVars.masterEnvVars;
-                        }
-                    }
-            );
-
-            //Global Properties
-            for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-
-                if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                    globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
-                }
-
-                if (nodeProperty instanceof EnvInjectNodeProperty) {
-
-                    Map<String, String> masterEnvVars = new HashMap<String, String>();
-                    try {
-                        masterEnvVars = Hudson.getInstance().getRootPath().act(
-                                new Callable<Map<String, String>, Throwable>() {
-                                    public Map<String, String> call() throws Throwable {
-                                        return EnvVars.masterEnvVars;
-                                    }
-                                }
-                        );
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
-                    unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-
-                    //Add global properties
-                    globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, masterEnvVars));
-                }
+        //use case : it is only on master
+        else if (isGlobalEnvInjectActivatedOnMaster()) {
+            try {
+                EnvVars envVars2Set = getNewMasterEnvironmentVariables(c, nodePath, listener);
+                nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
+            } catch (EnvInjectException e) {
+                throw new IOException(e);
             }
-
-
-            Node slave = Hudson.getInstance().getNode(c.getName());
-
-            //Specific nodeProperties can overrides the value if this is a slave
-            if (slave != null) {
-                for (NodeProperty<?> nodeProperty : c.getNode().getNodeProperties()) {
-
-                    if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                        globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
-                    }
-
-                    if (nodeProperty instanceof EnvInjectNodeProperty) {
-                        EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
-                        unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                        globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
-                    }
-                }
-            }
-
-            //Resolve against node env vars
-            envInjectEnvVarsService.resolveVars(globalPropertiesEnvVars, nodeEnvVars);
-
-            EnvVars envVars2Set = new EnvVars();
-            if (!unsetSystemVariables) {
-                envVars2Set.putAll(nodeEnvVars);
-            }
-            envVars2Set.putAll(globalPropertiesEnvVars);
-
-            //Set new env vars
-            nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
-
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
-        } catch (EnvInjectException e) {
-            e.printStackTrace();
         }
     }
+
+    private boolean isActiveSlave(Computer c) {
+        if (c == null) {
+            return false;
+        }
+
+        Node slave = Hudson.getInstance().getNode(c.getName());
+        return slave != null;
+    }
+
+    private boolean isGlobalEnvInjectActivatedOnMaster() {
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        for (NodeProperty<?> nodeProperty : globalNodeProperties) {
+            if (nodeProperty instanceof EnvInjectNodeProperty) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
 }
