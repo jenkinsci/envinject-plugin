@@ -46,6 +46,7 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
         parameterValues.add(new PasswordParameterValue(PWD_KEY, PWD_VALUE));
         ParametersAction parametersAction = new ParametersAction(parameterValues);
 
+        @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
         Assert.assertEquals(Result.SUCCESS, build.getResult());
 

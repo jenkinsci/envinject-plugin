@@ -74,7 +74,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
-            final Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsPropertiesProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), variables);
+            final Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), variables);
 
             //Resolve variables
             final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(variables, propertiesEnvVars);

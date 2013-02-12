@@ -13,6 +13,7 @@ import java.util.Map;
 /**
  * @author Gregory Boissinot
  */
+@SuppressWarnings("deprecation")
 public class BuildCauseRetrieverTest extends HudsonTestCase {
 
     private FreeStyleProject project;
@@ -32,6 +33,7 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
         project = createFreeStyleProject();
     }
 
+    @SuppressWarnings("deprecation")
     public void testManualBuildCause() throws Exception {
         checkCauseArguments(Cause.UserCause.class);
     }

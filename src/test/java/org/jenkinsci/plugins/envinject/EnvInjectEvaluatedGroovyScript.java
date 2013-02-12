@@ -46,6 +46,7 @@ public class EnvInjectEvaluatedGroovyScript extends HudsonTestCase {
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
         ParametersAction parametersAction = new ParametersAction(parameterValueList);
 
+        @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
         Assert.assertEquals(Result.SUCCESS, build.getResult());
 
@@ -84,6 +85,7 @@ public class EnvInjectEvaluatedGroovyScript extends HudsonTestCase {
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
         ParametersAction parametersAction = new ParametersAction(parameterValueList);
 
+        @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
         Assert.assertEquals(Result.SUCCESS, build.getResult());
 

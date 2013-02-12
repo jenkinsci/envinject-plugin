@@ -56,7 +56,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
             }
 
         }
@@ -106,7 +106,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsPropertiesFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
             }
         }
 
