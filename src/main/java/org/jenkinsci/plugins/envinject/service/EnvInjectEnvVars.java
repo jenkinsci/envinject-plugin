@@ -92,7 +92,7 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> executeAndGetMapGroovyScript(String scriptContent, Map<String, String> envVars) throws EnvInjectException {
+    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, String scriptContent, Map<String, String> envVars) throws EnvInjectException {
 
         if (scriptContent == null) {
             return new HashMap<String, String>();
@@ -120,6 +120,7 @@ public class EnvInjectEnvVars implements Serializable {
         for (Map.Entry<String, String> entryVariable : envVars.entrySet()) {
             groovyShell.setVariable(entryVariable.getKey(), entryVariable.getValue());
         }
+        groovyShell.setVariable("out", logger.getListener().getLogger());
 
         Object groovyResult = groovyShell.evaluate(scriptContent);
         if (groovyResult != null && !(groovyResult instanceof Map)) {

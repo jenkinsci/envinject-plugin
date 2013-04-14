@@ -209,7 +209,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             }
 
             //Evaluate Groovy script
-            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(info.getGroovyScriptContent(), infraEnvVarsNode);
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger, info.getGroovyScriptContent(), infraEnvVarsNode);
 
             final Map<String, String> propertiesVariables = envInjectEnvVarsService.getEnvVarsPropertiesJobProperty(rootPath,
                     logger, info.isLoadFilesFromMaster(),
