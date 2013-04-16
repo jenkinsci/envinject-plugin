@@ -73,6 +73,9 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
                     if (!appendedLineBegin && (c == '\r' || c == '\n')) {
                         continue;
                     }
+                    if (appendedLineBegin) {
+                        lineBuf[len++] = '\n';
+                    }
                     skipWhiteSpace = false;
                     appendedLineBegin = false;
                 }
