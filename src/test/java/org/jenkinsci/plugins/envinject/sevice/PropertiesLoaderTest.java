@@ -115,6 +115,29 @@ public class PropertiesLoaderTest {
     }
 
     @Test
+    public void fileWithNewlineInValues() throws Exception {
+        checkWithNewlineInValues(true);
+    }
+
+    @Test
+    public void contentWithNewlineInValues() throws Exception {
+        checkWithNewlineInValues(false);
+    }
+
+    private void checkWithNewlineInValues(boolean fromFile) throws Exception {
+        // Create properties file containing backslash-escaped newlines
+        String content = "KEY1=line1\\\nline2\nKEY2= line1 \\\n line2 \nKEY3=line1\\\n\\\nline3";
+        Map<String, String> gatherVars = gatherEnvVars(fromFile, content, new HashMap<String, String>());
+        assertNotNull(gatherVars);
+        assertTrue(gatherVars.size() == 3);
+
+        // Values should be trimmed at start & end, otherwise whitespace & newlines should be kept
+        assertEquals("line1\nline2", gatherVars.get("KEY1"));
+        assertEquals("line1 \nline2", gatherVars.get("KEY2"));
+        assertEquals("line1\n\nline3", gatherVars.get("KEY3"));
+    }
+
+    @Test
     public void fileWithVarsToResolve() throws Exception {
         checkWithVarsToResolve(true);
     }
