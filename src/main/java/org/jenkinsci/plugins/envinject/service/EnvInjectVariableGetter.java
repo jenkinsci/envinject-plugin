@@ -66,11 +66,12 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getCharacteristicEnvVars());
 
         try {
-            EnvVars envVars = new EnvVars();
-            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
-                result.putAll(envVars);
-            }
+//            EnvVars envVars = new EnvVars();
+//            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+//                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
+//                result.putAll(envVars);
+//            }
+
 
             JDK jdk = build.getProject().getJDK();
             if (jdk != null) {

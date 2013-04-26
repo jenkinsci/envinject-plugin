@@ -255,7 +255,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
         resultVariables.putAll(previousEnvVars);
 
-        resultVariables.putAll(variableGetter.getJenkinsSystemVariables(false));
+        resultVariables.putAll(variableGetter.getJenkinsSystemVariables(true));
         resultVariables.putAll(variableGetter.getBuildVariables(build, logger));
 
         final FilePath rootPath = getNodeRootPath();
