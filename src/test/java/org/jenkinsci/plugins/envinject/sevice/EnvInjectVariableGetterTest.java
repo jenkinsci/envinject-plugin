@@ -1,23 +1,41 @@
 package org.jenkinsci.plugins.envinject.sevice;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import hudson.EnvVars;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Hudson;
+import hudson.model.Node;
+import hudson.model.labels.LabelAtom;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.util.DescribableList;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
+import junit.framework.Assert;
+
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * @author Gregory Boissinot
  */
+@RunWith(PowerMockRunner.class)
 public class EnvInjectVariableGetterTest {
 
     private EnvInjectVariableGetter variableGetter;
@@ -65,6 +83,40 @@ public class EnvInjectVariableGetterTest {
         assertTrue(sameMap(expectedEnvVars, resultEnvVars));
     }
 
+    @Test
+    @PrepareForTest({ Computer.class, Hudson.class })
+    public void testGetJenkinsSystemVariablesForceFetchesGlobalNodesPropertiesFromMaster() throws Exception {
+
+        PowerMockito.mockStatic(Computer.class);
+        PowerMockito.mockStatic(Hudson.class);
+        Computer computer = mock(Computer.class);
+        Node node = mock(Node.class);
+        EnvVars envVars = new EnvVars();
+        final String PROPERTY_KEY = "PATH";
+        final String VALUE_FROM_SLAVE_COMPUTER = "VALUE_FROM_SLAVE_COMPUTER";
+        final String VALUE_FROM_GNP_MASTER = "VALUE_FROM_GNP_MASTER";
+        envVars.put(PROPERTY_KEY, VALUE_FROM_SLAVE_COMPUTER);
+        Hudson hudson = mock(Hudson.class);
+
+        when(Computer.currentComputer()).thenReturn(computer);
+        when(computer.getNode()).thenReturn(node);
+        when(computer.getEnvironment()).thenReturn(envVars);
+        when(node.getAssignedLabels()).thenReturn(new HashSet<LabelAtom>());
+        when(computer.getName()).thenReturn("slave0");
+        when(Hudson.getInstance()).thenReturn(hudson);
+        when(hudson.getRootDir()).thenReturn(new File(""));
+
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(
+            hudson);
+        EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty(
+            new EnvironmentVariablesNodeProperty.Entry(PROPERTY_KEY, VALUE_FROM_GNP_MASTER));
+        globalNodeProperties.add(property);
+        when(Hudson.getInstance().getGlobalNodeProperties()).thenReturn(globalNodeProperties);
+
+        Map<String, String> jenkinsSystemVariables = variableGetter.getJenkinsSystemVariables(false);
+        Assert.assertNotNull(jenkinsSystemVariables);
+        Assert.assertEquals(VALUE_FROM_GNP_MASTER, jenkinsSystemVariables.get(PROPERTY_KEY));
+    }
 
     private boolean sameMap(Map<String, String> expectedMap, Map<String, String> actualMap) {
 

@@ -246,7 +246,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private Environment setUpEnvironmentWithoutJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    protected Environment setUpEnvironmentWithoutJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
 
         final Map<String, String> resultVariables = new HashMap<String, String>();
 

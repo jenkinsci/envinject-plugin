@@ -1,10 +1,9 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.EnvVars;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
-import hudson.util.LogTaskListener;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -54,6 +52,12 @@ public class EnvInjectVariableGetter {
         result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
         result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
 
+        List<EnvironmentVariablesNodeProperty> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties()
+            .getAll(EnvironmentVariablesNodeProperty.class);
+        for (EnvironmentVariablesNodeProperty environmentVariablesNodeProperty : globalNodeProperties) {
+            result.putAll(environmentVariablesNodeProperty.getEnvVars());
+        }
+
         return result;
     }
 
@@ -66,11 +70,12 @@ public class EnvInjectVariableGetter {
         result.putAll(build.getCharacteristicEnvVars());
 
         try {
-            EnvVars envVars = new EnvVars();
-            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
-                result.putAll(envVars);
-            }
+//            EnvVars envVars = new EnvVars();
+//            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+//                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
+//                result.putAll(envVars);
+//            }
+
 
             JDK jdk = build.getProject().getJDK();
             if (jdk != null) {
