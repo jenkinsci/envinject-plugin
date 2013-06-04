@@ -5,9 +5,14 @@ import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Hudson;
+import hudson.model.Item;
+import hudson.model.Run;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -85,7 +90,18 @@ public class EnvInjectEnvVars implements Serializable {
         if (loadFromMaster) {
             Map<String, String> scriptPathExecutionEnvVars = new HashMap<String, String>();
             scriptPathExecutionEnvVars.putAll(infraEnvVarsMaster);
-            return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
+            if (scriptFilePath != null) {
+                String scriptFilePathResolved = Util.replaceMacro(scriptFilePath, scriptPathExecutionEnvVars);
+                String content = null;
+                try {
+                    content = FileUtils.readFileToString(new File(scriptFilePathResolved));
+                } catch (IOException e) {
+                    throw new EnvInjectException("Failed to load script from master", e);
+                }
+                return scriptExecutor.executeScriptSection(scriptExecutionRoot, null, content, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
+            }
+            return scriptExecutor.executeScriptSection(scriptExecutionRoot, null, scriptContent, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
+
         } else {
             return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, scriptExecutionEnvVars, scriptExecutionEnvVars);
         }
