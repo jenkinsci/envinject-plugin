@@ -2,9 +2,12 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
+import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
+import hudson.model.ReconfigurableDescribable;
+import jenkins.model.Jenkins;
 import net.sf.json.JSON;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -113,6 +116,20 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
+    }
+
+
+    @Override
+    public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+        EnvInjectJobProperty property = (EnvInjectJobProperty) super.reconfigure(req, form);
+        if (!Jenkins.getInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
+            // Don't let non RUN_SCRIPT users set arbitrary groovy script
+            property.info = new EnvInjectJobPropertyInfo(property.info.propertiesFilePath, property.info.propertiesContent,
+                                                         property.info.getScriptFilePath(), property.info.getScriptContent(),
+                                                         this.info.getGroovyScriptContent(),
+                                                         property.info.isLoadFilesFromMaster());
+        }
+        return property;
     }
 
     @Extension

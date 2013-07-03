@@ -33,7 +33,8 @@
 
         <f:entry title="${%Evaluated Groovy script}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContent">
-            <f:textarea
+            <j:getStatic var="permission" className="hudson.model.Hudson" field="RUN_SCRIPTS"/>
+            <f:textarea readonly="${h.hasPermission(it,permission) ? null : 'readonly'}"
                     name="envInjectInfoJobProperty.groovyScriptContent"
                     value="${instance.info.groovyScriptContent}"/>
         </f:entry>
