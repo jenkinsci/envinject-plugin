@@ -97,38 +97,17 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return envInjectJobProperty != null;
     }
 
-    public static class JobSetupEnvironmentWrapper extends BuildWrapper {
-
-        @SuppressWarnings("unused")
-        @Extension
-        public static class JobSetupEnvironmentWrapperDescriptor extends BuildWrapperDescriptor {
-
-            public JobSetupEnvironmentWrapperDescriptor() {
-            }
-
-            public JobSetupEnvironmentWrapperDescriptor(Class<? extends BuildWrapper> clazz) {
-                super(JobSetupEnvironmentWrapper.class);
-            }
-
-            @Override
-            public boolean isApplicable(AbstractProject<?, ?> item) {
-                return false;
-            }
-
-            @Override
-            public String getDisplayName() {
-                return null;
-            }
-        }
+    @Extension
+    public static class JobSetupEnvironmentWorkspaceListener extends WorkspaceListener {
 
         @Override
-        public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public void beforeUse(AbstractBuild build, FilePath ws, BuildListener listener) {
 
-            EnvInjectLogger envInjectLogger = new EnvInjectLogger(listener);
             EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
             EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+            if (envInjectJobProperty == null) return;
 
-            assert envInjectJobProperty != null;
+            EnvInjectLogger envInjectLogger = new EnvInjectLogger(listener);
 
             if (envInjectJobProperty.isKeepBuildVariables()) {
                 try {
@@ -136,7 +115,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, envInjectLogger);
 
                     //Add workspace
-                    FilePath ws = build.getWorkspace();
                     if (previousEnvVars.get("WORKSPACE") == null) {
                         previousEnvVars.put("WORKSPACE", ws.getRemote());
                     }
@@ -152,15 +130,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
 
                 } catch (EnvInjectException e) {
-                    throw new IOException(e.getMessage());
+                    throw new RuntimeException(e.getMessage());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e.getMessage());
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage());
                 }
             }
-        }
-
-        @Override
-        public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            return new Environment() {
-            };
         }
     }
 
@@ -227,10 +203,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
             //Add an action to share injected environment variables
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, mergedVariables);
-
-            //Add a wrapper to intercept the preCheckout event and add specific variables such as WORKSPACE variable
-            BuildWrapperService wrapperService = new BuildWrapperService();
-            wrapperService.addBuildWrapper(build, new JobSetupEnvironmentWrapper());
 
 
             return new Environment() {
@@ -324,17 +296,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (!(build instanceof MatrixBuild)) {
 
             EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
-            if (envInjectAction != null) {
-
-                //Remove technical wrappers
-                try {
-                    BuildWrapperService wrapperService = new BuildWrapperService();
-                    wrapperService.removeBuildWrappers(build, JobSetupEnvironmentWrapper.class);
-                } catch (EnvInjectException e) {
-                    logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                    throw new Run.RunnerAbortedException();
-                }
-            } else {
+            if (envInjectAction == null) {
                 try {
                     envVars.putAll(build.getEnvironment(listener));
                 } catch (IOException e) {
