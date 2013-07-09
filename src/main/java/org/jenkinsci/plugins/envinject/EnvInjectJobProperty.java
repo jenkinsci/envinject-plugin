@@ -28,8 +28,9 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
-    private EnvInjectJobPropertyContributor[] contributors;
+    private Boolean setBeforeCheckout = Boolean.FALSE;
 
+    private EnvInjectJobPropertyContributor[] contributors;
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
 
     @SuppressWarnings("unused")
@@ -102,6 +103,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.info = info;
     }
 
+    public Object readResolve() {
+        if (setBeforeCheckout == null) setBeforeCheckout = true;
+        return this;
+    }
+
     public void setOn(boolean on) {
         this.on = on;
     }
@@ -130,6 +136,14 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                                                          property.info.isLoadFilesFromMaster());
         }
         return property;
+    }
+
+    public boolean isSetBeforeCheckout() {
+        return setBeforeCheckout;
+    }
+
+    public void setSetBeforeCheckout(boolean setBeforeCheckout) {
+        this.setBeforeCheckout = setBeforeCheckout;
     }
 
     @Extension

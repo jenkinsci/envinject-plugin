@@ -228,9 +228,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Add an action to share injected environment variables
             new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, mergedVariables);
 
-            //Add a wrapper to intercept the preCheckout event and add specific variables such as WORKSPACE variable
-            BuildWrapperService wrapperService = new BuildWrapperService();
-            wrapperService.addBuildWrapper(build, new JobSetupEnvironmentWrapper());
+            if (envInjectJobProperty.isSetBeforeCheckout()) {
+                //Add a wrapper to intercept the preCheckout event and add specific variables such as WORKSPACE variable
+                BuildWrapperService wrapperService = new BuildWrapperService();
+                wrapperService.addBuildWrapper(build, new JobSetupEnvironmentWrapper());
+            }
 
 
             return new Environment() {
