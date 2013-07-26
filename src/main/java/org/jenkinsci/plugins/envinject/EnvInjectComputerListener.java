@@ -77,13 +77,6 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         Map<String, String> currentEnvVars = new HashMap<String, String>();
 
-        // -- Retrieve Environment variables from master
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
-            if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
-                currentEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
-            }
-        }
-
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
