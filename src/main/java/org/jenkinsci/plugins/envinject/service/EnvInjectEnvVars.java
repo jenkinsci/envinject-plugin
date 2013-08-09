@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -108,7 +109,7 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, String scriptContent, Map<String, String> envVars) throws EnvInjectException {
+    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, String scriptContent, Map<String, String> envVars) throws EnvInjectException, AbortException {
 
         if (scriptContent == null) {
             return new HashMap<String, String>();
@@ -140,7 +141,7 @@ public class EnvInjectEnvVars implements Serializable {
 
         Object groovyResult = groovyShell.evaluate(scriptContent);
         if (groovyResult != null && !(groovyResult instanceof Map)) {
-            throw new EnvInjectException("The evaluated Groovy script must return a Map object.");
+            throw new AbortException("The evaluated Groovy script must return a Map object.");
         }
 
         Map<String, String> result = new HashMap<String, String>();

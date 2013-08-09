@@ -49,8 +49,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
-            } catch (Throwable throwable) {
-                logger.error("SEVERE ERROR occurs: " + throwable.getMessage());
+            } catch (EnvInjectException e) {
+                e.printStackTrace(listener.error("SEVERE ERROR occurs"));
                 throw new Run.RunnerAbortedException();
             }
         }
@@ -130,11 +130,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
 
                 } catch (EnvInjectException e) {
-                    throw new RuntimeException(e.getMessage());
+                    throw new RuntimeException(e);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e.getMessage());
+                    throw new RuntimeException(e);
                 } catch (IOException e) {
-                    throw new RuntimeException(e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
         }
