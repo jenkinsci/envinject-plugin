@@ -1,9 +1,19 @@
 package org.jenkinsci.plugins.envinject;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -13,12 +23,6 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Gregory Boissinot
@@ -56,6 +60,10 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
             Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger,
+                    info.getGroovyScriptContent(), previousEnvVars);
+
+
 
             //Add workspace if not set
             if (ws != null) {
@@ -74,7 +82,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), injectedEnvVars);
 
             //Resolve variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, new HashMap<String, String>());
 
             //Execute script info
             int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
