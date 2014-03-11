@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.model.*;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.envinject.service.EnvironmentVariablesNodeLoader;
 
 import java.util.HashMap;
@@ -24,6 +25,15 @@ public class EnvInjectBuildVariableContributor extends BuildVariableContributor 
         ParametersAction parameters = build.getAction(ParametersAction.class);
         //Only for a parameterized job
         if (parameters != null) {
+
+            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+            if (envInjectJobProperty == null) {
+                // Don't override anything if envinject isn't enabled on this job
+                return;
+            }
+
+            if (!envInjectJobProperty.isOverrideBuildParameters()) return;
 
             //Gather global variables for the current node
             EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();

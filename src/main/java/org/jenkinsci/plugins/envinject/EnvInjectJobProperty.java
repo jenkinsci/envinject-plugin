@@ -28,6 +28,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
+    private boolean overrideBuildParameters;
     private EnvInjectJobPropertyContributor[] contributors;
 
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
@@ -50,6 +51,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     @SuppressWarnings("unused")
     public boolean isKeepBuildVariables() {
         return keepBuildVariables;
+    }
+
+    @SuppressWarnings("unused")
+    public boolean isOverrideBuildParameters() {
+        return overrideBuildParameters;
     }
 
     @SuppressWarnings("unused")
@@ -114,10 +120,13 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.keepBuildVariables = keepBuildVariables;
     }
 
+    public void setOverrideBuildParameters(boolean overrideBuildParameters) {
+        this.overrideBuildParameters = overrideBuildParameters;
+    }
+
     public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
     }
-
 
     @Override
     public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
@@ -164,6 +173,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
                     JSONObject onJSONObject = (JSONObject) onObject;
                     envInjectJobProperty.setKeepJenkinsSystemVariables(onJSONObject.getBoolean("keepJenkinsSystemVariables"));
                     envInjectJobProperty.setKeepBuildVariables(onJSONObject.getBoolean("keepBuildVariables"));
+                    envInjectJobProperty.setOverrideBuildParameters(onJSONObject.getBoolean("overrideBuildParameters"));
 
                     //Process contributions
                     setContributors(req, envInjectJobProperty, onJSONObject);

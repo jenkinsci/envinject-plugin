@@ -17,6 +17,13 @@
                     checked="${instance.keepBuildVariables}" default="${true}"/>
         </f:entry>
 
+        <f:entry field="overrideBuildParameters" title="${%Override Build Parameters}">
+            <f:checkbox
+                    name="overrideBuildParameters"
+                    checked="${instance.overrideBuildParameters}" default="${false}"/>
+        </f:entry>
+
+
         <f:entry title="${%Script File Path}"
                  help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
             <f:textbox
