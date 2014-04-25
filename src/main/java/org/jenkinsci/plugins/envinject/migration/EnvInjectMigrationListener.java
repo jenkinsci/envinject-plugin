@@ -79,7 +79,7 @@ public class EnvInjectMigrationListener extends ItemListener {
                             buildWrapperIterator.remove();
 
                             //Add new wrapper
-                            addOrModifyEnvInjectBuildWrapper(buildableItemWithBuildWrappers.getBuildWrappersList(), oldWrapper.getEnvInjectBuildWrapper());
+                            addOrModifyEnvInjectBuildWrapper(buildableItemWithBuildWrappers.getBuildWrappersList(), oldWrapper.getEnvInjectBuildWrapper(buildableItemWithBuildWrappers));
 
                             //Save the job with the new elements (the config.xml is overridden)
                             buildableItemWithBuildWrappers.save();

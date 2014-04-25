@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.tasks.BuildWrapperDescriptor;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
@@ -21,7 +22,7 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
     private transient String filePath;
 
     @Override
-    public EnvInjectBuildWrapper getEnvInjectBuildWrapper() {
+    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(BuildableItemWithBuildWrappers originalItem) {
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, null, false);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(jobPropertyInfo);

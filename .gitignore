@@ -3,3 +3,4 @@ work
 *.ipr
 *.iml
 *.iws
+.idea/*

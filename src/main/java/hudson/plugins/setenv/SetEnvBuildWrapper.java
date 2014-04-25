@@ -5,6 +5,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.tasks.BuildWrapperDescriptor;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
@@ -21,8 +22,16 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
     private transient String localVarText;
 
     @Override
-    public EnvInjectBuildWrapper getEnvInjectBuildWrapper() {
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, localVarText, null, null, null, false);
+    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(BuildableItemWithBuildWrappers originalItem) {
+        String varText = localVarText;
+        EnvInjectBuildWrapper existing = originalItem.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
+        if (existing != null && existing.getInfo() != null) {
+            String existingContent = existing.getInfo().getPropertiesContent();
+            if (existingContent != null && !existingContent.isEmpty()) {
+                varText = varText + "\n" + existingContent;
+            }
+        }
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, varText, null, null, null, false);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(jobPropertyInfo);
         return envInjectBuildWrapper;
