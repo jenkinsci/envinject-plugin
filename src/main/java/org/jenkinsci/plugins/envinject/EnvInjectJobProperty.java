@@ -126,7 +126,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             // Don't let non RUN_SCRIPT users set arbitrary groovy script
             property.info = new EnvInjectJobPropertyInfo(property.info.propertiesFilePath, property.info.propertiesContent,
                                                          property.info.getScriptFilePath(), property.info.getScriptContent(),
-                                                         this.info.getGroovyScriptContent(),
+                                                         property.info.getGroovyScriptContent(),
                                                          property.info.isLoadFilesFromMaster());
         }
         return property;
