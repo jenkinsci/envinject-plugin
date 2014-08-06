@@ -37,4 +37,11 @@
 
     </f:entry>
 
+    <f:entry field="maskPasswordParameters"
+             title="${%Mask password parameters}"
+             help="/plugin/envinject/help-buildWrapperMaskPasswordParameters.html">
+        <f:checkbox
+                name="maskPasswordParameters"
+                checked="${instance.maskPasswordParameters}" default="${true}"/>
+    </f:entry>
 </j:jelly>
