@@ -8,6 +8,9 @@ import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.PasswordParameterValue;
 import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -43,6 +46,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     };
 
     private boolean injectGlobalPasswords;
+    private boolean maskPasswordParameters;
     private EnvInjectPasswordEntry[] passwordEntries;
 
     @DataBoundConstructor
@@ -53,10 +57,18 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         return injectGlobalPasswords;
     }
 
+    public boolean isMaskPasswordParameters() {
+        return maskPasswordParameters;
+    }
+    
     public void setInjectGlobalPasswords(boolean injectGlobalPasswords) {
         this.injectGlobalPasswords = injectGlobalPasswords;
     }
 
+    public void setMaskPasswordParameters(boolean maskPasswordParameters) {
+        this.maskPasswordParameters = maskPasswordParameters;
+    }
+    
     public EnvInjectPasswordEntry[] getPasswordEntries() {
         return passwordEntries;
     }
@@ -106,6 +118,24 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
             //--Decorate passwords
             List<String> passwords2decorate = Lists.newArrayList(Lists.transform(getEnvInjectPasswordEntries(), PASSWORD_ENTRY_TO_VALUE));
 
+            //-- Decorate password parameters
+            if (isMaskPasswordParameters()) {
+                logger.info("Mask passwords passed as build parameters.");
+            
+                ParametersAction parametersAction = build.getAction(ParametersAction.class);
+                if (parametersAction != null) {
+                    List<ParameterValue> parameters = parametersAction.getParameters();
+                    if (parameters != null) {
+                        for (ParameterValue parameter : parameters) {
+                            if (parameter instanceof PasswordParameterValue) {
+                                PasswordParameterValue passwordParameterValue = ((PasswordParameterValue) parameter);
+                                passwords2decorate.add(passwordParameterValue.getValue().getPlainText());
+                            }
+                        }
+                    }
+                }
+            }
+            
             return new EnvInjectPasswordsOutputStream(outputStream, passwords2decorate);
 
         } catch (EnvInjectException ee) {
@@ -221,6 +251,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
             EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
             passwordWrapper.setInjectGlobalPasswords(formData.getBoolean("injectGlobalPasswords"));
+            passwordWrapper.setMaskPasswordParameters(formData.getBoolean("maskPasswordParameters"));
 
             //Envinject passowrds
             List<EnvInjectPasswordEntry> passwordEntries = req.bindParametersToList(EnvInjectPasswordEntry.class, "envInjectPasswordEntry.");
