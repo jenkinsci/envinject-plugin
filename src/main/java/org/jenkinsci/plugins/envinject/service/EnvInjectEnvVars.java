@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -57,7 +58,7 @@ public class EnvInjectEnvVars implements Serializable {
         return resultMap;
     }
 
-    public Map<String, String> getEnvVarsFileProperty(FilePath rootPath,
+    public Map<String, String> getEnvVarsFileProperty(@Nonnull FilePath rootPath,
                                                       EnvInjectLogger logger,
                                                       String propertiesFilePath,
                                                       Map<String, String> propertiesContent,
