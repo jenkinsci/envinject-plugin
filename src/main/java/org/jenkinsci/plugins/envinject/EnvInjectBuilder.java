@@ -54,7 +54,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
 
             //Get current envVars
-            Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
+            Map<String, String> variables = new HashMap<String, String>();
 
             //Add workspace if not set
             if (ws != null) {
@@ -71,6 +71,8 @@ public class EnvInjectBuilder extends Builder implements Serializable {
 
             //Always keep build variables (such as parameter variables).
             variables.putAll(getAndAddBuildVariables(build));
+
+            variables.putAll(previousEnvVars);
 
             //Get env vars from properties info.
             //File information path can be relative to the workspace
