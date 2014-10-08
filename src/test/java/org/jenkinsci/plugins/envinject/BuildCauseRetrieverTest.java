@@ -48,11 +48,12 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
 
     public void testUPSTREAMBuildCause() throws Exception {
         FreeStyleProject upProject = createFreeStyleProject();
-        FreeStyleBuild upBuild = upProject.scheduleBuild2(0).get();
+        FreeStyleBuild upBuild = upProject.scheduleBuild2(0, new Cause.UserCause()).get();
         Cause.UpstreamCause upstreamCause = new Cause.UpstreamCause((Run) upBuild);
         FreeStyleBuild build = project.scheduleBuild2(0, upstreamCause).get();
         Assert.assertEquals(Result.SUCCESS, build.getResult());
-        checkCauseArguments(upstreamCause);
+        checkBuildCauses(build, "UPSTREAMTRIGGER", "MANUALTRIGGER",
+                         "BUILD_CAUSE_UPSTREAMTRIGGER" , "ROOT_BUILD_CAUSE_MANUALTRIGGER");
     }
 
     public void testCustomBuildCause() throws Exception {
@@ -70,7 +71,9 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
         Assert.assertEquals(Result.SUCCESS, build.getResult());
 
         String customCauseName = CustomTestCause.class.getSimpleName().toUpperCase();
-        checkBuildCauses(build, "CUSTOMTESTCAUSE,SCMTRIGGER", "BUILD_CAUSE_" + customCauseName, "BUILD_CAUSE_SCMTRIGGER");
+        checkBuildCauses(build, "CUSTOMTESTCAUSE,SCMTRIGGER", "CUSTOMTESTCAUSE,SCMTRIGGER",
+                         "BUILD_CAUSE_" + customCauseName, "BUILD_CAUSE_SCMTRIGGER",
+                         "ROOT_BUILD_CAUSE_" + customCauseName, "ROOT_BUILD_CAUSE_SCMTRIGGER");
     }
 
     private void checkCauseArguments(Class<? extends Cause> causeClass) throws Exception {
@@ -80,21 +83,21 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
     private void checkCauseArguments(Cause cause) throws Exception {
         FreeStyleBuild build = project.scheduleBuild2(0, cause).get();
         Assert.assertEquals(Result.SUCCESS, build.getResult());
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
-        checkCauseArgumentsWithBuild(build, cause.getClass());
+        checkCauseArgumentsWithBuild(build, causeMatchingNames.get(cause.getClass()));
     }
 
-    private void checkCauseArgumentsWithBuild(FreeStyleBuild build, Class<? extends Cause> causeClass) throws Exception {
-        String causeValue = causeMatchingNames.get(causeClass);
+    private void checkCauseArgumentsWithBuild(FreeStyleBuild build, String causeValue) throws Exception {
         if (causeValue != null) {
-            checkBuildCauses(build, causeValue, "BUILD_CAUSE_" + causeValue);
+            checkBuildCauses(build, causeValue, causeValue, "BUILD_CAUSE_" + causeValue, "ROOT_BUILD_CAUSE_" + causeValue);
         } else {
             String customCauseName = CustomTestCause.class.getSimpleName().toUpperCase();
-            checkBuildCauses(build, customCauseName, "BUILD_CAUSE_" + customCauseName);
+            checkBuildCauses(build, customCauseName, customCauseName,
+                             "BUILD_CAUSE_" + customCauseName, "ROOT_BUILD_CAUSE_" + customCauseName);
         }
     }
 
-    private void checkBuildCauses(FreeStyleBuild build, String expectedMainCauseValue, String... expectedCauseKeys) {
+    private void checkBuildCauses(FreeStyleBuild build, String expectedMainCauseValue,
+                                  String expectedRootMainCauseValue, String... expectedCauseKeys) {
 
         EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
         Assert.assertNotNull(envInjectAction);
@@ -105,6 +108,10 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
         String causeValue = envVars.get("BUILD_CAUSE");
         Assert.assertNotNull(causeValue);
         Assert.assertEquals(expectedMainCauseValue, causeValue);
+
+        String rootCauseValue = envVars.get("ROOT_BUILD_CAUSE");
+        Assert.assertNotNull(rootCauseValue);
+        Assert.assertEquals(expectedRootMainCauseValue, rootCauseValue);
 
         for (String causeKey : expectedCauseKeys) {
             Assert.assertEquals("true", envVars.get(causeKey));
