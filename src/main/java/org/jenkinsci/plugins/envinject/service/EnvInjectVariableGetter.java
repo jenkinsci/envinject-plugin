@@ -144,7 +144,12 @@ public class EnvInjectVariableGetter {
         if (environmentList != null) {
             for (Environment e : environmentList) {
                 if (e != null) {
-                    e.buildEnvVars(result);
+                    try {
+                        e.buildEnvVars(result);
+                    }
+                    catch(Exception ex) {
+                        logger.error("Environment " + e + " could not provide it's env variables: " + ex);
+                    }
                 }
             }
         }

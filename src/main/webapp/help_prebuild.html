@@ -1,0 +1,10 @@
+<div>
+    <p>
+        If this option is checked, Jenkins makes it possible to set an environment
+        for the build job (or for each run on a matrix project) by executing a script
+        (a setup script).<br/>
+        These actions will be executed in a JobProperty "prebuild" phase, after a SCM checkout but before the build-proper starts.
+        This allows, for example, to setup build environment for Maven project based on SCM data, which would otherwise be impossible,
+        since Maven project requires Maven to be available even before any of the build wrappers are executed.<br/>
+    </p>
+</div>
