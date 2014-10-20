@@ -41,9 +41,10 @@ public class EnvInjectVariableGetter {
         if (computer != null) {
             result = computer.getEnvironment().overrideAll(result);
             Node n = computer.getNode();
-            if (n != null)
+            if (n != null) {
                 result.put("NODE_NAME", computer.getName());
-            result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+                result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
+            }
         }
 
         String rootUrl = Hudson.getInstance().getRootUrl();

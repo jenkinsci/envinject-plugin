@@ -79,10 +79,13 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             }
 
             //Get result variables
-            Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), injectedEnvVars);
+            final HashMap<String, String> EMPTY_VARS = new HashMap<String, String>();
+            final Map<String, String> propertiesEnvVars = (ws != null)
+                    ? envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), injectedEnvVars)
+                    : EMPTY_VARS;
 
             //Resolve variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, new HashMap<String, String>());
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, EMPTY_VARS);
 
             //Execute script info
             int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);

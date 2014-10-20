@@ -9,13 +9,14 @@ import org.jenkinsci.plugins.envinject.EnvInjectNodeProperty;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectGlobalPasswordRetriever implements Serializable {
 
-    public EnvInjectGlobalPasswordEntry[] getGlobalPasswords() throws EnvInjectException {
+    public @CheckForNull EnvInjectGlobalPasswordEntry[] getGlobalPasswords() throws EnvInjectException {
         XmlFile xmlFile = new XmlFile(new File(Jenkins.getInstance().getRootDir(), EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor.ENVINJECT_CONFIG + ".xml"));
         if (xmlFile.exists()) {
             EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor desc;

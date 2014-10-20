@@ -18,6 +18,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
@@ -205,7 +206,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             return EnvInjectJobPropertyContributor.all();
         }
 
-        public EnvInjectJobPropertyContributor[] getContributorsInstance() {
+        public @CheckForNull EnvInjectJobPropertyContributor[] getContributorsInstance() {
             EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
             try {
                 return envInjectContributorManagement.getNewContributorsInstance();
