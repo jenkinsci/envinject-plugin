@@ -107,12 +107,7 @@ public class EnvInjectMigrationListener extends ItemListener {
             }
         }
 
-        //Add the new envInjectBuildWrapper
-        try {
-            wrappers.add(wrapper);
-        } catch (IOException ioe) {
-            throw new EnvInjectException(ioe);
-        }
+        wrappers.add(wrapper);
 
     }
 
