@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import com.google.common.collect.Maps;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
@@ -10,6 +11,7 @@ import org.kohsuke.stapler.StaplerProxy;
 import java.io.File;
 import java.io.ObjectStreamException;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Gregory Boissinot
@@ -56,7 +58,13 @@ public class EnvInjectAction implements Action, StaplerProxy {
     }
 
     public Object getTarget() {
-        return new EnvInjectVarList(envMap);
+        final Set sensitiveVariables = build.getSensitiveBuildVariables();
+        return new EnvInjectVarList(Maps.transformEntries(envMap,
+                new Maps.EntryTransformer<String, String, String>() {
+                    public String transformEntry(String key, String value) {
+                        return sensitiveVariables.contains(key) ? "********" : value;
+                    }
+                }));
     }
 
     @SuppressWarnings("unused")
