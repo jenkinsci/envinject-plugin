@@ -41,7 +41,6 @@ import hudson.tasks.Shell;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,31 +52,62 @@ public class EnvInjectActionTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    @SuppressWarnings("deprecation")
     @Test public void doNotOverrideWrapperEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        FreeStyleBuild build = build(p);
-        assertEquals("BUILD_VAL", build.getEnvironment().get("DISPLAY"));
-        assertTrue(build.getLog().contains("actual=BUILD_VAL"));
+        validate(p);
     }
 
-    @SuppressWarnings("deprecation")
     @Test public void doNotOverrideContributorEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildersList().add(new ContributingBuilder("DISPLAY", "BUILD_VAL"));
 
-        FreeStyleBuild build = build(p);
-        assertEquals("BUILD_VAL", build.getEnvironment().get("DISPLAY"));
-        assertTrue(build.getLog().contains("actual=BUILD_VAL"));
+        validate(p);
     }
 
-    private FreeStyleBuild build(FreeStyleProject p) throws InterruptedException, ExecutionException {
+    @Test public void doNotOverrideWithBuildStep() throws Exception {
+        FreeStyleProject p = setupProjectWithDefaultEnvValue();
+        p.getBuildersList().add(new EnvInjectBuilder(null, "IRRELEVANT_VAR=true"));
+
+        p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
+
+        validate(p);
+    }
+
+    @Test public void doNotOverrideWithBuildWrapper() throws Exception {
+        FreeStyleProject p = setupProjectWithDefaultEnvValue();
+        final EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                null, "IRRELEVANT_VAR=true", null, null, null, false));
+
+        p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
+
+        validate(p);
+    }
+
+    @Test public void doNotOverrideWithPasswordWrapper() throws Exception {
+        FreeStyleProject p = setupProjectWithDefaultEnvValue();
+        final EnvInjectPasswordWrapper wrapper = new EnvInjectPasswordWrapper();
+        wrapper.setPasswordEntries(new EnvInjectPasswordEntry[] {
+                new EnvInjectPasswordEntry("IRRELEVANT", "value")
+        });
+        p.getBuildWrappersList().add(wrapper);
+
+        p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
+
+        validate(p);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void validate(FreeStyleProject p) throws Exception {
         p.getBuildersList().add(new Shell("echo actual=$DISPLAY"));
-        return p.scheduleBuild2(0).get();
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        assertEquals("BUILD_VAL", build.getEnvironment().get("DISPLAY"));
+        assertTrue(build.getLog(), build.getLog().contains("actual=BUILD_VAL"));
     }
 
     private FreeStyleProject setupProjectWithDefaultEnvValue()throws Exception, IOException {
