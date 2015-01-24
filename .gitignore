@@ -4,3 +4,4 @@ work
 *.iml
 *.iws
 .idea/*
+.*
