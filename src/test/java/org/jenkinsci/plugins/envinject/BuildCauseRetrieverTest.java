@@ -106,7 +106,6 @@ public class BuildCauseRetrieverTest extends HudsonTestCase {
         Assert.assertNotNull(envVars);
 
         String causeValue = envVars.get("BUILD_CAUSE");
-        Assert.assertNotNull(causeValue);
         Assert.assertEquals(expectedMainCauseValue, causeValue);
 
         String rootCauseValue = envVars.get("ROOT_BUILD_CAUSE");

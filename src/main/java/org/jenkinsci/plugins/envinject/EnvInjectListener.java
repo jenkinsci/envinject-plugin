@@ -10,6 +10,7 @@ import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
@@ -33,19 +34,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             EnvInjectLogger logger = new EnvInjectLogger(listener);
             try {
 
-                //Process environment variables at node level
-                Node buildNode = build.getBuiltOn();
-                if (buildNode != null) {
-                    loadEnvironmentVariablesNode(build, buildNode, logger);
-                }
-
                 //Load job envinject job property
                 if (isEnvInjectJobPropertyActive(build)) {
                     return setUpEnvironmentJobPropertyObject(build, launcher, listener, logger);
                 } else {
                     return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
                 }
-
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
@@ -74,22 +68,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return job instanceof BuildableItemWithBuildWrappers;
 
     }
-
-    private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, EnvInjectLogger logger) throws EnvInjectException {
-
-        EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
-        Map<String, String> configNodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, buildNode, logger);
-        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(buildNode.getRootPath());
-        try {
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, configNodeEnvVars);
-
-        } catch (IOException ioe) {
-            throw new EnvInjectException(ioe);
-        } catch (InterruptedException ie) {
-            throw new EnvInjectException(ie);
-        }
-    }
-
 
     private boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();

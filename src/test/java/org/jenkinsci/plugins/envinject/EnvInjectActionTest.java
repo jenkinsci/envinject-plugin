@@ -24,12 +24,10 @@
 package org.jenkinsci.plugins.envinject;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.FreeStyleBuild;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributor;
@@ -37,13 +35,14 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.Shell;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
@@ -102,12 +101,12 @@ public class EnvInjectActionTest {
         validate(p);
     }
 
-    @SuppressWarnings("deprecation")
     private void validate(FreeStyleProject p) throws Exception {
-        p.getBuildersList().add(new Shell("echo actual=$DISPLAY"));
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
-        assertEquals("BUILD_VAL", build.getEnvironment().get("DISPLAY"));
-        assertTrue(build.getLog(), build.getLog().contains("actual=BUILD_VAL"));
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+
+        p.scheduleBuild2(0).get();
+        assertEquals("BUILD_VAL", capture.getEnvVars().get("DISPLAY"));
     }
 
     private FreeStyleProject setupProjectWithDefaultEnvValue()throws Exception, IOException {
@@ -165,17 +164,24 @@ public class EnvInjectActionTest {
                 AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener
         ) throws InterruptedException, IOException {
             // Start serving envvar from EnvironmentContributor
-            ContributingExtension.values(key, value);
+            contributor.values(key, value);
             return true;
         }
     }
 
     @TestExtension
-    public static final class ContributingExtension extends EnvironmentContributor {
-        private static String value = null;
-        private static String key = null;
+    public static final Contributor contributor = new Contributor();
 
-        private static void values(String k, String v) {
+    @Before
+    public void setUp() {
+        contributor.values(null, null);
+    }
+
+    private static class Contributor extends EnvironmentContributor {
+        private String value = null;
+        private String key = null;
+
+        private void values(String k, String v) {
             value = v;
             key = k;
         }
