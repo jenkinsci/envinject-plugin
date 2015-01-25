@@ -4,6 +4,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import junit.framework.Assert;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 
 import java.util.Map;
@@ -40,7 +41,7 @@ public class EnvInjectEnvVarsEmpty extends HudsonTestCase {
         Assert.assertNotNull(resultValEnvVar1);
         Assert.assertNotNull(resultValEnvVar2);
 
-        Assert.assertTrue(resultValEnvVar1.length() == 0);
+        Assert.assertEquals(0, resultValEnvVar1.length());
         Assert.assertEquals("VAL2", resultValEnvVar2);
     }
 }

@@ -25,7 +25,7 @@ public class PropertiesGetterTest {
     public void getPropertiesContentEmptyMap() {
         String content = propertiesGetter.getPropertiesContentFromMapObject(Collections.<String, String>emptyMap());
         assertNotNull(content);
-        assertTrue(content.trim().length() == 0);
+        assertEquals(0, content.trim().length());
     }
 
     @Test
