@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 
 /**
  * @author Gregory Boissinot
@@ -22,12 +21,12 @@ public class PropertiesLoaderTest {
 
     @Test(expected = NullPointerException.class)
     public void nullFile() throws Exception {
-        propertiesLoader.getVarsFromPropertiesFile(null, any(Map.class));
+        propertiesLoader.getVarsFromPropertiesFile(null, new HashMap<String, String>());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void notExistFile() throws Exception {
-        propertiesLoader.getVarsFromPropertiesFile(new File("not exist"), any(Map.class));
+        propertiesLoader.getVarsFromPropertiesFile(new File("not exist"), new HashMap<String, String>());
     }
 
     @Test
@@ -43,7 +42,7 @@ public class PropertiesLoaderTest {
 
     @Test(expected = NullPointerException.class)
     public void nullContent() throws Exception {
-        propertiesLoader.getVarsFromPropertiesContent(null, any(Map.class));
+        propertiesLoader.getVarsFromPropertiesContent(null, new HashMap<String, String>());
     }
 
     @Test(expected = IllegalArgumentException.class)
