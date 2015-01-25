@@ -1,29 +1,73 @@
 package org.jenkinsci.plugins.envinject;
 
+import static org.junit.Assert.assertEquals;
 import hudson.Util;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Result;
 import junit.framework.Assert;
-import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.jvnet.hudson.test.HudsonTestCase;
 
+import org.jenkinsci.lib.envinject.EnvInjectAction;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Gregory Boissinot
- */
-public class EnvInjectBuildWrapperTest extends HudsonTestCase {
+public class EnvInjectBuildWrapperTest {
 
+    public @Rule JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void injectText() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.properties", "FILE_VAR=fvalue"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "TEXT_VAR=tvalue", null, null, null, false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("tvalue", capture.getEnvVars().get("TEXT_VAR"));
+        assertEquals("fvalue", capture.getEnvVars().get("FILE_VAR"));
+    }
+
+    @Test
+    public void injectFromScript() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.groovy", "return ['FILE_VAR': 'fvalue']"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                null, null, null, null, "return ['GROOVY_VAR': 'gvalue']", false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("gvalue", capture.getEnvVars().get("GROOVY_VAR"));
+    }
+
+    @Test
     public void testPropertiesContentCustomWorkspace() throws Exception {
 
         String customWorkspaceValue = Hudson.getInstance().getRootPath().getRemote() + "/customWorkspace";
         String customEnvVarName = "materialize_workspace_path";
         String customEnvVarValue = "${WORKSPACE}/materialize_workspace";
 
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         project.setCustomWorkspace(customWorkspaceValue);
 
         String propertiesContent = customEnvVarName + "=" + customEnvVarValue;
@@ -60,5 +104,4 @@ public class EnvInjectBuildWrapperTest extends HudsonTestCase {
     private String resolveVars(String value, Map<String, String> map) {
         return Util.replaceMacro(value, map);
     }
-
 }
