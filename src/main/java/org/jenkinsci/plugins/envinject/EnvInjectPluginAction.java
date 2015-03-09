@@ -22,7 +22,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
         return new EnvInjectVarList(Maps.transformEntries(envMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
-                        return getSensibleVariables().contains(key) ? "********" : value;
+                        return getSensibleVariables() != null && getSensibleVariables().contains(key) ? "********" : value;
                     }
                 }));
     }
