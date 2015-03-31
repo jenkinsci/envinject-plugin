@@ -31,32 +31,6 @@ public class PropertiesLoader implements Serializable {
      * @throws EnvInjectException
      * @throws IOException 
      */
-//    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException {
-//
-//        if (propertiesFile == null) {
-//            throw new NullPointerException("The properties file object must be set.");
-//        }
-//        if (!propertiesFile.exists()) {
-//            throw new IllegalArgumentException("The properties file object must be exist.");
-//        }
-//
-//        Map<String, String> result = new LinkedHashMap<String, String>();
-//
-//        SortedProperties properties = new SortedProperties();
-//        try {
-//            String fileContent = Util.loadFile(propertiesFile);
-//            String fileContentResolved = Util.replaceMacro(fileContent, currentEnvVars);
-//            fileContentResolved = processPath(fileContentResolved);
-//            properties.load(new StringReader(fileContentResolved));
-//        } catch (IOException ioe) {
-//            throw new EnvInjectException("Problem occurs on loading content", ioe);
-//        }
-//        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-//            result.put(processElement(entry.getKey()), processElement(entry.getValue()));
-//        }
-//        return result;
-//    }
-	
 	public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException, IOException {
 		
         if (propertiesFile == null) {
