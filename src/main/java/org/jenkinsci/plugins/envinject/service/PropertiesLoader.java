@@ -8,7 +8,6 @@ import org.jenkinsci.plugins.envinject.util.SortedProperties;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -56,7 +55,7 @@ public class PropertiesLoader implements Serializable {
         	key = Util.replaceMacro(key, currentEnvVars);
         	value = Util.replaceMacro(value, currentEnvVars);
         	
-        	result.put(processElement(key), processElement(value));
+        	result.put(key, value);
         }
         
         return result;
