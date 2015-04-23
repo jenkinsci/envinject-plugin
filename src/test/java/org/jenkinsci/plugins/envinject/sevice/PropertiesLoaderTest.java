@@ -182,8 +182,8 @@ public class PropertiesLoaderTest {
 			new HashMap<String, String>());
 
 	assertNotNull(gatherVars);
-	assertEquals(3, gatherVars.size());
-	assertEquals(keys[0], gatherVars.get("KEY1"));
+	assertEquals(4, gatherVars.size());
+	assertEquals(keys[0], gatherVars.get("KEY1 "));
 	assertEquals(keys[1], gatherVars.get("KEY2"));
 	assertEquals(keys[2], gatherVars.get("KEY3"));
 	assertEquals(keys[3], gatherVars.get("KEY4"));
