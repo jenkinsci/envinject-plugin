@@ -306,5 +306,52 @@ public class PropertiesLoaderTest {
         assertEquals("NEW_VALUE3\\otherContent", gatherVars.get("KEY3"));
         assertEquals("VALUE4", gatherVars.get("NEW_KEY4"));
     }
+    
+    /**
+     * Test properties file where keys and/or values are environment variables.
+     * @throws Exception on file read/write.
+     */
+    @Test
+    public void fileWithLinkToResolve() throws Exception {
+        // Preset environment variables
+	Map<String, String> currentEnvVars = new HashMap<String, String>();
+        currentEnvVars.put("VAR_TO_RESOLVE", "NEW_VALUE");
+        
+        String complexLinkUrl = "https://www.testing.abc:8080/folder/SPACE%20HERE#action=foo&id=_wh8794&variable=${VAR_TO_RESOLVE}";
+        
+	// Create properties file containing backslash-escaped newlines
+	Properties prop = new Properties();
+	prop.setProperty("complexLinkUrl", complexLinkUrl);
+
+	File propFile = File.createTempFile("test", "test");
+	OutputStream output = new FileOutputStream(propFile);
+	prop.store(output, null);
+	
+	Map<String, String> gatherVars = propertiesLoader.getVarsFromPropertiesFile(propFile, currentEnvVars);
+        assertNotNull(gatherVars);
+        assertEquals(1, gatherVars.size());
+        assertEquals("https://www.testing.abc:8080/folder/SPACE%20HERE#action=foo&id=_wh8794&variable=NEW_VALUE", gatherVars.get("complexLinkUrl"));
+    }
+
+    /**
+     * Test content where keys and/or values are environment variables.
+     * @throws Exception reading content.
+     */
+    @Test
+    public void contentWithLinkToResolve() throws Exception {
+	
+	// Preset environment variables
+	Map<String, String> currentEnvVars = new HashMap<String, String>();
+	currentEnvVars.put("VAR_TO_RESOLVE", "NEW_VALUE");
+	
+	// Symbols ":", "#" and "=" are always escaped IN THE VALUES of Properties file (otherwise they are seen as key/value separator).
+	// However, in the current state of EnvInject, the URLs don't need to be escape if used via Jenkins interface.
+	String complexLinkUrl = "KEY1=https://www.testing.abc:8080/folder/SPACE%20HERE#action=foo&id=_wh8794&variable=${VAR_TO_RESOLVE}";
+
+        Map<String, String> gatherVars = propertiesLoader.getVarsFromPropertiesContent(complexLinkUrl, currentEnvVars);
+        assertNotNull(gatherVars);
+        assertEquals(1, gatherVars.size());
+        assertEquals("https://www.testing.abc:8080/folder/SPACE%20HERE#action=foo&id=_wh8794&variable=NEW_VALUE", gatherVars.get("KEY1"));
+    }
 
 }
