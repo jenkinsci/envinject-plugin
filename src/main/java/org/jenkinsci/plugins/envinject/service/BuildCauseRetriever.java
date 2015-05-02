@@ -60,15 +60,19 @@ public class BuildCauseRetriever {
     private static Map<String, String> buildCauseEnvironmentVariables(String envBase, Collection<String> causeNames) {
         Map<String, String> triggerVars = new HashMap<String, String>();
         StringBuilder all = new StringBuilder();
+        int count = 0;
         for (String name : causeNames) {
             if (!StringUtils.isBlank(name)) {
                 triggerVars.put(envBase + "_" + name, "true");
-                all.append(",");
+                if (count > 0) {
+                    all.append(",");
+                }
                 all.append(name);
+                count++;
             }
         }
         // add variable containing all the trigger names
-        triggerVars.put(envBase, all.toString().substring(1));
+        triggerVars.put(envBase, all.toString());
         return triggerVars;
     }
 
