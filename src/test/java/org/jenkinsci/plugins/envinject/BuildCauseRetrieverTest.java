@@ -7,9 +7,9 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-import org.jenkinsci.plugins.envinject.CustomTestCause;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static com.google.common.base.Joiner.on;
@@ -121,6 +121,22 @@ public class BuildCauseRetrieverTest {
                         sub(ROOT_BUILD_CAUSE, customCauseName),
                         sub(ROOT_BUILD_CAUSE, SCM_TRIGGER))
         );
+    }
+
+    @Test
+    @Bug(28188)
+    public void shouldWriteInfoAboutAnonymousClassCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause() {
+            @Override
+            public String getShortDescription() {
+                return "This build was started by a hobbit Bilbo. Bilbo Baggins";
+            }
+        }).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+
+        assertThat(build, withCause(BUILD_CAUSE, ""));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, ""));
     }
 
     private String sub(String first, String second) {
