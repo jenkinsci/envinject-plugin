@@ -49,34 +49,39 @@ import org.jvnet.hudson.test.TestExtension;
 
 public class EnvInjectActionTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
-    @Test public void doNotOverrideWrapperEnvVar() throws Exception {
+    @Test
+    public void doNotOverrideWrapperEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        validate(p);
+        assertValueInjected(p);
     }
 
-    @Test public void doNotOverrideContributorEnvVar() throws Exception {
+    @Test
+    public void doNotOverrideContributorEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildersList().add(new ContributingBuilder("DISPLAY", "BUILD_VAL"));
 
-        validate(p);
+        assertValueInjected(p);
     }
 
-    @Test public void doNotOverrideWithBuildStep() throws Exception {
+    @Test
+    public void doNotOverrideWithBuildStep() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         p.getBuildersList().add(new EnvInjectBuilder(null, "IRRELEVANT_VAR=true"));
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        validate(p);
+        assertValueInjected(p);
     }
 
-    @Test public void doNotOverrideWithBuildWrapper() throws Exception {
+    @Test
+    public void doNotOverrideWithBuildWrapper() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         final EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
@@ -85,10 +90,11 @@ public class EnvInjectActionTest {
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        validate(p);
+        assertValueInjected(p);
     }
 
-    @Test public void doNotOverrideWithPasswordWrapper() throws Exception {
+    @Test
+    public void doNotOverrideWithPasswordWrapper() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         final EnvInjectPasswordWrapper wrapper = new EnvInjectPasswordWrapper();
         wrapper.setPasswordEntries(new EnvInjectPasswordEntry[] {
@@ -98,10 +104,10 @@ public class EnvInjectActionTest {
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 
-        validate(p);
+        assertValueInjected(p);
     }
 
-    private void validate(FreeStyleProject p) throws Exception {
+    private void assertValueInjected(FreeStyleProject p) throws Exception {
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
 
