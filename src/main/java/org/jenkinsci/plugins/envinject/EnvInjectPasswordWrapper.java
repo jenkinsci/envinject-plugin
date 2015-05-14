@@ -198,6 +198,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
             }
             logger.write(line.getBytes());
         }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            logger.close();
+        }       
     }
 
     @Override
