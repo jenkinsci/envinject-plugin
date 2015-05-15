@@ -5,7 +5,6 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +13,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Joiner.on;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 
 /**
  * @author Gregory Boissinot
@@ -47,7 +50,7 @@ public class BuildCauseRetriever {
             if (depth == MAX_UPSTREAM_DEPTH) {
                 causeNames.add("DEEPLYNESTEDCAUSES");
             } else {
-                Cause.UpstreamCause c = (Cause.UpstreamCause)cause;
+                Cause.UpstreamCause c = (Cause.UpstreamCause) cause;
                 List<Cause> upstreamCauses = c.getUpstreamCauses();
                 for (Cause upstreamCause : upstreamCauses)
                     insertRootCauseNames(causeNames, upstreamCause, depth + 1);
@@ -59,16 +62,15 @@ public class BuildCauseRetriever {
 
     private static Map<String, String> buildCauseEnvironmentVariables(String envBase, Collection<String> causeNames) {
         Map<String, String> triggerVars = new HashMap<String, String>();
-        StringBuilder all = new StringBuilder();
+        List<String> nonEmptyNames = new ArrayList<String>();
         for (String name : causeNames) {
-            if (!StringUtils.isBlank(name)) {
-                triggerVars.put(envBase + "_" + name, "true");
-                all.append(",");
-                all.append(name);
+            if (isNotBlank(name)) {
+                triggerVars.put(on("_").join(envBase, name), "true");
+                nonEmptyNames.add(name);
             }
         }
         // add variable containing all the trigger names
-        triggerVars.put(envBase, all.toString().substring(1));
+        triggerVars.put(envBase, on(",").join(nonEmptyNames));
         return triggerVars;
     }
 
