@@ -91,7 +91,7 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
     /**
      * A wrapper for an {@link OutputStream}, which raises the flag when a
      * stream gets closed externally.
-     * @since TODO
+     * @since 1.91.3
      */
     public static class FileLeakDetectorStream extends FilterOutputStream {
         
@@ -115,7 +115,7 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
     
     /**
      * A class, which decorates loggers by {@link FileLeakDetectorStream}.
-     * @since TODO
+     * @since 1.91.3
      */
     public static class FileLeakBuildWrapper extends BuildWrapper {
 
