@@ -1,27 +1,31 @@
 package org.jenkinsci.plugins.envinject;
 
-import static org.junit.Assert.assertEquals;
-import hudson.Util;
+import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Result;
-import junit.framework.Assert;
-
-import org.jenkinsci.lib.envinject.EnvInjectAction;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import static com.google.common.collect.ImmutableMap.of;
+import static hudson.Util.replaceMacro;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withEnvInjectAction;
+import static org.junit.Assert.assertEquals;
 
 public class EnvInjectBuildWrapperTest {
 
-    public @Rule JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     @Test
     public void injectText() throws Exception {
@@ -61,47 +65,35 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void testPropertiesContentCustomWorkspace() throws Exception {
-
-        String customWorkspaceValue = Hudson.getInstance().getRootPath().getRemote() + "/customWorkspace";
+    public void shouldPopulatePropertiesContentWithCustomWorkspace() throws Exception {
+        final String customWorkspaceValue = tmp.newFolder().getAbsolutePath();
         String customEnvVarName = "materialize_workspace_path";
         String customEnvVarValue = "${WORKSPACE}/materialize_workspace";
 
         FreeStyleProject project = j.createFreeStyleProject();
         project.setCustomWorkspace(customWorkspaceValue);
 
-        String propertiesContent = customEnvVarName + "=" + customEnvVarValue;
+        EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, null, false);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
-        envInjectBuildWrapper.setInfo(jobPropertyInfo);
+        envInjectBuildWrapper.setInfo(withPropContent(customEnvVarName + "=" + customEnvVarValue));
         project.getBuildWrappersList().add(envInjectBuildWrapper);
 
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
 
-        //1-- Compute expected injected var value
         //Retrieve build workspace
         String buildWorkspaceValue = build.getWorkspace().getRemote();
-        Assert.assertEquals(customWorkspaceValue, buildWorkspaceValue);
+        assertThat("1. Should see actual ws equal to custom", buildWorkspaceValue, equalTo(customWorkspaceValue));
+
         //Compute value with workspace
-        Map<String, String> mapEnvVars = new HashMap<String, String>();
-        mapEnvVars.put("WORKSPACE", buildWorkspaceValue);
-        String expectedCustomEnvVarValue = resolveVars(customEnvVarValue, mapEnvVars);
+        String expectedCustomEnvVarValue = replaceMacro(customEnvVarValue,
+                of("WORKSPACE", buildWorkspaceValue));
 
-        //2-- Get injected value for the specific variable
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-        Assert.assertNotNull(envInjectAction);
-        Map<String, String> envVars = envInjectAction.getEnvMap();
-        Assert.assertNotNull(envVars);
-        String resolvedValue = envVars.get(customEnvVarName);
-        Assert.assertNotNull(resolvedValue);
-
-        //3-- Test equals
-        Assert.assertEquals(expectedCustomEnvVarValue, resolvedValue);
+        assertThat("2. Property should be resolved with custom ws in build", build,
+                withEnvInjectAction(map(hasEntry(customEnvVarName, expectedCustomEnvVarValue))));
     }
 
-    private String resolveVars(String value, Map<String, String> map) {
-        return Util.replaceMacro(value, map);
+    private EnvInjectJobPropertyInfo withPropContent(String propertiesContent) {
+        return new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, null, false);
     }
 }
