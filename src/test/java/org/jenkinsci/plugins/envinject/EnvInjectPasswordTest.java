@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildWrapper;
@@ -9,34 +8,35 @@ import hudson.util.Secret;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import junit.framework.Assert;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectPasswordTest extends HudsonTestCase {
+public class EnvInjectPasswordTest {
+
+    @Rule
+    public JenkinsRule jenkins = new JenkinsRule();
 
     private static final String PWD_KEY = "PASS_KEY";
     private static final String PWD_VALUE = "PASS_VALUE";
 
-    private FreeStyleProject project;
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        project = createFreeStyleProject();
-    }
-
+    @Test
     public void testEnvInjectPasswordWrapper() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject();
 
         EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
         passwordWrapper.setPasswordEntries(new EnvInjectPasswordEntry[]{
@@ -45,12 +45,14 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
 
         project.getBuildWrappersList().add(passwordWrapper);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        jenkins.assertBuildStatusSuccess(build);
 
         checkEnvInjectResult(build);
     }
 
+    @Test
     public void testEnvInjectJobParameterPassword() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject();
 
         List<ParameterValue> parameterValues = new ArrayList<ParameterValue>();
         parameterValues.add(new PasswordParameterValue(PWD_KEY, PWD_VALUE));
@@ -58,13 +60,16 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
 
         @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        jenkins.assertBuildStatusSuccess(build);
 
         checkEnvInjectResult(build);
     }
 
+    @Test
     @Bug(28409)
     public void testFileHandlesLeak() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject();
+
         final EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
         passwordWrapper.setPasswordEntries(new EnvInjectPasswordEntry[]{
                 new EnvInjectPasswordEntry(PWD_KEY, PWD_VALUE)
@@ -74,18 +79,18 @@ public class EnvInjectPasswordTest extends HudsonTestCase {
         project.getBuildWrappersList().add(fileLeakDetector);
         project.getBuildWrappersList().add(passwordWrapper);
         
-        @SuppressWarnings("deprecation")  
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        assertBuildStatusSuccess(build);
+        jenkins.assertBuildStatusSuccess(build);
         
-        Assert.assertTrue("Nested output stream has not been closed", fileLeakDetector.getLastOutputStream().isClosed());    
+        assertTrue("Nested output stream has not been closed", fileLeakDetector.getLastOutputStream().isClosed());
     } 
-    
+
     private void checkEnvInjectResult(FreeStyleBuild build) {
         EnvInjectAction action = build.getAction(EnvInjectAction.class);
         Map<String, String> envVars = action.getEnvMap();
-        //The value must be encrypted in the envVars
-        Assert.assertEquals(Secret.fromString(PWD_VALUE).getEncryptedValue(), envVars.get(PWD_KEY));
+
+        // The value must be encrypted in the envVars
+        assertEquals(Secret.fromString(PWD_VALUE).getEncryptedValue(), envVars.get(PWD_KEY));
     }    
     
     /**

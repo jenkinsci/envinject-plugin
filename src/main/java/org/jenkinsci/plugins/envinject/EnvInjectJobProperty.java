@@ -6,7 +6,6 @@ import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.model.ReconfigurableDescribable;
 import jenkins.model.Jenkins;
 import net.sf.json.JSON;
 import net.sf.json.JSONException;
@@ -78,7 +77,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
                 descriptors = EnvInjectJobPropertyContributor.all();
 
-        //If the config are loaded with success (this step) and the descriptors size doesn't have change
+        // If the config are loaded with success (this step) and the descriptors size doesn't have change
         // we considerate, they are the same, therefore we retrieve instances
         if (contributors != null && contributors.length == descriptors.size()) {
             return contributors;
