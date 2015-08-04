@@ -1,21 +1,30 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.model.*;
-import junit.framework.Assert;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEvaluatedGroovyScript extends HudsonTestCase {
+public class EnvInjectEvaluatedGroovyScript {
 
+    @Rule
+    public JenkinsRule jenkins = new JenkinsRule();
+
+    @Test
     public void testMapGroovyScript() throws Exception {
 
-        FreeStyleProject project = createFreeStyleProject("jobTest");
+        FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(
@@ -48,22 +57,22 @@ public class EnvInjectEvaluatedGroovyScript extends HudsonTestCase {
 
         @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        assertEquals(Result.SUCCESS, build.getResult());
 
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
-        Assert.assertNotNull(envInjectAction);
+        assertNotNull(envInjectAction);
         Map<String, String> envVars = envInjectAction.getEnvMap();
-        Assert.assertNotNull(envVars);
+        assertNotNull(envVars);
 
         String resultValEnvVar = envVars.get("COMPUTE_VAR");
-        Assert.assertNotNull(resultValEnvVar);
-        Assert.assertEquals("string", resultValEnvVar);
+        assertNotNull(resultValEnvVar);
+        assertEquals("string", resultValEnvVar);
     }
 
-
+    @Test
     public void testBuildInVars() throws Exception {
 
-        FreeStyleProject project = createFreeStyleProject("jobTest");
+        FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(
@@ -87,17 +96,17 @@ public class EnvInjectEvaluatedGroovyScript extends HudsonTestCase {
 
         @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        assertEquals(Result.SUCCESS, build.getResult());
 
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
-        Assert.assertNotNull(envInjectAction);
+        assertNotNull(envInjectAction);
         Map<String, String> envVars = envInjectAction.getEnvMap();
-        Assert.assertNotNull(envVars);
+        assertNotNull(envVars);
 
         String resultValEnvVar1 = envVars.get("COMPUTE_VAR1");
         String resultValEnvVar2 = envVars.get("COMPUTE_VAR2");
-        Assert.assertNotNull(resultValEnvVar1);
-        Assert.assertNotNull(resultValEnvVar2);
-        Assert.assertEquals(resultValEnvVar2, resultValEnvVar1);
+        assertNotNull(resultValEnvVar1);
+        assertNotNull(resultValEnvVar2);
+        assertEquals(resultValEnvVar2, resultValEnvVar1);
     }
 }
