@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.532</version>
+        <version>1.532.3</version>
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>1.91.4-SNAPSHOT</version>
+    <version>1.91.5-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin</url>

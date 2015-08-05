@@ -11,11 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Gregory Boissinot
- */
-
-/**
  * Overriding job parameters with environment variables populated by EnvInject plugin
+ *
+ * @author Gregory Boissinot
  */
 @Extension
 public class EnvInjectBuildVariableContributor extends BuildVariableContributor {
