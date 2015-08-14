@@ -1,7 +1,16 @@
 <div>
-    <p>
-        Give a set of key/value (KEY=VALUE).<br/>
-        All the properties name will be accessible as environment variables by their names.<br/>
-        You can use or override the properties specified in the above properties file.<br/>
-    </p>
+    <p>Give a set of key/value (one variable per line): <code>KEY=VALUE</code>.</p>
+
+    <p>All the properties name will be accessible as environment variables by their names. You can use or override the
+        properties specified in the above properties file.</p>
+
+    <p>These environment variables (<strong>only these</strong>) will be available in the Job environment independently
+        from the build. There are following use-cases: SCM polling, validation of fields depending on environment
+        variables (e.g. <code>http://server/svn/$REPO</code>), custom workspace management, etc.</p>
+
+    <p><strong>Limitations:</strong> The field may contain variables, which are not resolvable outside the Build context
+        (e.g. <code>BUILD_NUMBER</code>, <code>WORKSPACE</code>, etc.), the plugin simply won't interpret these variables.
+        This behavior should be taken into account by job editors. For example, with <code>VAR1=${WORKSPACE}</code> it
+        will receive the string <code>${WORKSPACE}</code>.</p>
+
 </div>

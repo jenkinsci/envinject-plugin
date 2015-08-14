@@ -8,7 +8,7 @@
     </f:entry>
 
     <f:entry title="${%Properties Content}"
-             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
+             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper/help/propertiesContent">
         <f:textarea
                 name="envInjectInfoWrapper.propertiesContent"
                 value="${instance.info.propertiesContent}"/>
