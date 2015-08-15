@@ -13,7 +13,7 @@ public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
     @Override
     public void buildEnvironmentFor(Job job, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         EnvInjectJobProperty jobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
-        if (jobProperty != null) {
+        if (jobProperty != null && jobProperty.isOn()) {
             EnvInjectJobPropertyInfo jobPropertyInfo = jobProperty.getInfo();
 
             // Processes "Properties Content"

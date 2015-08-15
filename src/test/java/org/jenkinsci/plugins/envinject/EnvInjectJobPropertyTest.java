@@ -62,7 +62,7 @@ public class EnvInjectJobPropertyTest {
         assertNotNull(scheduled);
         FreeStyleBuild build = scheduled.get();
         jenkinsRule.assertBuildStatusSuccess(build);
-        assertEquals("The build parameter has been overriden", "Value", 
+        assertEquals("The build parameter has been overridden", "Value",
                 build.getEnvironment(TaskListener.NULL).get("PARAM"));
     }
     
@@ -119,7 +119,7 @@ public class EnvInjectJobPropertyTest {
     }
     
     @Nonnull
-    public EnvInjectJobProperty<FreeStyleProject>  
+    public EnvInjectJobProperty<FreeStyleProject>
             forPropertiesContent(@Nonnull FreeStyleProject job, @Nonnull String content) throws IOException {
         final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>();
         prop.setInfo(new EnvInjectJobPropertyInfo(null, content, null, null, null, false));
