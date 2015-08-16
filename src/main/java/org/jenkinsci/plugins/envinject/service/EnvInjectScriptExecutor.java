@@ -86,7 +86,7 @@ public class EnvInjectScriptExecutor {
             }
 
             FilePath tmpFile = batchRunner.createScriptFile(scriptExecutionRoot);
-            logger.info(String.format("Executing and processing the following script content: \n%s\n", scriptContent));
+            logger.info(String.format("Executing and processing the following script content: %n%s%n", scriptContent));
             int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
                 logger.info(String.format("Script executed. The exit code is %s.", cmdCode));

@@ -120,7 +120,7 @@ public class EnvInjectEnvVars implements Serializable {
             return new HashMap<String, String>();
         }
 
-        logger.info(String.format("Evaluation the following Groovy script content: \n%s\n", scriptContent));
+        logger.info(String.format("Evaluation the following Groovy script content: %n%s%n", scriptContent));
 
         Binding binding = new Binding();
         String jobName = envVars.get("JOB_NAME");
