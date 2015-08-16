@@ -15,6 +15,7 @@ import java.util.Set;
 
 /**
  * @author Gregory Boissinot
+ * @deprecated Replaced by {@link EnvInjectPluginAction}.
  */
 @Deprecated
 public class EnvInjectAction implements Action, StaplerProxy {
@@ -45,20 +46,38 @@ public class EnvInjectAction implements Action, StaplerProxy {
         return UnmodifiableMap.decorate(envMap);
     }
 
+    @Override
     public String getIconFileName() {
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return null;
+        }
         return "document-properties.gif";
     }
 
+    @Override
     public String getDisplayName() {
         return "Environment Variables";
     }
 
+    @Override
     public String getUrlName() {
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return null;
+        }
         return URL_NAME;
     }
 
+    protected AbstractBuild getBuild() {
+        return build;
+    }
+    
+    @Override
     public Object getTarget() {
         final Set sensitiveVariables = build.getSensitiveBuildVariables();
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return EnvInjectVarList.HIDDEN;
+        }
+        
         return new EnvInjectVarList(Maps.transformEntries(envMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
