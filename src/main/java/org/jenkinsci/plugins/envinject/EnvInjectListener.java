@@ -127,7 +127,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     Map<String, String> cleanVariables = envInjectEnvVars.removeUnsetVars(previousEnvVars);
 
                     //Set new env vars
-                    new EnvInjectActionSetter(build.getBuiltOn().getRootPath()).addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
+                    final Node builtOn = build.getBuiltOn();
+                    new EnvInjectActionSetter(builtOn != null ? builtOn.getRootPath() : null)
+                            .addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
 
                 } catch (EnvInjectException e) {
                     throw new RuntimeException(e);

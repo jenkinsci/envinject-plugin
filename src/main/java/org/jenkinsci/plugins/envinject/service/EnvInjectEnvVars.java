@@ -58,6 +58,7 @@ public class EnvInjectEnvVars implements Serializable {
         return resultMap;
     }
 
+    @Nonnull
     public Map<String, String> getEnvVarsFileProperty(@Nonnull FilePath rootPath,
                                                       EnvInjectLogger logger,
                                                       String propertiesFilePath,
