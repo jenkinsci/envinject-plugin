@@ -5,6 +5,7 @@ import hudson.Util;
 import hudson.model.Node;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
+import java.util.Arrays;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -63,7 +64,7 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
 
         @SuppressWarnings("unused")
         public EnvInjectGlobalPasswordEntry[] getEnvInjectGlobalPasswordEntries() {
-            return envInjectGlobalPasswordEntries;
+            return Arrays.copyOf(envInjectGlobalPasswordEntries, envInjectGlobalPasswordEntries.length);
         }
 
         @Override

@@ -16,6 +16,7 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectContributorManagement;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
 
@@ -69,7 +70,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             contributors = contributorsComputed;
         }
 
-        return contributors;
+        return Arrays.copyOf(contributors, contributors.length);
     }
 
     private EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
