@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Joiner.on;
+import java.util.Locale;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
@@ -87,7 +88,7 @@ public class BuildCauseRetriever {
         } else if (Cause.UpstreamCause.class.isInstance(cause)) {
             return "UPSTREAMTRIGGER";
         } else if (cause != null) {
-            return cause.getClass().getSimpleName().toUpperCase();
+            return cause.getClass().getSimpleName().toUpperCase(Locale.ENGLISH);
         }
 
         return null;

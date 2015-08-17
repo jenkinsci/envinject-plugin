@@ -105,7 +105,7 @@ public class EnvInjectVarList implements Serializable {
         response.setContentType("plain/text");
         StringWriter stringWriter = new StringWriter();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            stringWriter.write(String.format("%s%s%s\n", entry.getKey(), "=", entry.getValue()));
+            stringWriter.write(String.format("%s%s%s%n", entry.getKey(), "=", entry.getValue()));
         }
         response.getOutputStream().write(stringWriter.toString().getBytes());
     }

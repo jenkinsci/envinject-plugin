@@ -178,7 +178,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
                         nbMaskedPasswords++;
                     }
                 }
-                if (nbMaskedPasswords++ >= 1) { // is there at least one password to mask?
+                if (nbMaskedPasswords >= 1) { // is there at least one password to mask?
                     regex.deleteCharAt(regex.length() - 1); // removes the last unuseful pipe
                     regex.append(')');
                     passwordsAsPattern = Pattern.compile(regex.toString());
