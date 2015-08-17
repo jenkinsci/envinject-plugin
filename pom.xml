@@ -41,6 +41,15 @@
                 <role>Maintainer</role>
             </roles>
         </developer>
+        <developer>
+            <id>recena</id>
+            <name>Manuel Recena</name>
+            <email>recena@gmail.com</email>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Contributor</role>
+            </roles>
+        </developer>
     </developers>
 
     <properties>
@@ -60,16 +69,17 @@
     </scm>
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
                 <version>1.98</version>
                 <extensions>true</extensions>
-            </plugin>        
+            </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
 
         <dependency>
@@ -120,6 +130,6 @@
         </pluginRepository>
     </pluginRepositories>
 
-</project>  
-  
+</project>
+
 
