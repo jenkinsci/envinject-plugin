@@ -7,6 +7,9 @@ import hudson.model.*;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * @since 1.92
+ */
 @Extension
 public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
 
