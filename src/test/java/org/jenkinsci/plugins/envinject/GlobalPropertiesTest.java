@@ -1,6 +1,9 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.model.*;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Node;
+import hudson.model.Result;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -134,7 +137,7 @@ public class GlobalPropertiesTest {
 
         // now we change the global property variable value...
         testVarEntry = new EnvironmentVariablesNodeProperty.Entry(testVariableName, testVariableValueAfterChange);
-        Hudson.getInstance().getGlobalNodeProperties().add(new EnvironmentVariablesNodeProperty(testVarEntry));
+        jenkins.getInstance().getGlobalNodeProperties().add(new EnvironmentVariablesNodeProperty(testVarEntry));
 
         Set<Entry<String, String>> afterChange = jenkins.getInstance().getComputer(slaveNode.getNodeName()).getEnvironment()
                 .entrySet();
