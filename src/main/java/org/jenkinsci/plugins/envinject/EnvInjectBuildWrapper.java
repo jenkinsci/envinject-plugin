@@ -42,7 +42,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
     @Override
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
-        return super.decorateLogger(build, logger);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.decorateLogger(build, logger);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 }
             };
         } catch (Throwable throwable) {
-            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getCause());
+            logger.error("Problems occurs on injecting env vars as a build wrap: " + throwable.getCause());
             build.setResult(Result.FAILURE);
             return null;
         }
@@ -128,7 +128,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         @Override
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-            EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoWrapper.");
+            EnvInjectJobPropertyInfo info = req.bindJSON(EnvInjectJobPropertyInfo.class, formData);
             wrapper.setInfo(info);
             return wrapper;
         }

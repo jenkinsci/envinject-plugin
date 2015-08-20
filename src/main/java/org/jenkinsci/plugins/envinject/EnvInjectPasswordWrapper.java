@@ -83,22 +83,26 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         };
     }
 
+    /**
+     * Returns a listing of passwords: globals (if active) and locals (job passwords)
+     *
+     * @return Listing of {@link EnvInjectPasswordEntry}
+     * @throws EnvInjectException
+     */
     private List<EnvInjectPasswordEntry> getEnvInjectPasswordEntries() throws EnvInjectException {
 
         List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
 
-        //--Process global passwords
+        // Process global passwords (provided by EnvInject)
         if (isInjectGlobalPasswords()) {
             EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
             EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
             if (passwordEntries != null) {
-                for (EnvInjectGlobalPasswordEntry entry : passwordEntries) {
-                    passwordList.add(entry);
-                }
+                passwordList.addAll(Arrays.asList(passwordEntries));
             }
         }
 
-        //--Process job passwords
+        // Process local passwords (provided by EnvInject)
         if (getPasswordEntries() != null && getPasswordEntries().length != 0) {
             passwordList.addAll(Arrays.asList(getPasswordEntries()));
         }
@@ -115,10 +119,10 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
                 logger.info("Inject global passwords.");
             }
 
-            //--Decorate passwords
+            // Decorate passwords provided by EnvInject Plugin (globals and locals)
             List<String> passwords2decorate = Lists.newArrayList(Lists.transform(getEnvInjectPasswordEntries(), PASSWORD_ENTRY_TO_VALUE));
 
-            //-- Decorate password parameters
+            // Decorate passwords passed as build parameters
             if (isMaskPasswordParameters()) {
                 logger.info("Mask passwords passed as build parameters.");
             
@@ -194,7 +198,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         protected void eol(byte[] bytes, int len) throws IOException {
             String line = new String(bytes, 0, len);
             if (passwordsAsPattern != null) {
-                line = passwordsAsPattern.matcher(line).replaceAll("****");
+                line = passwordsAsPattern.matcher(line).replaceAll(EnvInjectPlugin.DEFAULT_MASK);
             }
             logger.write(line.getBytes());
         }
@@ -209,25 +213,23 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     @Override
     public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
         try {
-
-            //--Process global passwords
             List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
+
+            // Process global passwords (provided by EnvInject)
             if (isInjectGlobalPasswords()) {
                 EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
                 EnvInjectGlobalPasswordEntry[] passwordEntries = globalPasswordRetriever.getGlobalPasswords();
                 if (passwordEntries != null) {
-                    for (EnvInjectGlobalPasswordEntry entry : passwordEntries) {
-                        passwordList.add(entry);
-                    }
+                    passwordList.addAll(Arrays.asList(passwordEntries));
                 }
             }
 
-            //--Process job passwords
+            // Process local passwords (provided by EnvInject)
             if (getPasswordEntries() != null && getPasswordEntries().length != 0) {
                 passwordList.addAll(Arrays.asList(getPasswordEntries()));
             }
 
-            //--Inject passwords
+            // Finally, the passwords has been injected.
             for (EnvInjectPasswordEntry passwordEntry : passwordList) {
                 variables.put(passwordEntry.getName(), passwordEntry.getValue().getPlainText());
             }
@@ -259,13 +261,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
             passwordWrapper.setInjectGlobalPasswords(formData.getBoolean("injectGlobalPasswords"));
             passwordWrapper.setMaskPasswordParameters(formData.getBoolean("maskPasswordParameters"));
 
-            //Envinject passowrds
-            List<EnvInjectPasswordEntry> passwordEntries = req.bindParametersToList(EnvInjectPasswordEntry.class, "envInjectPasswordEntry.");
+            // Inject passwords to the build as environment variables (locals, no globals)
+            List<EnvInjectPasswordEntry> passwordEntries = req.bindJSONToList(EnvInjectPasswordEntry.class, formData.get("passwordEntry"));
             passwordWrapper.setPasswordEntries(passwordEntries.toArray(new EnvInjectPasswordEntry[passwordEntries.size()]));
 
             return passwordWrapper;
         }
     }
-
 
 }
