@@ -47,6 +47,8 @@ public class EnvInjectPlugin extends Plugin {
 
     public static final PermissionGroup PERMISSIONS = new PermissionGroup(EnvInjectPlugin.class, Messages._envinject_permissions_title());
 
+    public static final String DEFAULT_MASK = "[*******]";
+
     /**
      * Allows to view injected variables.
      * Even Jenkins admins may have no such permission in particular installations.

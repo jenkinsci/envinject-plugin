@@ -49,7 +49,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
                         final Set<String> sensibleVars = getSensibleVariables();
-                        return sensibleVars != null && sensibleVars.contains(key) ? "********" : value;
+                        return ((sensibleVars != null) && sensibleVars.contains(key)) ? EnvInjectPlugin.DEFAULT_MASK : value;
                     }
                 }));
     }
