@@ -1,7 +1,5 @@
 # EnvInject Plugin for Jenkins CI
 
-[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/envinject-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/job/envinject-plugin/)
-
 This plugin makes it possible to setup a custom environment for your jobs.
 
 Features:
