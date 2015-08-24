@@ -19,6 +19,8 @@ import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Gregory Boissinot
@@ -100,6 +102,7 @@ public class GlobalPropertiesTest {
     }
 
     @Test
+    @Issue("JENKINS-16316")
     public void testChangeOfGlobalPropertyGetsRecognizedWhenWithoutJobPropertyAndRunOnSlaves() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
