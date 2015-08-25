@@ -60,6 +60,7 @@
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
+        <powermock.version>1.4.9</powermock.version>
     </properties>
 
     <scm>
@@ -113,6 +114,20 @@
             <artifactId>test-annotations</artifactId>
             <version>1.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
         </dependency>
     </dependencies>
 
