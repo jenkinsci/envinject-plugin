@@ -40,17 +40,14 @@ public class BuildCauseRetrieverTest {
     @SuppressWarnings("deprecation")
     @Test
     public void shouldWriteInfoAboutManualBuildCause() throws Exception {
-        Cause cause = Cause.UserCause.class.newInstance();
-        Cause.UserIdCause userIdCause = (UserIdCause) cause;
+    	UserIdCause cause = Cause.UserIdCause.class.newInstance();
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
-
-        String userName = userIdCause.getUserName();
 
         assertThat(build.getResult(), is(SUCCESS));
         assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
-        assertThat(build, withCause(USER_NAME, userName));
+        assertThat(build, withCause(USER_NAME, cause.getUserName()));
     }
 
     @Test
