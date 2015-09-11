@@ -1,23 +1,23 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.model.Cause;
-import hudson.model.CauseAction;
+import static com.google.common.base.Joiner.*;
+import static hudson.model.Result.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.*;
 import hudson.model.FreeStyleBuild;
+import hudson.model.Cause;
+import hudson.model.Cause.UserIdCause;
+import hudson.model.CauseAction;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static com.google.common.base.Joiner.on;
-import static hudson.model.Result.SUCCESS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCause;
-import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCausesIsTrue;
 
 /**
  * @author Gregory Boissinot
@@ -27,6 +27,7 @@ public class BuildCauseRetrieverTest {
 
     public static final String BUILD_CAUSE = "BUILD_CAUSE";
     public static final String ROOT_BUILD_CAUSE = "ROOT_BUILD_CAUSE";
+    public static final String USER_NAME = "USER_NAME";
 
     public static final String MANUAL_TRIGGER = "MANUALTRIGGER";
     public static final String SCM_TRIGGER = "SCMTRIGGER";
@@ -40,12 +41,16 @@ public class BuildCauseRetrieverTest {
     @Test
     public void shouldWriteInfoAboutManualBuildCause() throws Exception {
         Cause cause = Cause.UserCause.class.newInstance();
+        Cause.UserIdCause userIdCause = (UserIdCause) cause;
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        String userName = userIdCause.getUserName();
 
         assertThat(build.getResult(), is(SUCCESS));
         assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
+        assertThat(build, withCause(USER_NAME, userName));
     }
 
     @Test

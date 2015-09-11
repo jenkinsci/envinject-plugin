@@ -3,14 +3,17 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
-import hudson.model.*;
+import hudson.model.Environment;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.EnvironmentContributor;
+import hudson.model.Executor;
+import hudson.model.Hudson;
 import hudson.model.Hudson.MasterComputer;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.Node;
 import hudson.util.LogTaskListener;
-import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
-import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +22,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
+import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
+import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 
 /**
  * @author Gregory Boissinot
@@ -110,6 +119,13 @@ public class EnvInjectVariableGetter {
         //Retrieve triggered cause
         Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
         result.putAll(triggerVariable);
+
+        //Get Cause UserName
+        String userName = new BuildCauseRetriever().getCauseUserName(build);
+
+        if (userName != null){
+        	result.put("USER_NAME", userName);
+        }
 
         return result;
     }

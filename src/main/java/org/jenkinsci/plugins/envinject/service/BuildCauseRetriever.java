@@ -1,7 +1,10 @@
 package org.jenkinsci.plugins.envinject.service;
 
+import static com.google.common.base.Joiner.*;
+import static org.apache.commons.lang.StringUtils.*;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
+import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
@@ -11,12 +14,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import static com.google.common.base.Joiner.on;
-import java.util.Locale;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
 /**
@@ -45,6 +45,20 @@ public class BuildCauseRetriever {
         env.putAll(buildCauseEnvironmentVariables(ENV_ROOT_CAUSE, rootCauseNames));
         return env;
     }
+
+    public String getCauseUserName(AbstractBuild<?, ?> build) {
+        CauseAction causeAction = build.getAction(CauseAction.class);
+        List<Cause> buildCauses = causeAction.getCauses();
+
+        for (Cause cause : buildCauses) {
+            if (isUserCause(cause)){
+            	return getUserName(cause);
+            }
+        }
+
+		return null;
+
+	}
 
     private static void insertRootCauseNames(Set<String> causeNames, Cause cause, int depth) {
         if (cause instanceof Cause.UpstreamCause) {
@@ -89,6 +103,23 @@ public class BuildCauseRetriever {
             return "UPSTREAMTRIGGER";
         } else if (cause != null) {
             return cause.getClass().getSimpleName().toUpperCase(Locale.ENGLISH);
+        }
+
+        return null;
+    }
+
+    private static Boolean isUserCause(Cause cause) {
+    	if (Cause.UserIdCause.class.isInstance(cause)) {
+    		return true;
+        }
+
+    	return false;
+    }
+
+    private static String getUserName(Cause cause) {
+    	if (Cause.UserIdCause.class.isInstance(cause)) {
+    		Cause.UserIdCause userIdCause = (UserIdCause) cause;
+    		return userIdCause.getUserName();
         }
 
         return null;
