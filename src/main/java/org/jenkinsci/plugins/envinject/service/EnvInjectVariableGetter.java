@@ -3,16 +3,8 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
-import hudson.model.Environment;
-import hudson.model.AbstractBuild;
-import hudson.model.Computer;
-import hudson.model.EnvironmentContributor;
-import hudson.model.Executor;
-import hudson.model.Hudson;
+import hudson.model.*;
 import hudson.model.Hudson.MasterComputer;
-import hudson.model.JDK;
-import hudson.model.Job;
-import hudson.model.Node;
 import hudson.util.LogTaskListener;
 
 import java.io.IOException;
@@ -55,7 +47,7 @@ public class EnvInjectVariableGetter {
             } else {
                 result.put("NODE_NAME", computer.getName());
             }
-            
+
             Node n = computer.getNode();
             if (n != null) {
                 result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));

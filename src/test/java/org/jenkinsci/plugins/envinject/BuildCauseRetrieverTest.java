@@ -47,7 +47,9 @@ public class BuildCauseRetrieverTest {
         assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
-        assertThat(build, withCause(USER_NAME, cause.getUserName()));
+        if(cause.getUserName() != null){
+        	assertThat(build, withCause(USER_NAME, cause.getUserName()));
+        }
     }
 
     @Test

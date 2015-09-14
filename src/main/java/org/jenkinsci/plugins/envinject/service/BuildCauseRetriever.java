@@ -1,9 +1,10 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import static com.google.common.base.Joiner.*;
-import static org.apache.commons.lang.StringUtils.*;
+import static com.google.common.base.Joiner.on;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
+import hudson.model.Cause.UserCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.triggers.SCMTrigger;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 
 /**
@@ -51,13 +54,12 @@ public class BuildCauseRetriever {
         List<Cause> buildCauses = causeAction.getCauses();
 
         for (Cause cause : buildCauses) {
-            if (isUserCause(cause)){
+            if (isUserCause(cause)) {
             	return getUserName(cause);
             }
         }
 
 		return null;
-
 	}
 
     private static void insertRootCauseNames(Set<String> causeNames, Cause cause, int depth) {
@@ -111,14 +113,20 @@ public class BuildCauseRetriever {
     private static Boolean isUserCause(Cause cause) {
     	if (Cause.UserIdCause.class.isInstance(cause)) {
     		return true;
+        }else if (Cause.UserCause.class.isInstance(cause)) {
+    		return true;
         }
 
     	return false;
     }
 
+    @CheckForNull
     private static String getUserName(Cause cause) {
     	if (Cause.UserIdCause.class.isInstance(cause)) {
     		Cause.UserIdCause userIdCause = (UserIdCause) cause;
+    		return userIdCause.getUserName();
+        }else if (Cause.UserCause.class.isInstance(cause)) {
+    		Cause.UserCause userIdCause = (UserCause) cause;
     		return userIdCause.getUserName();
         }
 
