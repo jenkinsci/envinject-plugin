@@ -19,8 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
