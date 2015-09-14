@@ -206,8 +206,7 @@ public class EnvInjectEnvVars implements Serializable {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
-            if(isSelfRef(entry))
-            {
+            if(isSelfRef(entry)) {
                 entry.setValue(removeSelfRef(entry));
             }
             String value = Util.replaceMacro(entry.getValue(), env);
@@ -285,14 +284,10 @@ public class EnvInjectEnvVars implements Serializable {
             return false;
         }
 
-        if (isSelfRef(env)) {
-            return false;
-    }
-
         return env.getValue().contains("$") && !env.getValue().contains("\\$");
     }
     
-    private boolean isSelfRef(Map.Entry<String, String> env) {
+    private static boolean isSelfRef(Map.Entry<String, String> env) {
 
         if (env.getValue().contains("${".concat(env.getKey()).concat("}"))) {
             return true;
@@ -311,18 +306,6 @@ public class EnvInjectEnvVars implements Serializable {
             return value.replace("\\$", "$");
         }
         return value;
-    }
-
-    public Map<String, String> removeSelfRef(Map<String, String> envVars) {
-        Map<String, String> result = new HashMap<String, String>();
-        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            if(isSelfRef(entry))
-            {
-                result.put(entry.getKey(), removeSelfRef(entry));
-                logger.info(String.format("Clean self referencing '%s' variable.", entry.getKey()));
-}
-        }
-        return result;
     }
     
     private String removeSelfRef(Map.Entry<String, String> env) {
