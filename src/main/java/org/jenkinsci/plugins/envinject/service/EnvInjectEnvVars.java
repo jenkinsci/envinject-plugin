@@ -206,6 +206,10 @@ public class EnvInjectEnvVars implements Serializable {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
+            if(isSelfRef(entry))
+            {
+                entry.setValue(removeSelfRef(entry));
+            }
             String value = Util.replaceMacro(entry.getValue(), env);
             entry.setValue(value);
         }
@@ -220,7 +224,7 @@ public class EnvInjectEnvVars implements Serializable {
             for (Map.Entry<String, String> entry : variables.entrySet()) {
                 String value = Util.replaceMacro(entry.getValue(), variables);
                 entry.setValue(value);
-                if (isUnresolvedVar(value)) {
+                if (isUnresolvedVar(entry)) {
                     nbUnresolvedVar++;
                 }
             }
@@ -238,7 +242,7 @@ public class EnvInjectEnvVars implements Serializable {
 
             value = removeUnsetVars(value);
 
-            if (!isUnresolvedVar(value)) {
+            if (!isUnresolvedVar(entry)) {
                 result.put(entry.getKey(), removeEscapeDollar(value));
             } else {
                 logger.info(String.format("Unset unresolved '%s' variable.", entry.getKey()));
@@ -270,18 +274,35 @@ public class EnvInjectEnvVars implements Serializable {
 
     }
 
-    private boolean isUnresolvedVar(String value) {
+    private boolean isUnresolvedVar(Map.Entry<String, String> env) {
 
-        if (value == null) {
+        if (null == env.getValue()) {
             return true;
         }
 
         //Empty environment variables are acceptable
-        if (value.trim().length() == 0) {
+        if (env.getValue().trim().length() == 0) {
             return false;
         }
 
-        return value.contains("$") && !value.contains("\\$");
+        if (isSelfRef(env)) {
+            return false;
+    }
+
+        return env.getValue().contains("$") && !env.getValue().contains("\\$");
+    }
+    
+    private boolean isSelfRef(Map.Entry<String, String> env) {
+
+        if (env.getValue().contains("${".concat(env.getKey()).concat("}"))) {
+            return true;
+        }
+        
+        if (env.getValue().contains("$".concat(env.getKey()))) {
+            return true;
+        }
+   
+        return false;
     }
 
     private String removeEscapeDollar(String value) {
@@ -290,6 +311,33 @@ public class EnvInjectEnvVars implements Serializable {
             return value.replace("\\$", "$");
         }
         return value;
+    }
+
+    public Map<String, String> removeSelfRef(Map<String, String> envVars) {
+        Map<String, String> result = new HashMap<String, String>();
+        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+            if(isSelfRef(entry))
+            {
+                result.put(entry.getKey(), removeSelfRef(entry));
+                logger.info(String.format("Clean self referencing '%s' variable.", entry.getKey()));
+}
+        }
+        return result;
+    }
+    
+    private String removeSelfRef(Map.Entry<String, String> env) {
+        //We replace self variable name unless we are on Windows (Unix only)
+        if ('/' == File.separatorChar) { //unix test
+            if (env.getValue().contains("${".concat(env.getKey()).concat("}"))) {
+            return env.getValue().replace("${".concat(env.getKey()).concat("}"), "");
+        }
+        
+        if (env.getValue().contains("$".concat(env.getKey()))) {
+            return env.getValue().replace("$".concat(env.getKey()), "");
+        }
+            
+        }
+        return env.getValue();
     }
 
 }
