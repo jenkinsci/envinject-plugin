@@ -53,8 +53,21 @@ public class BuildCauseRetriever {
         List<Cause> buildCauses = causeAction.getCauses();
 
         for (Cause cause : buildCauses) {
-            if (isUserCause(cause)) {
+            if (isUserCause(cause) || isUserIdCause(cause)) {
             	return getUserName(cause);
+            }
+        }
+
+		return null;
+	}
+
+    public String getCauseUserId(AbstractBuild<?, ?> build) {
+        CauseAction causeAction = build.getAction(CauseAction.class);
+        List<Cause> buildCauses = causeAction.getCauses();
+
+        for (Cause cause : buildCauses) {
+            if (isUserIdCause(cause)) {
+            	return getUserId(cause);
             }
         }
 
@@ -110,23 +123,39 @@ public class BuildCauseRetriever {
     }
 
     private static Boolean isUserCause(Cause cause) {
-    	if (Cause.UserIdCause.class.isInstance(cause)) {
+    	if (cause instanceof UserCause){
     		return true;
-        }else if (Cause.UserCause.class.isInstance(cause)) {
+    	}
+
+    	return false;
+    }
+
+    private static Boolean isUserIdCause(Cause cause) {
+    	if (cause instanceof UserIdCause){
     		return true;
-        }
+    	}
 
     	return false;
     }
 
     @CheckForNull
     private static String getUserName(Cause cause) {
-    	if (Cause.UserIdCause.class.isInstance(cause)) {
+    	if (cause instanceof UserIdCause) {
     		Cause.UserIdCause userIdCause = (UserIdCause) cause;
     		return userIdCause.getUserName();
-        }else if (Cause.UserCause.class.isInstance(cause)) {
-    		Cause.UserCause userIdCause = (UserCause) cause;
-    		return userIdCause.getUserName();
+        }else if (cause instanceof UserCause) {
+    		Cause.UserCause userCause = (UserCause) cause;
+    		return userCause.getUserName();
+        }
+
+        return null;
+    }
+
+    @CheckForNull
+    private static String getUserId(Cause cause) {
+    	if (cause instanceof UserIdCause) {
+    		Cause.UserIdCause userIdCause = (UserIdCause) cause;
+    		return userIdCause.getUserId();
         }
 
         return null;

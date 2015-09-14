@@ -119,6 +119,13 @@ public class EnvInjectVariableGetter {
         	result.put("USER_NAME", userName);
         }
 
+        //Get Cause UserId(UserIdCause only)
+        String userId = new BuildCauseRetriever().getCauseUserId(build);
+
+        if (userId != null){
+        	result.put("USER_ID", userId);
+        }
+
         return result;
     }
 

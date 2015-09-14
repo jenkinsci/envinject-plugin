@@ -28,6 +28,7 @@ public class BuildCauseRetrieverTest {
     public static final String BUILD_CAUSE = "BUILD_CAUSE";
     public static final String ROOT_BUILD_CAUSE = "ROOT_BUILD_CAUSE";
     public static final String USER_NAME = "USER_NAME";
+    public static final String USER_ID = "USER_ID";
 
     public static final String MANUAL_TRIGGER = "MANUALTRIGGER";
     public static final String SCM_TRIGGER = "SCMTRIGGER";
@@ -49,6 +50,9 @@ public class BuildCauseRetrieverTest {
         assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
         if(cause.getUserName() != null){
         	assertThat(build, withCause(USER_NAME, cause.getUserName()));
+        }
+        if(cause.getUserId() != null){
+        	assertThat(build, withCause(USER_ID, cause.getUserId()));
         }
     }
 
