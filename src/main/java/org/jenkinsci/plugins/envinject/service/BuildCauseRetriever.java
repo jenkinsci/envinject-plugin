@@ -51,26 +51,22 @@ public class BuildCauseRetriever {
     public String getCauseUserName(AbstractBuild<?, ?> build) {
         CauseAction causeAction = build.getAction(CauseAction.class);
         List<Cause> buildCauses = causeAction.getCauses();
-
         for (Cause cause : buildCauses) {
             if (isUserCause(cause) || isUserIdCause(cause)) {
             	return getUserName(cause);
             }
         }
-
 		return null;
 	}
 
     public String getCauseUserId(AbstractBuild<?, ?> build) {
         CauseAction causeAction = build.getAction(CauseAction.class);
         List<Cause> buildCauses = causeAction.getCauses();
-
         for (Cause cause : buildCauses) {
             if (isUserIdCause(cause)) {
             	return getUserId(cause);
             }
         }
-
 		return null;
 	}
 
@@ -126,7 +122,6 @@ public class BuildCauseRetriever {
     	if (cause instanceof UserCause){
     		return true;
     	}
-
     	return false;
     }
 
@@ -134,7 +129,6 @@ public class BuildCauseRetriever {
     	if (cause instanceof UserIdCause){
     		return true;
     	}
-
     	return false;
     }
 
@@ -143,11 +137,10 @@ public class BuildCauseRetriever {
     	if (cause instanceof UserIdCause) {
     		Cause.UserIdCause userIdCause = (UserIdCause) cause;
     		return userIdCause.getUserName();
-        }else if (cause instanceof UserCause) {
+        } else if (cause instanceof UserCause) {
     		Cause.UserCause userCause = (UserCause) cause;
     		return userCause.getUserName();
         }
-
         return null;
     }
 
@@ -157,7 +150,6 @@ public class BuildCauseRetriever {
     		Cause.UserIdCause userIdCause = (UserIdCause) cause;
     		return userIdCause.getUserId();
         }
-
         return null;
     }
 

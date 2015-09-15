@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.*;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.*;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Cause;
+import hudson.model.Cause.UserCause;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.model.FreeStyleProject;
@@ -41,19 +42,13 @@ public class BuildCauseRetrieverTest {
     @SuppressWarnings("deprecation")
     @Test
     public void shouldWriteInfoAboutManualBuildCause() throws Exception {
-    	UserIdCause cause = Cause.UserIdCause.class.newInstance();
+    	Cause cause = Cause.UserCause.class.newInstance();
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
 
         assertThat(build.getResult(), is(SUCCESS));
         assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
         assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
-        if(cause.getUserName() != null){
-        	assertThat(build, withCause(USER_NAME, cause.getUserName()));
-        }
-        if(cause.getUserId() != null){
-        	assertThat(build, withCause(USER_ID, cause.getUserId()));
-        }
     }
 
     @Test
@@ -145,6 +140,32 @@ public class BuildCauseRetrieverTest {
 
         assertThat(build, withCause(BUILD_CAUSE, ""));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, ""));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void shouldWriteInfoUserCause() throws Exception {
+    	UserCause cause = Cause.UserCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+        assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
+        assertThat(build, withCause(USER_NAME, cause.getUserName()));
+    }
+
+    @Test
+    public void shouldWriteInfoUserIdCause() throws Exception {
+    	UserIdCause cause = Cause.UserIdCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+        assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
+        assertThat(build, withCause(USER_NAME, cause.getUserName()));
+        assertThat(build, withCause(USER_ID, cause.getUserId()));
     }
 
     private String sub(String first, String second) {
