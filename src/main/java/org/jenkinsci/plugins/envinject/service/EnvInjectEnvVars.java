@@ -206,7 +206,7 @@ public class EnvInjectEnvVars implements Serializable {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
-            if(isSelfRef(entry)) {
+            if (isSelfRef(entry)) {
                 entry.setValue(removeSelfRef(entry));
             }
             String value = Util.replaceMacro(entry.getValue(), env);
