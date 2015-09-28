@@ -142,24 +142,37 @@ public class BuildCauseRetrieverTest {
         assertThat(build, withCause(ROOT_BUILD_CAUSE, ""));
     }
 
+
+    @Test
+    public void shouldWriteUserInfoAboutUserIdCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.UserIdCause() {
+        	@Override
+            public String getUserId() {
+                return "testUserId";
+            }
+
+        	@Override
+            public String getUserName() {
+                return "testUserName";
+            }
+        }).get();
+
+        assertThat(build, withCause(USER_ID, "testUserId"));
+        assertThat(build, withCause(USER_NAME, "testUserName"));
+    }
+
     @SuppressWarnings("deprecation")
     @Test
-    public void shouldWriteInfoUserCause() throws Exception {
-        UserCause cause = Cause.UserCause.class.newInstance();
-        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+    public void shouldWriteUserInfoAboutUserCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.UserCause() {
+        	@Override
+            public String getUserName() {
+                return "testUserName";
+            }
+        }).get();
 
-        assertThat(build, withCause(USER_NAME, cause.getUserName()));
+        assertThat(build, withCause(USER_NAME, "testUserName"));
     }
-
-    @Test
-    public void shouldWriteInfoUserIdCause() throws Exception {
-        UserIdCause cause = Cause.UserIdCause.class.newInstance();
-        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
-
-        assertThat(build, withCause(USER_NAME, cause.getUserName()));
-        assertThat(build, withCause(USER_ID, cause.getUserId()));
-    }
-
 
     private String sub(String first, String second) {
         return on("_").join(first, second);
