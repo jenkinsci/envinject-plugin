@@ -43,19 +43,11 @@ public class EnvInjectEnvVars implements Serializable {
                                                                Map<String, String> propertiesContent,
                                                                Map<String, String> infraEnvVarsMaster,
                                                                Map<String, String> infraEnvVarsNode) throws EnvInjectException {
-        final Map<String, String> resultMap = new LinkedHashMap<String, String>();
-        try {
-            if (loadFilesFromMaster) {
-                resultMap.putAll(Hudson.getInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
-            } else {
-                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
-            }
-        } catch (IOException e) {
-            throw new EnvInjectException(e);
-        } catch (InterruptedException e) {
-            throw new EnvInjectException(e);
+        if (loadFilesFromMaster) {
+            return new PropertiesVariablesRetriever(Hudson.getInstance().getRootPath(), propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger).retrieve();
+        } else {
+            return new PropertiesVariablesRetriever(rootPath, propertiesFilePath, propertiesContent, infraEnvVarsNode, logger).retrieve();
         }
-        return resultMap;
     }
 
     @Nonnull
@@ -64,15 +56,7 @@ public class EnvInjectEnvVars implements Serializable {
                                                       String propertiesFilePath,
                                                       Map<String, String> propertiesContent,
                                                       Map<String, String> currentEnvVars) throws EnvInjectException {
-        Map<String, String> resultMap = new LinkedHashMap<String, String>();
-        try {
-            resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, currentEnvVars, logger)));
-        } catch (IOException e) {
-            throw new EnvInjectException(e);
-        } catch (InterruptedException e) {
-            throw new EnvInjectException(e);
-        }
-        return resultMap;
+        return new PropertiesVariablesRetriever(rootPath, propertiesFilePath, propertiesContent, currentEnvVars, logger).retrieve();
     }
 
     public int executeScript(boolean loadFromMaster,
