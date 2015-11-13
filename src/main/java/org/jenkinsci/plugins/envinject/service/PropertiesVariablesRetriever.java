@@ -71,13 +71,7 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
     }
 
     private File getFile(File base, String scriptFilePath) {
-
-        File file = new File(scriptFilePath);
-        if (file.exists()) {
-            return file;
-        }
-
-        file = new File(base, scriptFilePath);
+        File file = new File(new FilePath(base).child(scriptFilePath).getRemote());
         return file.exists() ? file : null;
     }
 
