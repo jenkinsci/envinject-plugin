@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -39,10 +40,10 @@ public class PropertiesGetterTest {
 
     @Test
     public void getPropertiesContentThreeElements() {
-        Map<String, String> entryMap = new HashMap<String, String>();
-        entryMap.put("key1", "value1");
-        entryMap.put("key2", "value2");
+        Map<String, String> entryMap = new LinkedHashMap<String, String>();
         entryMap.put("key3", "value3");
+        entryMap.put("key2", "value2");
+        entryMap.put("key1", "value1");
         String content = propertiesGetter.getPropertiesContentFromMapObject(entryMap);
         assertNotNull(content);
         assertEquals("key3=value3\nkey2=value2\nkey1=value1", content);
