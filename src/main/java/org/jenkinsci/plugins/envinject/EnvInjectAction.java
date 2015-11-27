@@ -62,7 +62,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         return new EnvInjectVarList(Maps.transformEntries(envMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
-                        return sensitiveVariables.contains(key) ? "********" : value;
+                        return sensitiveVariables != null && sensitiveVariables.contains(key) ? "********" : value;
                     }
                 }));
     }
