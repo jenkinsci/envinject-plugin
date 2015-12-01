@@ -80,6 +80,7 @@ public class EnvInjectEvaluatedGroovyScript {
                         "def buildNumber1 = env['BUILD_NUMBER']\n" +
                         "def buildNumber2 = currentBuild.getNumber()\n" +
                         "def map = [COMPUTE_VAR1: buildNumber1, COMPUTE_VAR2: buildNumber2]\n" +
+                        "assert currentListener instanceof hudson.model.TaskListener;\n" +
                         "return map");
 
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);

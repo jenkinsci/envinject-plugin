@@ -140,6 +140,7 @@ public class EnvInjectEnvVars implements Serializable {
             groovyShell.setVariable(entryVariable.getKey(), entryVariable.getValue());
         }
         groovyShell.setVariable("out", logger.getListener().getLogger());
+        groovyShell.setVariable("currentListener", logger.getListener());
 
         Object groovyResult = groovyShell.evaluate(scriptContent);
         if (groovyResult != null && !(groovyResult instanceof Map)) {
