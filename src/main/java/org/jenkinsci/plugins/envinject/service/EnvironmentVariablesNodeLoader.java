@@ -5,9 +5,9 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -42,7 +42,7 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
 
             //Get env vars for the current node
             Map<String, String> nodeEnvVars = nodePath.act(
-                    new Callable<Map<String, String>, IOException>() {
+                    new MasterToSlaveCallable<Map<String, String>, IOException>() {
                         public Map<String, String> call() throws IOException {
                             return EnvVars.masterEnvVars;
                         }
