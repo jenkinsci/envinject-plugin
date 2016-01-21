@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
+import jenkins.MasterToSlaveFileCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<String, String>> {
+public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<String, String>> {
 
     private String propertiesFilePath;
 
