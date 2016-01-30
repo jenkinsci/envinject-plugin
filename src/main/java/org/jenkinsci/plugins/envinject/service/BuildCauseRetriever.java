@@ -33,13 +33,19 @@ public class BuildCauseRetriever {
 
     public Map<String, String> getTriggeredCause(AbstractBuild<?, ?> build) {
         CauseAction causeAction = build.getAction(CauseAction.class);
-        List<Cause> buildCauses = causeAction.getCauses();
         Map<String, String> env = new HashMap<String, String>();
         List<String> directCauseNames = new ArrayList<String>();
         Set<String> rootCauseNames = new LinkedHashSet<String>();
-        for (Cause cause : buildCauses) {
-            directCauseNames.add(getTriggerName(cause));
-            insertRootCauseNames(rootCauseNames, cause, 0);
+
+        if (causeAction != null) {
+            List<Cause> buildCauses = causeAction.getCauses();
+            for (Cause cause : buildCauses) {
+                directCauseNames.add(getTriggerName(cause));
+                insertRootCauseNames(rootCauseNames, cause, 0);
+            }
+        } else {
+            directCauseNames.add("UNKNOWN");
+            rootCauseNames.add("UNKNOWN");
         }
         env.putAll(buildCauseEnvironmentVariables(ENV_CAUSE, directCauseNames));
         env.putAll(buildCauseEnvironmentVariables(ENV_ROOT_CAUSE, rootCauseNames));
