@@ -5,10 +5,15 @@ import hudson.model.*;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.Secret;
+
+import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import org.hamcrest.Matchers;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
+import org.junit.Assert;
 import org.junit.Rule;
 
 import java.util.ArrayList;
@@ -17,10 +22,13 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -84,6 +92,29 @@ public class EnvInjectPasswordTest {
         
         assertTrue("Nested output stream has not been closed", fileLeakDetector.getLastOutputStream().isClosed());
     } 
+
+    /**
+     * Test that
+     * {@link EnvInjectPasswordWrapper#decorateLogger(AbstractBuild, OutputStream)}
+     * does not write to the output stream. The written message would bypass
+     * the other build wrappers, which have not yet wrapped the OutputStream.
+     *
+     * @throws Exception
+     */
+    @Test
+    @Issue("JENKINS-30028")
+    public void testDoNotWriteDuringDecorateLogger() throws Exception {
+      FreeStyleProject project = jenkins.createFreeStyleProject();
+      FreeStyleBuild build = new FreeStyleBuild(project);
+
+      EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
+      passwordWrapper.setInjectGlobalPasswords(true);
+      passwordWrapper.setMaskPasswordParameters(true);
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      passwordWrapper.decorateLogger(build, outputStream);
+
+      assertThat(outputStream.toByteArray(), is(new byte[0]));
+    }
 
     private void checkEnvInjectResult(FreeStyleBuild build) {
         EnvInjectAction action = build.getAction(EnvInjectAction.class);
