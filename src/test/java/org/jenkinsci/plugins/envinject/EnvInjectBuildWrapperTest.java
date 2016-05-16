@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withEnvInjectAction;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
@@ -47,6 +48,114 @@ public class EnvInjectBuildWrapperTest {
 
         assertEquals("tvalue", capture.getEnvVars().get("TEXT_VAR"));
         assertEquals("fvalue", capture.getEnvVars().get("FILE_VAR"));
+    }
+
+    @Test
+    public void injectTextPropsFileReferenceInPropsContent() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.properties", "BASE_PATH=/tmp"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "PATH_FOO=$BASE_PATH/foo \n PATH_BAR=$BASE_PATH/bar", null, null, null, false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("/tmp", capture.getEnvVars().get("BASE_PATH"));
+        assertEquals("/tmp/foo", capture.getEnvVars().get("PATH_FOO"));
+        assertEquals("/tmp/bar", capture.getEnvVars().get("PATH_BAR"));
+    }
+
+    @Test
+    public void injectTextPropsFileReferenceAndCrossReferenceInPropsContent() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.properties", "INIT_PATH=/tmp/foo"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "NEW_PATH=/tmp/bar:$OLD_PATH \n OLD_PATH=$INIT_PATH", null, null, null, false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("/tmp/foo", capture.getEnvVars().get("INIT_PATH"));
+        assertEquals("/tmp/foo", capture.getEnvVars().get("OLD_PATH"));
+        assertEquals("/tmp/bar:/tmp/foo", capture.getEnvVars().get("NEW_PATH"));
+    }
+
+    @Test
+    public void injectTextPropsContentSelfReferenceWithInitalValueFromPropsFile() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "MY_PATH=/tmp/bar:$MY_PATH", null, null, null, false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("/tmp/bar:/tmp/foo", capture.getEnvVars().get("MY_PATH"));
+    }
+
+    @Test
+    public void injectTextPropsContentOverwritesPropsFile() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "MY_PATH=/tmp/bar", null, null, null, false
+        ));
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        assertEquals("/tmp/bar", capture.getEnvVars().get("MY_PATH"));
+    }
+
+    @Test
+    public void injectTextExtendSysEnvVar() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        p.scheduleBuild2(0).get();
+
+        String oldPath = capture.getEnvVars().get("PATH");
+        assertNotNull(oldPath);
+
+        p.setScm(new SingleFileSCM("vars.properties", "PATH=ABC:$PATH"));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        p.getBuildWrappersList().add(wrapper);
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", null, null, null, null, false
+        ));
+        p.scheduleBuild2(0).get();
+
+        String newPathFromPropsFile = capture.getEnvVars().get("PATH");
+        assertEquals("ABC:" + oldPath, newPathFromPropsFile);
+
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+                "vars.properties", "PATH=${PATH}:CBA", null, null, null, false
+        ));
+        p.scheduleBuild2(0).get();
+
+        String newPathFromPropsContent = capture.getEnvVars().get("PATH");
+        // NOTE: prefix ABC: from propsFile is lost
+        assertEquals(oldPath + ":CBA", newPathFromPropsContent);
     }
 
     @Test
