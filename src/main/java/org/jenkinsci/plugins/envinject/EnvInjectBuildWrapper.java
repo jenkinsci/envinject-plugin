@@ -63,8 +63,8 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 
             //Add workspace if not set
-            if (ws != null && injectedEnvVars.get("WORKSPACE") == null) {
-                injectedEnvVars.put("WORKSPACE", ws.getRemote());
+            if (ws != null && injectedEnvVars.get(EnvInjectConstants.WORKSPACE) == null) {
+                injectedEnvVars.put(EnvInjectConstants.WORKSPACE, ws.getRemote());
             }
 
             //Add SCM variables if not set
@@ -101,8 +101,8 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                     env.putAll(resultVariables);
                 }
             };
-        } catch (Exception e) {
-            logger.error("Problems occurs on injecting env vars as a build wrap: " + e.getMessage());
+        } catch (Throwable throwable) {
+            logger.error("Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return null;
         }
