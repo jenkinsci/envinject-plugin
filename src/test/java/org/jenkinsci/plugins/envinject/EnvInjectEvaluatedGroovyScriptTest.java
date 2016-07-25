@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.model.*;
+import hudson.util.IOUtils;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -16,15 +18,15 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEvaluatedGroovyScript {
+public class EnvInjectEvaluatedGroovyScriptTest {
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
     @Test
     public void testMapGroovyScript() throws Exception {
-
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
+        hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(
@@ -71,8 +73,9 @@ public class EnvInjectEvaluatedGroovyScript {
 
     @Test
     public void testBuildInVars() throws Exception {
-
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
+        hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
+        hudson.EnvVars.masterEnvVars.remove("BUILD_NUMBER");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(

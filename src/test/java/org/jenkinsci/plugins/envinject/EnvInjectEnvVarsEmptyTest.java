@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEnvVarsEmpty {
+public class EnvInjectEnvVarsEmptyTest {
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();

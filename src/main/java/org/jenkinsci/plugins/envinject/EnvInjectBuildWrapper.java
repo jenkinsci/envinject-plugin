@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
+
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -57,19 +59,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-
             Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
-            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger,
-                    info.getGroovyScriptContent(), previousEnvVars);
-
-
 
             //Add workspace if not set
-            if (ws != null) {
-                if (injectedEnvVars.get("WORKSPACE") == null) {
-                    injectedEnvVars.put("WORKSPACE", ws.getRemote());
-                }
+            if (ws != null && injectedEnvVars.get(EnvInjectConstants.WORKSPACE) == null) {
+                injectedEnvVars.put(EnvInjectConstants.WORKSPACE, ws.getRemote());
             }
 
             //Add SCM variables if not set
@@ -78,14 +73,16 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 scm.buildEnvVars(build, injectedEnvVars);
             }
 
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger, info.getGroovyScriptContent(), injectedEnvVars);
+
             //Get result variables
-            final HashMap<String, String> EMPTY_VARS = new HashMap<String, String>();
+            final Map<String, String> emptyVars = Collections.emptyMap();
             final Map<String, String> propertiesEnvVars = (ws != null)
                     ? envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), injectedEnvVars)
-                    : EMPTY_VARS;
+                    : emptyVars;
 
             //Resolve variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, EMPTY_VARS);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, emptyVars);
 
             //Execute script info
             int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
@@ -105,7 +102,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 }
             };
         } catch (Throwable throwable) {
-            logger.error("Problems occurs on injecting env vars as a build wrap: " + throwable.getCause());
+            logger.error("Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return null;
         }
