@@ -3,7 +3,7 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.Main;
 import hudson.Platform;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectMasterEnvVarsSetter implements Callable<Void, EnvInjectException> {
+public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, EnvInjectException> {
 
     private EnvVars enVars;
 
