@@ -43,7 +43,7 @@ public class EnvInjectBuildWrapperTest {
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
-        p.scheduleBuild2(0).get();
+        FreeStyleBuild run = j.buildAndAssertSuccess(p);
 
         assertEquals("tvalue", capture.getEnvVars().get("TEXT_VAR"));
         assertEquals("fvalue", capture.getEnvVars().get("FILE_VAR"));

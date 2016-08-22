@@ -27,34 +27,43 @@ package org.jenkinsci.plugins.envinject.migration;
 import hudson.model.FreeStyleProject;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
+
 
 /**
  * Tests the migrations.
  *
  * @author Robert Sandell
  */
-public class EnvInjectMigrationBuildWrapperTest extends HudsonTestCase {
+public class EnvInjectMigrationBuildWrapperTest {
 
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    
     /**
      * Tests that an old project containing both a set-env setting and a envInject wrapper
      * doesn't get overwritten in the migration.
      */
+    @Test
     @LocalData
-    @Bug(22169)
+    @Issue("JENKINS-22169")
     public void testSetEnvAndEnvInject() {
-        FreeStyleProject project = (FreeStyleProject) jenkins.getItem("Experimental_SetEnvMigration");
-        assertNotNull(project);
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("Experimental_SetEnvMigration");
+        assertThat("Project has not been properly loaded from the local data", project, notNullValue());
         EnvInjectBuildWrapper wrapper = project.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
         String content = wrapper.getInfo().getPropertiesContent();
 
-        assertStringContains(content, "ONE=one");
-        assertStringContains(content, "HELLO=world");
-        assertStringContains(content, "ME=you");
+        assertThat(content, containsString("ONE=one"));
+        assertThat(content, containsString("HELLO=world"));
+        assertThat(content, containsString("ME=you"));
 
         EnvInjectJobProperty property = project.getProperty(EnvInjectJobProperty.class);
-        assertStringContains(property.getInfo().getPropertiesContent(), "ZERO=0");
+        assertThat(property.getInfo().getPropertiesContent(), containsString("ZERO=0"));
     }
 }
