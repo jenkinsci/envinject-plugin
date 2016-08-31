@@ -79,6 +79,14 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        if (isInjectGlobalPasswords()) {
+            logger.info("Inject global passwords.");
+        }
+        if (isMaskPasswordParameters()) {
+            logger.info("Mask passwords passed as build parameters.");
+        }
+
         return new Environment() {
         };
     }
@@ -113,19 +121,11 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     @Override
     public OutputStream decorateLogger(AbstractBuild build, OutputStream outputStream) throws IOException, InterruptedException, Run.RunnerAbortedException {
         try {
-            EnvInjectLogger logger = new EnvInjectLogger(new StreamTaskListener(outputStream));
-
-            if (isInjectGlobalPasswords()) {
-                logger.info("Inject global passwords.");
-            }
-
             // Decorate passwords provided by EnvInject Plugin (globals and locals)
             List<String> passwords2decorate = Lists.newArrayList(Lists.transform(getEnvInjectPasswordEntries(), PASSWORD_ENTRY_TO_VALUE));
 
             // Decorate passwords passed as build parameters
             if (isMaskPasswordParameters()) {
-                logger.info("Mask passwords passed as build parameters.");
-            
                 ParametersAction parametersAction = build.getAction(ParametersAction.class);
                 if (parametersAction != null) {
                     List<ParameterValue> parameters = parametersAction.getParameters();
