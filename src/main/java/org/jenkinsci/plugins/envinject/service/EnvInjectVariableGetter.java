@@ -3,14 +3,17 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
-import hudson.model.*;
+import hudson.model.Environment;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.EnvironmentContributor;
+import hudson.model.Executor;
+import hudson.model.Hudson;
 import hudson.model.Hudson.MasterComputer;
+import hudson.model.JDK;
+import hudson.model.Job;
+import hudson.model.Node;
 import hudson.util.LogTaskListener;
-import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
-import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +22,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
+import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
+import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 /**
  * @author Gregory Boissinot
@@ -46,7 +55,7 @@ public class EnvInjectVariableGetter {
             } else {
                 result.put("NODE_NAME", computer.getName());
             }
-            
+
             Node n = computer.getNode();
             if (n != null) {
                 result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));

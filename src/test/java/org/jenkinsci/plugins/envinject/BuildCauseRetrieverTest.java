@@ -1,23 +1,22 @@
 package org.jenkinsci.plugins.envinject;
 
+import static com.google.common.base.Joiner.*;
+import static hudson.model.Result.*;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.*;
+import hudson.model.FreeStyleBuild;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static com.google.common.base.Joiner.on;
-import static hudson.model.Result.SUCCESS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCause;
-import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCausesIsTrue;
 
 /**
  * @author Gregory Boissinot
@@ -27,6 +26,8 @@ public class BuildCauseRetrieverTest {
 
     public static final String BUILD_CAUSE = "BUILD_CAUSE";
     public static final String ROOT_BUILD_CAUSE = "ROOT_BUILD_CAUSE";
+    public static final String USER_NAME = "USER_NAME";
+    public static final String USER_ID = "USER_ID";
 
     public static final String MANUAL_TRIGGER = "MANUALTRIGGER";
     public static final String SCM_TRIGGER = "SCMTRIGGER";
@@ -39,7 +40,7 @@ public class BuildCauseRetrieverTest {
     @SuppressWarnings("deprecation")
     @Test
     public void shouldWriteInfoAboutManualBuildCause() throws Exception {
-        Cause cause = Cause.UserCause.class.newInstance();
+    	Cause cause = Cause.UserCause.class.newInstance();
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
 
         assertThat(build.getResult(), is(SUCCESS));
@@ -137,6 +138,46 @@ public class BuildCauseRetrieverTest {
 
         assertThat(build, withCause(BUILD_CAUSE, ""));
         assertThat(build, withCause(ROOT_BUILD_CAUSE, ""));
+    }
+
+
+    @Test
+    public void shouldWriteUserInfoAboutUserIdCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.UserIdCause() {
+        	@Override
+            public String getUserId() {
+                return "testUserId";
+            }
+
+        	@Override
+            public String getUserName() {
+                return "testUserName";
+            }
+        }).get();
+
+        assertThat(build, withCause(USER_NAME, "testUserName"));
+        assertThat(build, withCause(USER_ID, "testUserId"));
+    }
+
+    @Test
+    public void shouldWriteUserInfoAboutUserCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.UserCause() {
+        	@Override
+            public String getUserName() {
+                return "testUserName";
+            }
+        }).get();
+
+        assertThat(build, withCause(USER_NAME, "testUserName"));
+        assertThat(build, withCause(USER_ID, ""));
+    }
+
+    @Test
+    public void shouldWriteUserInfoAboutOtherCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.RemoteCause("host","note")).get();
+
+        assertThat(build, withCause(USER_NAME, ""));
+        assertThat(build, withCause(USER_ID, ""));
     }
 
     private String sub(String first, String second) {
