@@ -7,8 +7,6 @@ import static org.hamcrest.Matchers.*;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.*;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Cause;
-import hudson.model.Cause.UserCause;
-import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
@@ -157,11 +155,10 @@ public class BuildCauseRetrieverTest {
             }
         }).get();
 
-        assertThat(build, withCause(USER_ID, "testUserId"));
         assertThat(build, withCause(USER_NAME, "testUserName"));
+        assertThat(build, withCause(USER_ID, "testUserId"));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void shouldWriteUserInfoAboutUserCause() throws Exception {
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.UserCause() {
@@ -172,6 +169,15 @@ public class BuildCauseRetrieverTest {
         }).get();
 
         assertThat(build, withCause(USER_NAME, "testUserName"));
+        assertThat(build, withCause(USER_ID, ""));
+    }
+
+    @Test
+    public void shouldWriteUserInfoAboutOtherCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause.RemoteCause("host","note")).get();
+
+        assertThat(build, withCause(USER_NAME, ""));
+        assertThat(build, withCause(USER_ID, ""));
     }
 
     private String sub(String first, String second) {
