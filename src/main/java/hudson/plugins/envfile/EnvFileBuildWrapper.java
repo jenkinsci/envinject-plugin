@@ -10,6 +10,7 @@ import hudson.tasks.BuildWrapperDescriptor;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.migration.EnvInjectMigrationBuildWrapper;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 
 import java.io.IOException;
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
     @Override
     public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@Nonnull BuildableItemWithBuildWrappers originalItem) {
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, false, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(jobPropertyInfo);
         return envInjectBuildWrapper;
     }

@@ -15,6 +15,8 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import static org.junit.Assert.*;
+
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
@@ -40,8 +42,8 @@ public class EnvInjectPluginActionTest {
 
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
-        
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, false, null));
+
         capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
     }

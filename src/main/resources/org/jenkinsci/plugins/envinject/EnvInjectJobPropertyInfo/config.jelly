@@ -21,9 +21,9 @@
     </f:entry>
 
     <f:entry title="${%Evaluated Groovy script}"
-             field="groovyScriptContent">
-        <f:textarea/>
+             field="secureGroovyScript">
     </f:entry>
+    <f:property field="secureGroovyScript"/>
 
     <j:choose>
         <j:when test="${showLoadFilesFromMaster}">

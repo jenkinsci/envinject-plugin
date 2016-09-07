@@ -9,6 +9,8 @@ import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import java.io.IOException;
 import javax.annotation.Nonnull;
+
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -42,7 +44,7 @@ public class EnvInjectJobPropertyTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         
         EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
-                new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
+                new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, false, null));
         // prop.setOn(false); // It is default
         project.addProperty(prop);
         
@@ -131,8 +133,8 @@ public class EnvInjectJobPropertyTest {
                 propertiesContent,
                 scriptFilePath,
                 scriptContent,
-                groovyScriptContent,
-                true);
+                true,
+                new SecureGroovyScript(groovyScriptContent, false, null));
         EnvInjectJobProperty property = new EnvInjectJobProperty<FreeStyleProject>(info);
         property.setOn(true);
         property.setKeepBuildVariables(false);
@@ -155,7 +157,7 @@ public class EnvInjectJobPropertyTest {
         assertEquals(propertiesContent, info.getPropertiesContent());
         assertEquals(scriptFilePath, info.getScriptFilePath());
         assertEquals(scriptContent, info.getScriptContent());
-        assertEquals(groovyScriptContent, info.getGroovyScriptContent());
+        assertEquals(groovyScriptContent, info.getSecureGroovyScript().getScript());
         assertTrue("loadFilesFromMaster should be true", info.isLoadFilesFromMaster());
     }
     
@@ -163,7 +165,7 @@ public class EnvInjectJobPropertyTest {
     public EnvInjectJobProperty<FreeStyleProject>
             forPropertiesContent(@Nonnull FreeStyleProject job, @Nonnull String content) throws IOException {
         final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
-                new EnvInjectJobPropertyInfo(null, content, null, null, null, false));
+                new EnvInjectJobPropertyInfo(null, content, null, null, false, null));
         prop.setOn(true); // Property becomes enabled by default
         job.addProperty(prop);
         return prop;

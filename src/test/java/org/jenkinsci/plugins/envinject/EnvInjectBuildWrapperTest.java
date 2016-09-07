@@ -17,6 +17,7 @@ import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 import hudson.util.IOUtils;
 
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -43,7 +44,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "TEXT_VAR=tvalue", null, null, null, false
+                "vars.properties", "TEXT_VAR=tvalue", null, null, false, null
         ));
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -62,7 +63,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "PATH_FOO=$BASE_PATH/foo \n PATH_BAR=$BASE_PATH/bar", null, null, null, false
+                "vars.properties", "PATH_FOO=$BASE_PATH/foo \n PATH_BAR=$BASE_PATH/bar", null, null, false, null
         ));
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -82,7 +83,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "NEW_PATH=/tmp/bar:$OLD_PATH \n OLD_PATH=$INIT_PATH", null, null, null, false
+                "vars.properties", "NEW_PATH=/tmp/bar:$OLD_PATH \n OLD_PATH=$INIT_PATH", null, null, false, null
         ));
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -102,7 +103,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "MY_PATH=/tmp/bar:$MY_PATH", null, null, null, false
+                "vars.properties", "MY_PATH=/tmp/bar:$MY_PATH", null, null, false, null
         ));
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -120,7 +121,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "MY_PATH=/tmp/bar", null, null, null, false
+                "vars.properties", "MY_PATH=/tmp/bar", null, null, false, null
         ));
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -145,7 +146,7 @@ public class EnvInjectBuildWrapperTest {
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", null, null, null, null, false
+                "vars.properties", null, null, null, false, null
         ));
         p.scheduleBuild2(0).get();
 
@@ -153,7 +154,7 @@ public class EnvInjectBuildWrapperTest {
         assertEquals("ABC:" + oldPath, newPathFromPropsFile);
 
         wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                "vars.properties", "PATH=${PATH}:CBA", null, null, null, false
+                "vars.properties", "PATH=${PATH}:CBA", null, null, false, null
         ));
         p.scheduleBuild2(0).get();
 
@@ -263,8 +264,8 @@ public class EnvInjectBuildWrapperTest {
                         propertiesContent,
                         scriptFilePath,
                         scriptContent,
-                        groovyScriptContent,
-                        false));
+                        false,
+                        new SecureGroovyScript(groovyScriptContent, false, null)));
         project.getBuildWrappersList().add(wrapper);
 
         project = j.configRoundtrip(project);
@@ -278,12 +279,12 @@ public class EnvInjectBuildWrapperTest {
         assertEquals(propertiesContent, info.getPropertiesContent());
         assertEquals(scriptFilePath, info.getScriptFilePath());
         assertEquals(scriptContent, info.getScriptContent());
-        assertEquals(groovyScriptContent, info.getGroovyScriptContent());
+        assertEquals(groovyScriptContent, info.getSecureGroovyScript().getScript());
         assertFalse("loadFilesFromMaster should be false", info.isLoadFilesFromMaster());
     }
 
     private EnvInjectJobPropertyInfo withPropContent(String propertiesContent) {
-        return new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, null, false);
+        return new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, false, null);
     }
 
 }

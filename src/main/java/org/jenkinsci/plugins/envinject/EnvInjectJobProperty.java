@@ -161,19 +161,6 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.contributors = jobPropertyContributors;
     }
 
-    @Override
-    public JobProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
-        EnvInjectJobProperty property = (EnvInjectJobProperty) super.reconfigure(req, form);
-        if (property != null && property.info != null && !Jenkins.getActiveInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
-            // Don't let non RUN_SCRIPT users set arbitrary groovy script
-            property.info = new EnvInjectJobPropertyInfo(property.info.propertiesFilePath, property.info.propertiesContent,
-                                                         property.info.getScriptFilePath(), property.info.getScriptContent(),
-                                                         this.info != null ? this.info.getGroovyScriptContent() : "",
-                                                         property.info.isLoadFilesFromMaster());
-        }
-        return property;
-    }
-
     @Extension
     @SuppressWarnings("unused")
     public static final class DescriptorImpl extends JobPropertyDescriptor {

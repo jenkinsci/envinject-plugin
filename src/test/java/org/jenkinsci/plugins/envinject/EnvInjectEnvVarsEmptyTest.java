@@ -4,6 +4,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -27,7 +28,7 @@ public class EnvInjectEnvVarsEmptyTest {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         StringBuffer propertiesContent = new StringBuffer("EMPTYVAR1=\n");
         propertiesContent.append("VAR2=VAL2");
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, false, null);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);

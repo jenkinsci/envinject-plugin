@@ -98,7 +98,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 scm.buildEnvVars(build, injectedEnvVars);
             }
 
-            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger, info.getGroovyScriptContent(), injectedEnvVars);
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeGroovyScript(logger, info.getSecureGroovyScript(), injectedEnvVars);
 
             //Get result variables
             final Map<String, String> emptyVars = Collections.emptyMap();

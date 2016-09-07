@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -59,7 +60,7 @@
         <envinject.lib.version>1.24</envinject.lib.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <mockito.version>1.10.19</mockito.version>
-
+        <jenkins-test-harness.version>2.15</jenkins-test-harness.version>
         <jenkins.version>1.609.3</jenkins.version>
         <java.level>6</java.level>
         <java.level.test>${java.level}</java.level.test>
@@ -88,7 +89,12 @@
     </build>
 
     <dependencies>
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version> <!-- assertLogContains is incompatible with whatever hamcrest junit 4.12 adds -->
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jenkins-ci.lib</groupId>
             <artifactId>envinject-lib</artifactId>
@@ -119,6 +125,11 @@
             <artifactId>matrix-project</artifactId>
             <version>1.7</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <version>1.22</version>
         </dependency>
     </dependencies>
 

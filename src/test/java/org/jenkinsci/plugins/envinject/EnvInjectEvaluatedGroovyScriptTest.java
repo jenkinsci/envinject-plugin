@@ -1,18 +1,41 @@
 package org.jenkinsci.plugins.envinject;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlInput;
+import hudson.cli.CLICommand;
+import hudson.cli.CLICommandInvoker;
+import hudson.cli.UpdateJobCommand;
 import hudson.model.*;
-import hudson.util.IOUtils;
 
+import hudson.model.queue.QueueTaskFuture;
+import jenkins.model.Jenkins;
+import org.apache.tools.ant.filters.StringInputStream;
+import org.hamcrest.CoreMatchers;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.Url;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 
 /**
@@ -110,5 +133,112 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         assertNotNull(resultValEnvVar1);
         assertNotNull(resultValEnvVar2);
         assertEquals(resultValEnvVar2, resultValEnvVar1);
+    }
+
+    @Test
+    @Issue("SECURITY-256")
+    public void testBuildUnderSecureJenkins() throws Exception {
+        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
+        MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("alice")
+                .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.DISCOVER, Job.CONFIGURE).everywhere().to("bob");
+        jenkins.jenkins.setAuthorizationStrategy(auth);
+
+        FreeStyleProject project = jenkins.createFreeStyleProject();
+        String script = "return [IT_IS_GROOVY: \"Indeed\"]";
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, false,
+                                                                     new SecureGroovyScript(script, false, null));
+        EnvInjectJobProperty property = new EnvInjectJobProperty(info);
+        property.setKeepJenkinsSystemVariables(true);
+        property.setKeepBuildVariables(true);
+        property.setOn(true);
+        project.addProperty(property);
+
+        //The script is not approved so should fail
+        QueueTaskFuture<FreeStyleBuild> future = project.scheduleBuild2(0);
+        jenkins.assertBuildStatus(Result.FAILURE, future);
+        //Now let bob configure the build, it should also fail
+        saveConfigurationAs(project, "bob");
+
+        future = project.scheduleBuild2(0);
+        FreeStyleBuild run = jenkins.assertBuildStatus(Result.FAILURE, future);
+        //Check that it failed for the correct reason
+        jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", run);
+
+        //Now let alice approve the script
+        ScriptApproval.get().preapproveAll();
+
+        //Then the build should succeed
+        jenkins.buildAndAssertSuccess(project);
+    }
+
+    private void saveConfigurationAs(FreeStyleProject project, String userId) throws Exception {
+        JenkinsRule.WebClient w = jenkins.createWebClient().login(userId);
+        jenkins.submit(w.getPage(project, "configure").getFormByName("config"));
+    }
+
+    @Test
+    @Issue("SECURITY-256")
+    public void testWorkaroundSecurity86() throws Exception {
+        jenkins.jenkins.setCrumbIssuer(null);
+        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
+        MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("alice")
+                .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.DISCOVER, Item.CONFIGURE).everywhere().to("user");
+        jenkins.jenkins.setAuthorizationStrategy(auth);
+
+        FreeStyleProject job = jenkins.createFreeStyleProject();
+        String script = "return [IT_IS_GROOVY: \"Indeed\"]";
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, false,
+                                                                     new SecureGroovyScript(script, false, null));
+        EnvInjectJobProperty property = new EnvInjectJobProperty(info);
+        property.setKeepJenkinsSystemVariables(true);
+        property.setKeepBuildVariables(true);
+        property.setOn(true);
+        job.addProperty(property);
+
+        saveConfigurationAs(job, "alice");
+        //Since alice is an admin the script should be approved automagically
+        FreeStyleBuild build = jenkins.buildAndAssertSuccess(job);
+
+        org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
+        assertNotNull(envInjectAction);
+        Map<String, String> envVars = envInjectAction.getEnvMap();
+        assertThat(envVars, hasEntry("IT_IS_GROOVY", "Indeed"));
+
+        final String originalXml = job.getConfigFile().asString();
+
+        job = jenkins.jenkins.getItemByFullName(job.getFullName(), FreeStyleProject.class);
+        property = job.getProperty(EnvInjectJobProperty.class);
+        property.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, false, new SecureGroovyScript(
+                "echo \"1337 h4x0r\"\n" + script, false, null
+        )));
+        saveConfigurationAs(job, "user");
+        //Should now fail
+        QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
+        jenkins.assertBuildStatus(Result.FAILURE, future);
+
+        //Reset
+        job.updateByXml((Source)new StreamSource(new StringInputStream(originalXml)));
+        //Should work again
+        jenkins.buildAndAssertSuccess(job);
+
+        String hackXml = originalXml.replace("return [IT_IS_GROOVY: &quot;Indeed&quot;]", "echo &quot;m0r3 1337 h4x0r&quot;\n");
+        assertThat(hackXml, containsString("m0r3 1337 h4x0r")); //Just to test myself
+        JenkinsRule.WebClient wc = jenkins.createWebClient().login("user");
+        WebRequest request = new WebRequest(new URL(job.getAbsoluteUrl() + "config.xml"), HttpMethod.POST);
+        request.setRequestBody(hackXml);
+        //wc.addCrumb(request); can't set body and crumb in the same request
+        wc.getPage(request);
+        //Verify it took effect
+        job = jenkins.jenkins.getItemByFullName(job.getFullName(), FreeStyleProject.class);
+        property = job.getProperty(EnvInjectJobProperty.class);
+        assertThat(property.getInfo().getSecureGroovyScript().getScript(), containsString("m0r3 1337 h4x0r"));
+
+        //should also fail
+        future = job.scheduleBuild2(0);
+        build = jenkins.assertBuildStatus(Result.FAILURE, future);
+        //Check that it failed for the correct reason
+        jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", build);
     }
 }

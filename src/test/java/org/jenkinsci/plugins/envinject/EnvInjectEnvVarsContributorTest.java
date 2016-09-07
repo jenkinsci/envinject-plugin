@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject;
 import hudson.EnvVars;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -19,7 +20,7 @@ public class EnvInjectEnvVarsContributorTest {
     public void envVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "REPO=trivial-maven", null, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "REPO=trivial-maven", null, null, false, null);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);
@@ -33,7 +34,7 @@ public class EnvInjectEnvVarsContributorTest {
     public void notAvailableEnvVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("notAvailableEnvVarsJob");
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "VAR1=${WORKSPACE}\nVAR2=${JOB_NAME}", null, null, null, false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "VAR1=${WORKSPACE}\nVAR2=${JOB_NAME}", null, null, false, null);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);
