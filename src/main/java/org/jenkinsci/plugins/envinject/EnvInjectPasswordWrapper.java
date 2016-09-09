@@ -84,7 +84,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
             logger.info("Inject global passwords.");
         }
         if (isMaskPasswordParameters()) {
-            logger.info("Mask passwords passed as build parameters.");
+            logger.info("Mask passwords that will be passed as build parameters.");
         }
 
         return new Environment() {
