@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -31,9 +32,15 @@ public class EnvInjectVariableGetter {
 
         Map<String, String> result = new TreeMap<String, String>();
 
-        Computer computer;
+        final Computer computer;
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins == null) {
+             throw new IOException("The caller requested getting Jenkins System variables, "
+                    + "but the master has not been started, or was already shut down");
+        }
         if (forceOnMaster) {
-            computer = Hudson.getInstance().toComputer();
+            
+            computer = jenkins.toComputer();
         } else {
             computer = Computer.currentComputer();
         }
@@ -53,13 +60,13 @@ public class EnvInjectVariableGetter {
             }
         }
 
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = jenkins.getRootUrl();
         if (rootUrl != null) {
             result.put("JENKINS_URL", rootUrl);
             result.put("HUDSON_URL", rootUrl); // Legacy compatibility
         }
-        result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
-        result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
+        result.put("JENKINS_HOME", jenkins.getRootDir().getPath());
+        result.put("HUDSON_HOME", jenkins.getRootDir().getPath());   // legacy compatibility
 
         return result;
     }
@@ -98,7 +105,7 @@ public class EnvInjectVariableGetter {
             result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
         }
 
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = Jenkins.getActiveInstance().getRootUrl();
         if (rootUrl != null) {
             result.put("BUILD_URL", rootUrl + build.getUrl());
             result.put("JOB_URL", rootUrl + build.getParent().getUrl());
