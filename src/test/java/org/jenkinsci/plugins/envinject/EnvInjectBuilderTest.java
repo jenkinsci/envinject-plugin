@@ -24,7 +24,9 @@
 package org.jenkinsci.plugins.envinject;
 
 import static org.junit.Assert.assertEquals;
+
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.model.FreeStyleProject;
 
 import org.junit.Before;
@@ -33,6 +35,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
+
+import java.io.File;
 
 public class EnvInjectBuilderTest {
 
@@ -57,6 +61,26 @@ public class EnvInjectBuilderTest {
         p.getBuildersList().add(new EnvInjectBuilder(null, "VAR=new"));
 
         assertEquals("new", buildEnvVars().get("VAR"));
+    }
+
+    @Test public void propertyFileInWorkspaceShouldTakePrecedenceOverAbsolutePropertyFile() throws Exception {
+        File propertyFile = File.createTempFile("test", "properties",  new File(System.getProperty("user.dir")));
+        propertyFile.deleteOnExit();
+        new FilePath(propertyFile).write("SOURCE=user.dir", "UTF-8");
+        p.setScm(new SingleFileSCM(propertyFile.getName(), "SOURCE=workspace"));
+        p.getBuildersList().add(new EnvInjectBuilder(propertyFile.getName(), null));
+
+        assertEquals("workspace", buildEnvVars().get("SOURCE"));
+    }
+
+    @Test public void injectPropertiesUsingAbsoluteFileName() throws Exception {
+        File propertyFile = File.createTempFile("test", "properties");
+        propertyFile.deleteOnExit();
+        new FilePath(propertyFile).write("VAR=test", "UTF-8");
+
+        p.getBuildersList().add(new EnvInjectBuilder(propertyFile.getAbsolutePath(), null));
+
+        assertEquals("test", buildEnvVars().get("VAR"));
     }
 
     private EnvVars buildEnvVars() throws Exception {

@@ -14,7 +14,9 @@ import java.util.Map;
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<String, String>> {
+public class PropertiesVariablesRetriever {
+
+    private FilePath basePath;
 
     private String propertiesFilePath;
 
@@ -24,61 +26,58 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
 
     private EnvInjectLogger logger;
 
-    public PropertiesVariablesRetriever(String propertiesFilePath, Map<String, String> propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+    public PropertiesVariablesRetriever(FilePath basePath, String propertiesFilePath, Map<String, String> propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+        this.basePath = basePath;
         this.propertiesFilePath = propertiesFilePath;
         this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
         this.logger = logger;
     }
 
-    public Map<String, String> invoke(File base, VirtualChannel channel) throws IOException, InterruptedException {
+    public Map<String, String> retrieve() throws EnvInjectException {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
-        try {
+        //Add the properties file
+        if (propertiesFilePath != null) {
+            String propertiesFilePathResolved = Util.replaceMacro(propertiesFilePath, currentEnvVars);
+            propertiesFilePathResolved = propertiesFilePathResolved.replace("\\", "/");
+            FilePath remotePropertiesFilePath = new FilePath(basePath, propertiesFilePathResolved);
 
-            PropertiesLoader loader = new PropertiesLoader();
-
-            //Add the properties file
-            if (propertiesFilePath != null) {
-                String propertiesFilePathResolved = Util.replaceMacro(propertiesFilePath, currentEnvVars);
-                propertiesFilePathResolved = propertiesFilePathResolved.replace("\\", "/");
-                File propertiesFile = getFile(base, propertiesFilePathResolved);
-                if (propertiesFile == null) {
+            try {
+                if (!remotePropertiesFilePath.exists()) {
                     String message = String.format("The given properties file path '%s' doesn't exist.", propertiesFilePathResolved);
                     logger.error(message);
                     String patternMessage = String.format("Missing file path was resolved from pattern '%s' .", propertiesFilePath);
                     logger.error(patternMessage);
                     throw new EnvInjectException(message);
                 }
+
                 logger.info(String.format("Injecting as environment variables the properties file path '%s'", propertiesFilePathResolved));
-                result.putAll(loader.getVarsFromPropertiesFile(propertiesFile, currentEnvVars));
+                result.putAll(remotePropertiesFilePath.act(new FilePath.FileCallable<Map<String, String>>() {
+                    public Map<String, String> invoke(File propertiesFile, VirtualChannel virtualChannel) throws IOException, InterruptedException {
+                        try {
+                            return new PropertiesLoader().getVarsFromPropertiesFile(propertiesFile, currentEnvVars);
+                        } catch (EnvInjectException envEx) {
+                            throw new IOException(envEx.getMessage());
+                        }
+                    }
+                }));
                 logger.info("Variables injected successfully.");
+            } catch (IOException e) {
+                throw new EnvInjectException(e);
+            } catch (InterruptedException e) {
+                throw new EnvInjectException(e);
             }
+        }
 
-            //Add the properties content
-            if (propertiesContent != null) {
-                PropertiesGetter propertiesGetter = new PropertiesGetter();
-                logger.info(String.format("Injecting as environment variables the properties content %n%s%n", propertiesGetter.getPropertiesContentFromMapObject(propertiesContent)));
-                result.putAll(propertiesContent);
-                logger.info("Variables injected successfully.");
-            }
-
-        } catch (EnvInjectException envEx) {
-            throw new IOException(envEx.getMessage());
+        //Add the properties content
+        if (propertiesContent != null) {
+            PropertiesGetter propertiesGetter = new PropertiesGetter();
+            logger.info(String.format("Injecting as environment variables the properties content %n%s%n", propertiesGetter.getPropertiesContentFromMapObject(propertiesContent)));
+            result.putAll(propertiesContent);
+            logger.info("Variables injected successfully.");
         }
 
         return result;
     }
-
-    private File getFile(File base, String scriptFilePath) {
-
-        File file = new File(scriptFilePath);
-        if (file.exists()) {
-            return file;
-        }
-
-        file = new File(base, scriptFilePath);
-        return file.exists() ? file : null;
-    }
-
 }
