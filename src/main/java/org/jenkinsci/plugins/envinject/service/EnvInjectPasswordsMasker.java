@@ -56,10 +56,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
             }
 
             //Job passwords
-            EnvInjectPasswordEntry[] passwordEntries = envInjectPasswordWrapper.getPasswordEntries();
-            if (passwordEntries != null) {
-                maskJobPasswords(envVars, passwordEntries);
-            }
+            maskJobPasswords(envVars, envInjectPasswordWrapper.getPasswordEntryList());
 
         } catch (EnvInjectException ee) {
             logger.error("Can't mask global password :" + ee.getMessage());
@@ -103,7 +100,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
         }
     }
 
-    private void maskJobPasswords(Map<String, String> envVars, EnvInjectPasswordEntry[] passwordEntries) {
+    private void maskJobPasswords(Map<String, String> envVars, List<EnvInjectPasswordEntry> passwordEntries) {
         for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
             envVars.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
         }
