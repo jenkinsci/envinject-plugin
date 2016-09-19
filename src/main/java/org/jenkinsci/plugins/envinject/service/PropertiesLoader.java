@@ -11,6 +11,7 @@ import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
@@ -79,6 +80,7 @@ public class PropertiesLoader implements Serializable {
         return result;
     }
 
+    @CheckForNull
     private String processElement(Object prop, Map<String, String> currentEnvVars) {
         String macroProcessedElement = Util.replaceMacro(String.valueOf(prop), currentEnvVars);
         if (macroProcessedElement == null) {

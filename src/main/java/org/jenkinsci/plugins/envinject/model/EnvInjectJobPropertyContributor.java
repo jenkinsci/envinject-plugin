@@ -7,6 +7,7 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.io.Serializable;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -21,11 +22,11 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
     public abstract Map<String, String> getEnvVars(AbstractBuild build, TaskListener listener) throws EnvInjectException;
 
     public Descriptor<EnvInjectJobPropertyContributor> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Jenkins.getActiveInstance().getDescriptor(getClass());
     }
 
     @SuppressWarnings("unused")
     public static DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> all() {
-        return Hudson.getInstance().getDescriptorList(EnvInjectJobPropertyContributor.class);
+        return Jenkins.getActiveInstance().getDescriptorList(EnvInjectJobPropertyContributor.class);
     }
 }

@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectPasswordWrapper;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
@@ -63,7 +64,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
         }
     }
 
-
+    @CheckForNull
     private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(AbstractBuild build) throws EnvInjectException {
 
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;

@@ -22,7 +22,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Gregory Boissinot
@@ -246,7 +248,8 @@ public class EnvInjectEnvVars implements Serializable {
         return result;
     }
 
-    private String removeUnsetVars(String value) {
+    @Nullable
+    private String removeUnsetVars(@CheckForNull String value) {
 
         if (value == null) {
             return null;

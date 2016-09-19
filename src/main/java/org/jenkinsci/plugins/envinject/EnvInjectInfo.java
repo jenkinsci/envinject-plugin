@@ -10,6 +10,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * @author Gregory Boissinot
@@ -40,6 +42,7 @@ public class EnvInjectInfo implements Serializable {
         return propertiesContent;
     }
 
+    @CheckForNull
     @SuppressWarnings("deprecation")
     public Map<String, String> getPropertiesContentMap(Map<String, String> currentEnvVars) {
 
@@ -67,7 +70,9 @@ public class EnvInjectInfo implements Serializable {
 
     /**
      * Fix CR/LF and always make it Unix style.
+     * @return String with fixed line endings. May return {@code null} only for {@code null} input
      */
+    @Nullable
     protected String fixCrLf(String s) {
         if (s == null) {
             return null;

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -121,6 +122,7 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
+    @CheckForNull
     @SuppressWarnings("unchecked")
     public EnvInjectJobProperty getEnvInjectJobProperty(AbstractBuild build) {
         if (build == null) {

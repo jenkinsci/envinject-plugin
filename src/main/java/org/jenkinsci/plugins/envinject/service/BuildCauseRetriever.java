@@ -16,6 +16,7 @@ import java.util.Set;
 
 import static com.google.common.base.Joiner.on;
 import java.util.Locale;
+import javax.annotation.CheckForNull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
@@ -81,6 +82,7 @@ public class BuildCauseRetriever {
         return triggerVars;
     }
 
+    @CheckForNull
     @SuppressWarnings(value = "deprecation")
     private static String getTriggerName(Cause cause) {
         if (SCMTrigger.SCMTriggerCause.class.isInstance(cause)) {
