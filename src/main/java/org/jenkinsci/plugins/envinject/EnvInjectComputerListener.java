@@ -7,12 +7,12 @@ import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -36,7 +36,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }
@@ -92,7 +92,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }

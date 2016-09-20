@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.12</version>
+        <version>2.15</version>
     </parent>
 
     <artifactId>envinject</artifactId>
@@ -60,8 +60,8 @@
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <mockito.version>1.10.19</mockito.version>
 
-        <jenkins.version>1.532.3</jenkins.version>
-        <jenkins-test-harness.version>1.532.3</jenkins-test-harness.version>
+        <jenkins.version>1.609.3</jenkins.version>
+        <jenkins-test-harness.version>1.609.3</jenkins-test-harness.version>
         <java.level>6</java.level>
         <java.level.test>${java.level}</java.level.test>
         <findbugs.failOnError>false</findbugs.failOnError>
@@ -115,8 +115,8 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-project</artifactId>
-            <version>1.4</version>
-            <scope>test</scope>
+            <version>1.7</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 
