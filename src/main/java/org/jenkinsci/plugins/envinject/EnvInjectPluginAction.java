@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributingAction;
+import java.util.Collections;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 
 import java.util.Map;
@@ -45,11 +46,14 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
     
     @Nonnull
     private EnvInjectVarList getEnvInjectVarList() {
+        if (envMap == null) {
+            return new EnvInjectVarList(Collections.<String,String>emptyMap());
+        }
         return new EnvInjectVarList(Maps.transformEntries(envMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
                         final Set<String> sensibleVars = getSensibleVariables();
-                        return sensibleVars != null && sensibleVars.contains(key) ? "********" : value;
+                        return ((sensibleVars != null) && sensibleVars.contains(key)) ? EnvInjectPlugin.DEFAULT_MASK : value;
                     }
                 }));
     }

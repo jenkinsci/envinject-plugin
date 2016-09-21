@@ -125,15 +125,16 @@ public class PropertiesLoaderTest {
 
     private void checkWithNewlineInValues(boolean fromFile) throws Exception {
         // Create properties file containing backslash-escaped newlines
-        String content = "KEY1=line1\\\nline2\nKEY2= line1 \\\n line2 \nKEY3=line1\\\n\\\nline3";
+        String content = "KEY1=line1\\nline2\nKEY2= line3 \\n\\\n line4 \nKEY3=line5\\\n\\\nline6\nKEY4=line7\\\nline8\\n\\nline9";
         Map<String, String> gatherVars = gatherEnvVars(fromFile, content, new HashMap<String, String>());
         assertNotNull(gatherVars);
-        assertEquals(3, gatherVars.size());
+        assertEquals(4, gatherVars.size());
 
         // Values should be trimmed at start & end, otherwise whitespace & newlines should be kept
         assertEquals("line1\nline2", gatherVars.get("KEY1"));
-        assertEquals("line1 \nline2", gatherVars.get("KEY2"));
-        assertEquals("line1\n\nline3", gatherVars.get("KEY3"));
+        assertEquals("line3 \nline4", gatherVars.get("KEY2"));
+        assertEquals("line5line6", gatherVars.get("KEY3"));
+        assertEquals("line7line8\n\nline9", gatherVars.get("KEY4"));
     }
 
     @Test
@@ -147,17 +148,17 @@ public class PropertiesLoaderTest {
     }
 
     private void checkWithVarsToResolve(boolean fromFile) throws Exception {
-        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=VALUE2\nKEY3=${VAR3_TO_RESOLVE}\\otherContent";
+        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=https\\://github.com\nKEY3=${VAR3_TO_RESOLVE}\\\\otherContent";
         Map<String, String> currentEnvVars = new HashMap<String, String>();
-        currentEnvVars.put("VAR1_TO_RESOLVE", "NEW_VALUE1");
-        currentEnvVars.put("VAR3_TO_RESOLVE", "NEW_VALUE3");
+        currentEnvVars.put("VAR1_TO_RESOLVE", "NEW_VALUE1 ");
+        currentEnvVars.put("VAR3_TO_RESOLVE", "C:\\Bench");
 
         Map<String, String> gatherVars = gatherEnvVars(fromFile, content, currentEnvVars);
         assertNotNull(gatherVars);
         assertEquals(3, gatherVars.size());
         assertEquals("NEW_VALUE1", gatherVars.get("KEY1"));
-        assertEquals("VALUE2", gatherVars.get("KEY2"));
-        assertEquals("NEW_VALUE3\\otherContent", gatherVars.get("KEY3"));
+        assertEquals("https://github.com", gatherVars.get("KEY2"));
+        assertEquals("C:\\Bench\\otherContent", gatherVars.get("KEY3"));
     }
 
     private Map<String, String> gatherEnvVars(boolean fromFile, String content2Load, Map<String, String> currentEnvVars) throws Exception {

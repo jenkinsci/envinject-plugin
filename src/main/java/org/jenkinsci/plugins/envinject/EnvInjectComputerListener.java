@@ -4,15 +4,14 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -24,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -36,7 +36,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }
@@ -49,7 +49,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         boolean unsetSystemVariables = false;
         Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+        for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
 
             if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                 globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
@@ -92,7 +92,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }
@@ -166,12 +166,12 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             return false;
         }
 
-        Node slave = Hudson.getInstance().getNode(c.getName());
+        Node slave = Jenkins.getActiveInstance().getNode(c.getName());
         return slave != null;
     }
 
     private boolean isGlobalEnvInjectActivatedOnMaster() {
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         for (NodeProperty<?> nodeProperty : globalNodeProperties) {
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 return true;

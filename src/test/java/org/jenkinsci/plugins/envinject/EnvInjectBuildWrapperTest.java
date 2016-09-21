@@ -1,15 +1,5 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
-
 import static com.google.common.collect.ImmutableMap.of;
 import static hudson.Util.replaceMacro;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,6 +8,19 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withEnvInjectAction;
 import static org.junit.Assert.assertEquals;
+import hudson.EnvVars;
+import hudson.model.FreeStyleBuild;
+import hudson.model.Result;
+import hudson.model.FreeStyleProject;
+import hudson.util.IOUtils;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 public class EnvInjectBuildWrapperTest {
 
@@ -40,7 +43,7 @@ public class EnvInjectBuildWrapperTest {
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
-        p.scheduleBuild2(0).get();
+        FreeStyleBuild run = j.buildAndAssertSuccess(p);
 
         assertEquals("tvalue", capture.getEnvVars().get("TEXT_VAR"));
         assertEquals("fvalue", capture.getEnvVars().get("FILE_VAR"));
@@ -62,6 +65,45 @@ public class EnvInjectBuildWrapperTest {
         p.scheduleBuild2(0).get();
 
         assertEquals("gvalue", capture.getEnvVars().get("GROOVY_VAR"));
+    }
+
+    @Test
+    public void exceptionMessageMustBeLogged() throws Exception {
+    	FreeStyleProject p = j.createFreeStyleProject();
+    	
+    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+    	p.getBuildWrappersList().add(wrapper);
+    	wrapper.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': FOOVAR]", false));
+    	
+    	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+    	p.getBuildersList().add(capture);
+    	FreeStyleBuild build = p.scheduleBuild2(0).get();
+
+    	assertEquals(Result.FAILURE, build.getResult());
+    	String output = IOUtils.toString(build.getLogReader());
+    	assertThat("Excepted error message it's not logged", output.contains("No such property: FOOVAR"));
+    }
+
+    @Test
+    @Issue("JENKINS-36545")
+    public void shouldPopulateVariableWithWorkspace() throws Exception {
+        final String customWorkspaceValue = tmp.newFolder().getAbsolutePath();
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setCustomWorkspace(customWorkspaceValue);
+
+    	EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
+    	
+    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+    	project.getBuildWrappersList().add(wrapper);
+    	wrapper.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': WORKSPACE]", false));
+
+    	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+    	project.getBuildersList().add(capture);
+    	FreeStyleBuild build = project.scheduleBuild2(0).get();
+
+    	assertEquals(Result.SUCCESS, build.getResult());
+    	assertEquals(customWorkspaceValue, capture.getEnvVars().get("GROOVY_VAR"));
     }
 
     @Test

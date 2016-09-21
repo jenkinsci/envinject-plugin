@@ -15,11 +15,11 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import jenkins.model.Jenkins;
 import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -39,8 +39,7 @@ public class GlobalPropertiesTest {
         final String workspaceName = "WORKSPACE";
 
         //A global node property TEST_WORKSPACE
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = jenkins.getInstance()
-                .getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testWorkspaceVariableName, testWorkspaceVariableValue)));
 
         EnvInjectJobProperty jobProperty = new EnvInjectJobProperty();

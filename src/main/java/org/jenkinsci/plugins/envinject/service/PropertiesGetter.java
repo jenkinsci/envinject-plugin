@@ -2,13 +2,16 @@ package org.jenkinsci.plugins.envinject.service;
 
 import java.io.Serializable;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * @author Gregory Boissinot
  */
 public class PropertiesGetter implements Serializable {
 
-    public String getPropertiesContentFromMapObject(Map<String, String> propertiesContent) {
+    @Nullable
+    public String getPropertiesContentFromMapObject(@CheckForNull Map<String, String> propertiesContent) {
 
         if (propertiesContent == null) {
             return null;

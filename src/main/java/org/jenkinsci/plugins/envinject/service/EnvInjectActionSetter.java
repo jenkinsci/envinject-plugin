@@ -3,7 +3,7 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.remoting.Callable;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
@@ -33,7 +33,7 @@ public class EnvInjectActionSetter implements Serializable {
             envInjectAction.overrideAll(build.getSensitiveBuildVariables(), envMap);
         } else {
             if (rootPath != null) {
-                envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
+                envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
                     public Map<String, String> call() throws EnvInjectException {
                         HashMap<String, String> result = new HashMap<String, String>();
                         result.putAll(EnvVars.masterEnvVars);

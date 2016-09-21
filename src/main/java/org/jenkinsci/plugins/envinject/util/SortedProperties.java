@@ -8,7 +8,9 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Gregory Boissinot
+ * Use java.util.Properties now instead
  */
+@Deprecated
 public class SortedProperties extends LinkedHashMap<Object, Object> {
 
 

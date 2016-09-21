@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.532.3</version>
+        <version>2.15</version>
     </parent>
 
     <artifactId>envinject</artifactId>
@@ -56,11 +56,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
-        <envinject.lib.version>1.23</envinject.lib.version>
+        <envinject.lib.version>1.24</envinject.lib.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
-        <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
         <powermock.version>1.4.9</powermock.version>
+        <jenkins.version>1.609.3</jenkins.version>
+        <jenkins-test-harness.version>1.609.3</jenkins-test-harness.version>
+        <java.level>6</java.level>
+        <java.level.test>${java.level}</java.level.test>
+        <findbugs.failOnError>false</findbugs.failOnError>
     </properties>
 
     <scm>
@@ -97,13 +101,6 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>${mockito.version}</version>
@@ -120,7 +117,11 @@
             <artifactId>powermock-api-mockito</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
-            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>matrix-project</artifactId>
+            <version>1.7</version>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>

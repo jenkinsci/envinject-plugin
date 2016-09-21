@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.service.PropertiesGetter;
@@ -9,6 +10,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * @author Gregory Boissinot
@@ -39,6 +42,7 @@ public class EnvInjectInfo implements Serializable {
         return propertiesContent;
     }
 
+    @CheckForNull
     @SuppressWarnings("deprecation")
     public Map<String, String> getPropertiesContentMap(Map<String, String> currentEnvVars) {
 
@@ -66,7 +70,9 @@ public class EnvInjectInfo implements Serializable {
 
     /**
      * Fix CR/LF and always make it Unix style.
+     * @return String with fixed line endings. May return {@code null} only for {@code null} input
      */
+    @Nullable
     protected String fixCrLf(String s) {
         if (s == null) {
             return null;
@@ -80,8 +86,10 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @Deprecated
+    @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     private transient Map<String, String> propertiesContentMap;
     @Deprecated
+    @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     protected transient boolean populateTriggerCause;
 
 }

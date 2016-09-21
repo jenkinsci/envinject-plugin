@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.envinject;
 
 import hudson.model.*;
+import hudson.util.IOUtils;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -16,15 +18,15 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEvaluatedGroovyScript {
+public class EnvInjectEvaluatedGroovyScriptTest {
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
     @Test
     public void testMapGroovyScript() throws Exception {
-
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
+        hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(
@@ -71,8 +73,9 @@ public class EnvInjectEvaluatedGroovyScript {
 
     @Test
     public void testBuildInVars() throws Exception {
-
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
+        hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
+        hudson.EnvVars.masterEnvVars.remove("BUILD_NUMBER");
 
         StringBuffer groovyScriptContent = new StringBuffer();
         groovyScriptContent.append(
@@ -80,6 +83,7 @@ public class EnvInjectEvaluatedGroovyScript {
                         "def buildNumber1 = env['BUILD_NUMBER']\n" +
                         "def buildNumber2 = currentBuild.getNumber()\n" +
                         "def map = [COMPUTE_VAR1: buildNumber1, COMPUTE_VAR2: buildNumber2]\n" +
+                        "assert currentListener instanceof hudson.model.TaskListener;\n" +
                         "return map");
 
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);

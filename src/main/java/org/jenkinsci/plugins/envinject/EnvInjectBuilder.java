@@ -87,7 +87,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
 
         } catch (Throwable throwable) {
-            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
+            logger.error("Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return false;
         }

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
@@ -245,6 +246,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
+    @CheckForNull
     private Node getNode() {
         Computer computer = Computer.currentComputer();
         if (computer == null) {
@@ -253,6 +255,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return computer.getNode();
     }
 
+    @CheckForNull
     private FilePath getNodeRootPath() {
         Node node = getNode();
         if (node != null) {

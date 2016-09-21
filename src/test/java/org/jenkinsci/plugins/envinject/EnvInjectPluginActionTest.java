@@ -72,6 +72,7 @@ public class EnvInjectPluginActionTest {
     public void hideActionGlobally() throws Exception {
         final EnvInjectPlugin plugin = EnvInjectPlugin.getInstance();
         EnvInjectPluginConfiguration.configure(true, false);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         
         // Run build and retrieve results
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
@@ -95,6 +96,7 @@ public class EnvInjectPluginActionTest {
         // Enable permissions
         final EnvInjectPlugin plugin = EnvInjectPlugin.getInstance();
         EnvInjectPluginConfiguration.configure(false, true);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         
         // Create a test user
         User user = User.get("testUser", true, null);
