@@ -4,7 +4,6 @@ import hudson.EnvVars;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -21,6 +20,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -83,12 +83,12 @@ public class EnvInjectVariableGetterTest {
     }
     
     @Test
-    @PrepareForTest({ Computer.class, Hudson.class })
+    @PrepareForTest({ Computer.class, Jenkins.class })
     @Issue("JENKINS-16316")
     public void testGetJenkinsSystemVariablesForceFetchesGlobalNodesPropertiesFromMaster() throws Exception {
 
         PowerMockito.mockStatic(Computer.class);
-        PowerMockito.mockStatic(Hudson.class);
+        PowerMockito.mockStatic(Jenkins.class);
         Computer computer = mock(Computer.class);
         Node node = mock(Node.class);
         EnvVars envVars = new EnvVars();
@@ -96,14 +96,14 @@ public class EnvInjectVariableGetterTest {
         final String VALUE_FROM_SLAVE_COMPUTER = "VALUE_FROM_SLAVE_COMPUTER";
         final String VALUE_FROM_GNP_MASTER = "VALUE_FROM_GNP_MASTER";
         envVars.put(PROPERTY_KEY, VALUE_FROM_SLAVE_COMPUTER);
-        Hudson hudson = mock(Hudson.class);
+        Jenkins hudson = mock(Jenkins.class);
 
         when(Computer.currentComputer()).thenReturn(computer);
         when(computer.getNode()).thenReturn(node);
         when(computer.getEnvironment()).thenReturn(envVars);
         when(node.getAssignedLabels()).thenReturn(new HashSet<LabelAtom>());
         when(computer.getName()).thenReturn("slave0");
-        when(Hudson.getInstance()).thenReturn(hudson);
+        when(Jenkins.getInstance()).thenReturn(hudson);
         when(hudson.getRootDir()).thenReturn(new File(""));
 
         DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = new DescribableList<NodeProperty<?>, NodePropertyDescriptor>(
@@ -111,7 +111,7 @@ public class EnvInjectVariableGetterTest {
         EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty(
             new EnvironmentVariablesNodeProperty.Entry(PROPERTY_KEY, VALUE_FROM_GNP_MASTER));
         globalNodeProperties.add(property);
-        when(Hudson.getInstance().getGlobalNodeProperties()).thenReturn(globalNodeProperties);
+        when(Jenkins.getInstance().getGlobalNodeProperties()).thenReturn(globalNodeProperties);
 
         Map<String, String> jenkinsSystemVariables = variableGetter.getJenkinsSystemVariables(false);
         assertNotNull(jenkinsSystemVariables);
