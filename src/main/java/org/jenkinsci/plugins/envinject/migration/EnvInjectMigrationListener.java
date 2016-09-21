@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -36,7 +37,7 @@ public class EnvInjectMigrationListener extends ItemListener {
     @Override
     @SuppressWarnings("deprecation")
     public void onLoaded() {
-        List<TopLevelItem> items = Hudson.getInstance().getItems();
+        List<TopLevelItem> items = Jenkins.getActiveInstance().getItems();
         for (TopLevelItem item : items) {
             try {
 

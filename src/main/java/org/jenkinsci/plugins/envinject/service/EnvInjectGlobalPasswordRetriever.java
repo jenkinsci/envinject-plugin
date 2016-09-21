@@ -17,7 +17,7 @@ import javax.annotation.CheckForNull;
 public class EnvInjectGlobalPasswordRetriever implements Serializable {
 
     public @CheckForNull EnvInjectGlobalPasswordEntry[] getGlobalPasswords() throws EnvInjectException {
-        XmlFile xmlFile = new XmlFile(new File(Jenkins.getInstance().getRootDir(), EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor.ENVINJECT_CONFIG + ".xml"));
+        XmlFile xmlFile = new XmlFile(new File(Jenkins.getActiveInstance().getRootDir(), EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor.ENVINJECT_CONFIG + ".xml"));
         if (xmlFile.exists()) {
             EnvInjectNodeProperty.EnvInjectNodePropertyDescriptor desc;
             try {

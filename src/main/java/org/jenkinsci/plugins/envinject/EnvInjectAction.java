@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.ObjectStreamException;
 import java.util.Map;
 import java.util.Set;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
@@ -19,8 +21,13 @@ import java.util.Set;
  */
 @Deprecated
 public class EnvInjectAction implements Action, StaplerProxy {
-
-    public static String URL_NAME = "injectedEnvVars";
+    
+    /**
+     * @deprecated The field does nothing. It was public by mistake
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public final static String URL_NAME = "injectedEnvVars";
 
     private transient Map<String, String> envMap;
 
@@ -64,7 +71,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         if (!EnvInjectPlugin.canViewInjectedVars(build)) {
             return null;
         }
-        return URL_NAME;
+        return "injectedEnvVars";
     }
 
     protected AbstractBuild getBuild() {

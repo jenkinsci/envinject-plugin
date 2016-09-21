@@ -8,7 +8,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.util.VariableResolver;
@@ -23,7 +22,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Gregory Boissinot
@@ -46,7 +47,7 @@ public class EnvInjectEnvVars implements Serializable {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {
             if (loadFilesFromMaster) {
-                resultMap.putAll(Hudson.getInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
+                resultMap.putAll(Jenkins.getActiveInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
             } else {
                 resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
             }
@@ -135,7 +136,7 @@ public class EnvInjectEnvVars implements Serializable {
             }
         }
 
-        GroovyShell groovyShell = new GroovyShell(Hudson.getInstance().getPluginManager().uberClassLoader, binding);
+        GroovyShell groovyShell = new GroovyShell(Jenkins.getActiveInstance().getPluginManager().uberClassLoader, binding);
         for (Map.Entry<String, String> entryVariable : envVars.entrySet()) {
             groovyShell.setVariable(entryVariable.getKey(), entryVariable.getValue());
         }
@@ -247,7 +248,8 @@ public class EnvInjectEnvVars implements Serializable {
         return result;
     }
 
-    private String removeUnsetVars(String value) {
+    @Nullable
+    private String removeUnsetVars(@CheckForNull String value) {
 
         if (value == null) {
             return null;

@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -12,6 +11,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +33,7 @@ public class GlobalPropertiesTest {
         final String workspaceName = "WORKSPACE";
 
         //A global node property TEST_WORKSPACE
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testWorkspaceVariableName, testWorkspaceVariableValue)));
 
         EnvInjectJobProperty jobProperty = new EnvInjectJobProperty();
@@ -68,7 +68,7 @@ public class GlobalPropertiesTest {
         final String testJobVariableName = "TEST_JOB_WORKSPACE";
         final String testJobVariableExprValue = "${WORKSPACE}";
 
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testGlobalVariableName, testGlobalVariableValue)));
 
         StringBuffer propertiesContent = new StringBuffer();

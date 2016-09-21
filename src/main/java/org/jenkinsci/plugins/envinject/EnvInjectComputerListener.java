@@ -4,7 +4,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.ComputerListener;
@@ -24,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -49,7 +49,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         boolean unsetSystemVariables = false;
         Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+        for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
 
             if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                 globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
@@ -166,12 +166,12 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             return false;
         }
 
-        Node slave = Hudson.getInstance().getNode(c.getName());
+        Node slave = Jenkins.getActiveInstance().getNode(c.getName());
         return slave != null;
     }
 
     private boolean isGlobalEnvInjectActivatedOnMaster() {
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         for (NodeProperty<?> nodeProperty : globalNodeProperties) {
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 return true;

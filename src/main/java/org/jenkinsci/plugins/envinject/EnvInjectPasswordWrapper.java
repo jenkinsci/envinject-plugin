@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
@@ -35,12 +39,18 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
+            if (envInjectPasswordEntry == null) {
+                throw new NullPointerException("Received null EnvInject password entry");
+            }
             return envInjectPasswordEntry.getName();
         }
     };
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
+            if (envInjectPasswordEntry == null) {
+                throw new NullPointerException("Received null EnvInject password entry");
+            }
             return envInjectPasswordEntry.getValue().getPlainText();
         }
     };
@@ -69,11 +79,31 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         this.maskPasswordParameters = maskPasswordParameters;
     }
     
+    /**
+     * Retrieves raw array of password entries.
+     * @return Array of password entries or {@code null} if the array is not specified
+     * @deprecated Use {@link #getPasswordEntryList()} instead
+     */
+    @CheckForNull
+    @Deprecated @Restricted(NoExternalUse.class)
     public EnvInjectPasswordEntry[] getPasswordEntries() {
-        return passwordEntries;
+        return passwordEntries == null ? null : Arrays.copyOf(passwordEntries, passwordEntries.length);
+    }
+    
+    /**
+     * Provides a read-only list of password entry sets.
+     * @return List of password entries.
+     * @since TODO
+     */
+    @Nonnull
+    public List<EnvInjectPasswordEntry> getPasswordEntryList() {
+        if (passwordEntries == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(Arrays.asList(passwordEntries));
     }
 
-    public void setPasswordEntries(EnvInjectPasswordEntry[] passwordEntries) {
+    public void setPasswordEntries(@CheckForNull EnvInjectPasswordEntry[] passwordEntries) {
         this.passwordEntries = passwordEntries;
     }
 
@@ -111,9 +141,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         }
 
         // Process local passwords (provided by EnvInject)
-        if (getPasswordEntries() != null && getPasswordEntries().length != 0) {
-            passwordList.addAll(Arrays.asList(getPasswordEntries()));
-        }
+        passwordList.addAll(getPasswordEntryList());
 
         return passwordList;
     }
@@ -225,9 +253,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
             }
 
             // Process local passwords (provided by EnvInject)
-            if (getPasswordEntries() != null && getPasswordEntries().length != 0) {
-                passwordList.addAll(Arrays.asList(getPasswordEntries()));
-            }
+            passwordList.addAll(getPasswordEntryList());
 
             // Finally, the passwords has been injected.
             for (EnvInjectPasswordEntry passwordEntry : passwordList) {

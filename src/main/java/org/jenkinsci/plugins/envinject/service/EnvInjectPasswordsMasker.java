@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectPasswordWrapper;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * @author Gregory Boissinot
@@ -56,17 +57,14 @@ public class EnvInjectPasswordsMasker implements Serializable {
             }
 
             //Job passwords
-            EnvInjectPasswordEntry[] passwordEntries = envInjectPasswordWrapper.getPasswordEntries();
-            if (passwordEntries != null) {
-                maskJobPasswords(envVars, passwordEntries);
-            }
+            maskJobPasswords(envVars, envInjectPasswordWrapper.getPasswordEntryList());
 
         } catch (EnvInjectException ee) {
             logger.error("Can't mask global password :" + ee.getMessage());
         }
     }
 
-
+    @CheckForNull
     private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(AbstractBuild build) throws EnvInjectException {
 
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
@@ -103,7 +101,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
         }
     }
 
-    private void maskJobPasswords(Map<String, String> envVars, EnvInjectPasswordEntry[] passwordEntries) {
+    private void maskJobPasswords(Map<String, String> envVars, List<EnvInjectPasswordEntry> passwordEntries) {
         for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
             envVars.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
         }

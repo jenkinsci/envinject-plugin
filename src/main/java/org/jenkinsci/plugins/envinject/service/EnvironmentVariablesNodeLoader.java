@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
@@ -16,6 +15,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -49,7 +49,7 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
                     }
             );
 
-            for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+            for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
                 if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                     EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
                     EnvVars envVars = variablesNodeProperty.getEnvVars();
