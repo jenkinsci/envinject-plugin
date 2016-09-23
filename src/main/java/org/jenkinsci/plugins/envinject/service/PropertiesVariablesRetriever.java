@@ -11,28 +11,40 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
  */
 public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<String, String>> {
 
+    @CheckForNull
     private String propertiesFilePath;
 
+    @CheckForNull
     private Map<String, String> propertiesContent;
 
+    @Nonnull
     private Map<String, String> currentEnvVars;
 
+    @Nonnull
     private EnvInjectLogger logger;
 
-    public PropertiesVariablesRetriever(String propertiesFilePath, Map<String, String> propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+    public PropertiesVariablesRetriever(
+            @CheckForNull String propertiesFilePath, 
+            @CheckForNull Map<String, String> propertiesContent, 
+            @Nonnull Map<String, String> currentEnvVars, 
+            @Nonnull EnvInjectLogger logger) {
         this.propertiesFilePath = propertiesFilePath;
         this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
         this.logger = logger;
     }
 
-    public Map<String, String> invoke(File base, VirtualChannel channel) throws IOException, InterruptedException {
+    //TODO: Actually Channel is not used here. Maybe a bug?
+    @Override
+    public Map<String, String> invoke(@CheckForNull File base, @CheckForNull VirtualChannel channel) throws IOException, InterruptedException {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
         try {
@@ -71,7 +83,7 @@ public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<
         return result;
     }
 
-    private File getFile(File base, String scriptFilePath) {
+    private File getFile(@CheckForNull File base, @Nonnull String scriptFilePath) {
 
         File file = new File(scriptFilePath);
         if (file.exists()) {

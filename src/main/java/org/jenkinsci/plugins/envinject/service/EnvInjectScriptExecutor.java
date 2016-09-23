@@ -12,25 +12,29 @@ import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
 import java.io.IOException;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectScriptExecutor {
 
-    private Launcher launcher;
+    @Nonnull
+    private final Launcher launcher;
 
-    private EnvInjectLogger logger;
+    @Nonnull
+    private final EnvInjectLogger logger;
 
-    public EnvInjectScriptExecutor(Launcher launcher, EnvInjectLogger logger) {
+    public EnvInjectScriptExecutor(@Nonnull Launcher launcher, @Nonnull EnvInjectLogger logger) {
         this.launcher = launcher;
         this.logger = logger;
     }
 
-    public int executeScriptSection(FilePath scriptExecutionRoot,
-                                    String scriptFilePath,
-                                    String scriptContent,
-                                    Map<String, String> scriptPathExecutionEnvVars,
+    public int executeScriptSection(@Nonnull FilePath scriptExecutionRoot,
+                                    @CheckForNull String scriptFilePath,
+                                    @CheckForNull String scriptContent,
+                                    @Nonnull Map<String, String> scriptPathExecutionEnvVars,
                                     Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
 
         //Process the script file path
@@ -56,8 +60,10 @@ public class EnvInjectScriptExecutor {
         return 0;
     }
 
-
-    private int executeScriptPath(FilePath scriptExecutionRoot, String scriptFilePath, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+    // TODO: Null file path leads to NOP, maybe safe here
+    private int executeScriptPath(
+            @Nonnull FilePath scriptExecutionRoot, @Nonnull String scriptFilePath, 
+            @Nonnull Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
         try {
             launcher.getListener().getLogger().println(String.format("Executing '%s'.", scriptFilePath));
             ArgumentListBuilder cmds = new ArgumentListBuilder();
@@ -74,7 +80,9 @@ public class EnvInjectScriptExecutor {
         }
     }
 
-    private int executeScriptContent(FilePath scriptExecutionRoot, String scriptContent, Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+    private int executeScriptContent(@Nonnull FilePath scriptExecutionRoot, 
+            @Nonnull String scriptContent, @Nonnull Map<String, String> scriptExecutionEnvVars) 
+            throws EnvInjectException {
 
         try {
 
@@ -87,7 +95,8 @@ public class EnvInjectScriptExecutor {
 
             FilePath tmpFile = batchRunner.createScriptFile(scriptExecutionRoot);
             logger.info(String.format("Executing and processing the following script content: %n%s%n", scriptContent));
-            int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener()).envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
+            int cmdCode = launcher.launch().cmds(batchRunner.buildCommandLine(tmpFile)).stdout(launcher.getListener())
+                    .envs(scriptExecutionEnvVars).pwd(scriptExecutionRoot).join();
             if (cmdCode != 0) {
                 logger.info(String.format("Script executed. The exit code is %s.", cmdCode));
             } else {

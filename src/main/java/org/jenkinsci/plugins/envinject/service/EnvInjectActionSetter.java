@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 
 /**
@@ -26,7 +27,8 @@ public class EnvInjectActionSetter implements Serializable {
         this.rootPath = rootPath;
     }
 
-    public void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) throws EnvInjectException, IOException, InterruptedException {
+    public void addEnvVarsToEnvInjectBuildAction(@Nonnull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
+            throws EnvInjectException, IOException, InterruptedException {
 
         EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {

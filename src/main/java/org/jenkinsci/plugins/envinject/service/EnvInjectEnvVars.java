@@ -33,23 +33,27 @@ public class EnvInjectEnvVars implements Serializable {
 
     EnvInjectLogger logger;
 
-    public EnvInjectEnvVars(EnvInjectLogger logger) {
+    public EnvInjectEnvVars(@Nonnull EnvInjectLogger logger) {
         this.logger = logger;
     }
 
-    public Map<String, String> getEnvVarsPropertiesJobProperty(FilePath rootPath,
-                                                               EnvInjectLogger logger,
+    public Map<String, String> getEnvVarsPropertiesJobProperty(@Nonnull FilePath rootPath,
+                                                               @Nonnull EnvInjectLogger logger,
                                                                boolean loadFilesFromMaster,
-                                                               String propertiesFilePath,
-                                                               Map<String, String> propertiesContent,
-                                                               Map<String, String> infraEnvVarsMaster,
-                                                               Map<String, String> infraEnvVarsNode) throws EnvInjectException {
+                                                               @CheckForNull String propertiesFilePath,
+                                                               @CheckForNull Map<String, String> propertiesContent,
+                                                               @Nonnull Map<String, String> infraEnvVarsMaster,
+                                                               @Nonnull Map<String, String> infraEnvVarsNode) throws EnvInjectException {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {
             if (loadFilesFromMaster) {
-                resultMap.putAll(Jenkins.getActiveInstance().getRootPath().act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
+                resultMap.putAll(Jenkins.getActiveInstance().getRootPath().act(
+                        new PropertiesVariablesRetriever(
+                                propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
             } else {
-                resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
+                resultMap.putAll(rootPath.act(
+                        new PropertiesVariablesRetriever(
+                                propertiesFilePath, propertiesContent, infraEnvVarsNode, logger)));
             }
         } catch (IOException e) {
             throw new EnvInjectException(e);
@@ -61,10 +65,10 @@ public class EnvInjectEnvVars implements Serializable {
 
     @Nonnull
     public Map<String, String> getEnvVarsFileProperty(@Nonnull FilePath rootPath,
-                                                      EnvInjectLogger logger,
-                                                      String propertiesFilePath,
-                                                      Map<String, String> propertiesContent,
-                                                      Map<String, String> currentEnvVars) throws EnvInjectException {
+                                                      @Nonnull EnvInjectLogger logger,
+                                                      @CheckForNull String propertiesFilePath,
+                                                      @CheckForNull Map<String, String> propertiesContent,
+                                                      @Nonnull Map<String, String> currentEnvVars) throws EnvInjectException {
         Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {
             resultMap.putAll(rootPath.act(new PropertiesVariablesRetriever(propertiesFilePath, propertiesContent, currentEnvVars, logger)));
@@ -77,15 +81,15 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     public int executeScript(boolean loadFromMaster,
-                             String scriptContent,
-                             FilePath scriptExecutionRoot,
-                             String scriptFilePath,
-                             Map<String, String> infraEnvVarsMaster,
-                             Map<String, String> infraEnvVarsNode,
-                             Launcher launcher,
-                             BuildListener listener) throws EnvInjectException {
+                             @CheckForNull String scriptContent,
+                             @Nonnull FilePath scriptExecutionRoot,
+                             @CheckForNull String scriptFilePath,
+                             @Nonnull Map<String, String> infraEnvVarsMaster,
+                             @Nonnull Map<String, String> infraEnvVarsNode,
+                             @Nonnull Launcher launcher,
+                             @Nonnull BuildListener listener) throws EnvInjectException {
 
-        EnvInjectLogger logger = new EnvInjectLogger(listener);
+        final EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectScriptExecutor scriptExecutor = new EnvInjectScriptExecutor(launcher, logger);
 
         Map<String, String> scriptExecutionEnvVars = new HashMap<String, String>();
@@ -112,7 +116,8 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, String scriptContent, Map<String, String> envVars) throws EnvInjectException, AbortException {
+    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, 
+            String scriptContent, Map<String, String> envVars) throws EnvInjectException, AbortException {
 
         if (scriptContent == null) {
             return new HashMap<String, String>();

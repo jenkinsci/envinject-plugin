@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -12,17 +13,26 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describable<EnvInjectJobPropertyInfo> {
 
-    private String scriptFilePath;
-    private String scriptContent;
-    private String groovyScriptContent;
-    private boolean loadFilesFromMaster;
+    @CheckForNull
+    private final String scriptFilePath;
+    @CheckForNull
+    private final String scriptContent;
+    @CheckForNull
+    private final String groovyScriptContent;
+    private final boolean loadFilesFromMaster;
 
     public EnvInjectJobPropertyInfo() {
-        super(null, null);
+        this(null, null, null, null, null, false);
     }
 
     @DataBoundConstructor
-    public EnvInjectJobPropertyInfo(String propertiesFilePath, String propertiesContent, String scriptFilePath, String scriptContent, String groovyScriptContent, boolean loadFilesFromMaster) {
+    public EnvInjectJobPropertyInfo(
+            @CheckForNull String propertiesFilePath, 
+            @CheckForNull String propertiesContent, 
+            @CheckForNull String scriptFilePath, 
+            @CheckForNull String scriptContent, 
+            @CheckForNull String groovyScriptContent, 
+            boolean loadFilesFromMaster) {
         super(propertiesFilePath, propertiesContent);
         this.scriptFilePath = Util.fixEmpty(scriptFilePath);
         this.scriptContent = fixCrLf(Util.fixEmpty(scriptContent));
@@ -30,14 +40,17 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
         this.loadFilesFromMaster = loadFilesFromMaster;
     }
 
+    @CheckForNull
     public String getScriptFilePath() {
         return scriptFilePath;
     }
 
+    @CheckForNull
     public String getScriptContent() {
         return scriptContent;
     }
 
+    @CheckForNull
     public String getGroovyScriptContent() {
         return groovyScriptContent;
     }

@@ -18,8 +18,9 @@ import javax.annotation.Nullable;
  */
 public class EnvInjectInfo implements Serializable {
 
-    protected String propertiesFilePath;
-    protected String propertiesContent;
+    //TODO: Should be final, but binary compatibility...
+    protected @CheckForNull String propertiesFilePath;
+    protected @CheckForNull String propertiesContent;
 
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
@@ -27,6 +28,7 @@ public class EnvInjectInfo implements Serializable {
         this.propertiesContent = fixCrLf(Util.fixEmpty(propertiesContent));
     }
 
+    @CheckForNull
     public String getPropertiesFilePath() {
         return propertiesFilePath;
     }
@@ -73,7 +75,7 @@ public class EnvInjectInfo implements Serializable {
      * @return String with fixed line endings. May return {@code null} only for {@code null} input
      */
     @Nullable
-    protected String fixCrLf(String s) {
+    protected String fixCrLf(@CheckForNull String s) {
         if (s == null) {
             return null;
         }
