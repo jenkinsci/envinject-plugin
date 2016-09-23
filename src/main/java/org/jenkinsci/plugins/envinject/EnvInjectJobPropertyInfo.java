@@ -1,12 +1,16 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.Extension;
 import hudson.Util;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
+public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describable<EnvInjectJobPropertyInfo> {
 
     private String scriptFilePath;
     private String scriptContent;
@@ -40,5 +44,18 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo {
 
     public boolean isLoadFilesFromMaster() {
         return loadFilesFromMaster;
+    }
+
+    @Override
+    public Descriptor<EnvInjectJobPropertyInfo> getDescriptor() {
+        return Jenkins.getInstance().getDescriptorByType(DescriptorImpl.class);
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<EnvInjectJobPropertyInfo> {
+        @Override
+        public String getDisplayName() {
+            return "EnvInjectJobPropertyInfo";
+        }
     }
 }

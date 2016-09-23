@@ -8,6 +8,9 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withEnvInjectAction;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
@@ -21,6 +24,8 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+
+import java.io.IOException;
 
 public class EnvInjectBuildWrapperTest {
 
@@ -135,7 +140,42 @@ public class EnvInjectBuildWrapperTest {
                 withEnvInjectAction(map(hasEntry(customEnvVarName, expectedCustomEnvVarValue))));
     }
 
+    @Test
+    public void configRoundTrip() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        final String propertiesFilePath = "filepath.properties";
+        final String propertiesContent = "PROPERTIES=CONTENT";
+        final String scriptFilePath = "script/file.path";
+        final String scriptContent = "echo SCRIPT=CONTENT";
+        final String groovyScriptContent = "return [script:\"content\"]";
+
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(
+                new EnvInjectJobPropertyInfo(
+                        propertiesFilePath,
+                        propertiesContent,
+                        scriptFilePath,
+                        scriptContent,
+                        groovyScriptContent,
+                        false));
+        project.getBuildWrappersList().add(wrapper);
+
+        project = j.configRoundtrip(project);
+        project = j.jenkins.getItemByFullName(project.getFullName(), FreeStyleProject.class);
+
+        wrapper = (EnvInjectBuildWrapper)project.getBuildWrappers().get(wrapper.getDescriptor());
+        assertNotNull("There should be a build wrapper", wrapper);
+        EnvInjectJobPropertyInfo info = wrapper.getInfo();
+        assertNotNull("There should be a EnvInjectJobPropertyInfo", info);
+        assertEquals(propertiesFilePath, info.getPropertiesFilePath());
+        assertEquals(propertiesContent, info.getPropertiesContent());
+        assertEquals(scriptFilePath, info.getScriptFilePath());
+        assertEquals(scriptContent, info.getScriptContent());
+        assertEquals(groovyScriptContent, info.getGroovyScriptContent());
+        assertFalse("loadFilesFromMaster should be false", info.isLoadFilesFromMaster());
+    }
+
     private EnvInjectJobPropertyInfo withPropContent(String propertiesContent) {
         return new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, null, false);
     }
+
 }

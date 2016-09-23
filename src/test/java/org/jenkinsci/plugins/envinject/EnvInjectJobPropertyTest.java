@@ -117,6 +117,47 @@ public class EnvInjectJobPropertyTest {
         jenkinsRule.assertBuildStatusSuccess(build);
         assertEquals("The build parameter value has not been overridden", "Overridden", build.getEnvironment(TaskListener.NULL).get("PARAM"));
     }
+
+    @Test
+    public void configRoundTrip() throws Exception {
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        final String propertiesFilePath = "filepath.properties";
+        final String propertiesContent = "PROPERTIES=CONTENT";
+        final String scriptFilePath = "script/file.path";
+        final String scriptContent = "echo SCRIPT=CONTENT";
+        final String groovyScriptContent = "return [script:\"content\"]";
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(
+                propertiesFilePath,
+                propertiesContent,
+                scriptFilePath,
+                scriptContent,
+                groovyScriptContent,
+                true);
+        EnvInjectJobProperty property = new EnvInjectJobProperty<FreeStyleProject>(info);
+        property.setOn(true);
+        property.setKeepBuildVariables(false);
+        property.setKeepJenkinsSystemVariables(false);
+        property.setOverrideBuildParameters(true);
+        project.addProperty(property);
+
+        project = jenkinsRule.configRoundtrip(project);
+        project = jenkinsRule.jenkins.getItemByFullName(project.getFullName(), FreeStyleProject.class);
+
+        property = project.getProperty(EnvInjectJobProperty.class);
+        assertNotNull("there should be a property", property);
+        info = property.getInfo();
+        assertNotNull("There should be an info object", info);
+        assertTrue("Property should be on", property.isOn());
+        assertFalse("KeepBuildVariables", property.isKeepBuildVariables());
+        assertFalse("KeepJenkinsSystemVariables", property.isKeepJenkinsSystemVariables());
+        assertTrue("OverrideBuildParameters", property.isOverrideBuildParameters());
+        assertEquals(propertiesFilePath, info.getPropertiesFilePath());
+        assertEquals(propertiesContent, info.getPropertiesContent());
+        assertEquals(scriptFilePath, info.getScriptFilePath());
+        assertEquals(scriptContent, info.getScriptContent());
+        assertEquals(groovyScriptContent, info.getGroovyScriptContent());
+        assertTrue("loadFilesFromMaster should be true", info.isLoadFilesFromMaster());
+    }
     
     @Nonnull
     public EnvInjectJobProperty<FreeStyleProject>
