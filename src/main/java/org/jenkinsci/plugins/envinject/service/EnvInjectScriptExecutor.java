@@ -35,7 +35,7 @@ public class EnvInjectScriptExecutor {
                                     @CheckForNull String scriptFilePath,
                                     @CheckForNull String scriptContent,
                                     @Nonnull Map<String, String> scriptPathExecutionEnvVars,
-                                    Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
+                                    @Nonnull Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
 
         //Process the script file path
         if (scriptFilePath != null) {

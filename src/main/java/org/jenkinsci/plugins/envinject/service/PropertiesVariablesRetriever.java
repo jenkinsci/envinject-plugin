@@ -83,6 +83,7 @@ public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<
         return result;
     }
 
+    @CheckForNull
     private File getFile(@CheckForNull File base, @Nonnull String scriptFilePath) {
 
         File file = new File(scriptFilePath);

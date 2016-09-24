@@ -8,18 +8,20 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, EnvInjectException> {
 
-    private EnvVars enVars;
+    private @Nonnull EnvVars enVars;
 
-    public EnvInjectMasterEnvVarsSetter(EnvVars enVars) {
+    public EnvInjectMasterEnvVarsSetter(@Nonnull EnvVars enVars) {
         this.enVars = enVars;
     }
 
+    @Override
     public Void call() throws EnvInjectException {
         try {
             Field platformField = EnvVars.class.getDeclaredField("platform");

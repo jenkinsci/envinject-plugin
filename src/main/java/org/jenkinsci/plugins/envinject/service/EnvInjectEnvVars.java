@@ -116,8 +116,10 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> executeAndGetMapGroovyScript(EnvInjectLogger logger, 
-            String scriptContent, Map<String, String> envVars) throws EnvInjectException, AbortException {
+    public Map<String, String> executeAndGetMapGroovyScript(
+            @Nonnull EnvInjectLogger logger, 
+            @CheckForNull String scriptContent, 
+            @Nonnull Map<String, String> envVars) throws EnvInjectException, AbortException {
 
         if (scriptContent == null) {
             return new HashMap<String, String>();
@@ -166,26 +168,30 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
     public int executeScript(
-            String scriptContent,
-            FilePath scriptExecutionRoot,
-            String scriptFilePath,
-            Map<String, String> envVars,
-            Launcher launcher,
-            BuildListener listener) throws EnvInjectException {
+            @CheckForNull String scriptContent,
+            @Nonnull FilePath scriptExecutionRoot,
+            @CheckForNull String scriptFilePath,
+            @Nonnull Map<String, String> envVars,
+            @Nonnull Launcher launcher,
+            @Nonnull BuildListener listener) throws EnvInjectException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectScriptExecutor scriptExecutor = new EnvInjectScriptExecutor(launcher, logger);
         return scriptExecutor.executeScriptSection(scriptExecutionRoot, scriptFilePath, scriptContent, envVars, envVars);
     }
 
-    public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars, Map<String, String> propertiesEnvVars) {
+    @Nonnull
+    public Map<String, String> getMergedVariables(
+            @Nonnull Map<String, String> infraEnvVars, 
+            @Nonnull Map<String, String> propertiesEnvVars) {
         return getMergedVariables(infraEnvVars, propertiesEnvVars, new HashMap<String, String>(), new HashMap<String, String>());
     }
 
-    public Map<String, String> getMergedVariables(Map<String, String> infraEnvVars,
-                                                  Map<String, String> propertiesEnvVars,
-                                                  Map<String, String> groovyMapEnvVars,
-                                                  Map<String, String> contribEnvVars) {
+    @Nonnull
+    public Map<String, String> getMergedVariables(@Nonnull Map<String, String> infraEnvVars,
+                                                  @Nonnull Map<String, String> propertiesEnvVars,
+                                                  @Nonnull Map<String, String> groovyMapEnvVars,
+                                                  @Nonnull Map<String, String> contribEnvVars) {
 
         //0-- Pre-resolve infraEnv vars
         resolveVars(infraEnvVars, infraEnvVars);
@@ -209,7 +215,8 @@ public class EnvInjectEnvVars implements Serializable {
     }
 
 
-    public void resolveVars(Map<String, String> variables, Map<String, String> env) {
+    public void resolveVars(@Nonnull Map<String, String> variables, 
+            @Nonnull Map<String, String> env) {
 
         //Resolve variables against env
         for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -237,7 +244,8 @@ public class EnvInjectEnvVars implements Serializable {
         }
     }
 
-    public Map<String, String> removeUnsetVars(Map<String, String> envVars) {
+    @Nonnull
+    public Map<String, String> removeUnsetVars(@Nonnull Map<String, String> envVars) {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
 
@@ -278,7 +286,7 @@ public class EnvInjectEnvVars implements Serializable {
 
     }
 
-    private boolean isUnresolvedVar(String value) {
+    private boolean isUnresolvedVar(@CheckForNull String value) {
 
         if (value == null) {
             return true;
@@ -292,7 +300,11 @@ public class EnvInjectEnvVars implements Serializable {
         return value.contains("$") && !value.contains("\\$");
     }
 
-    private String removeEscapeDollar(String value) {
+    private String removeEscapeDollar(@CheckForNull String value) {
+        if (value == null) {
+            return  null;
+        }
+        
         //We replace escaped $ unless we are on Windows (Unix only)
         if ('/' == File.separatorChar) { //unix test
             return value.replace("\\$", "$");
