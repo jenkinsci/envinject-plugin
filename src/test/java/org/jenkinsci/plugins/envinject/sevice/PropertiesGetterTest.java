@@ -3,9 +3,11 @@ package org.jenkinsci.plugins.envinject.sevice;
 import org.jenkinsci.plugins.envinject.service.PropertiesGetter;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -46,7 +48,10 @@ public class PropertiesGetterTest {
         entryMap.put("key1", "value1");
         String content = propertiesGetter.getPropertiesContentFromMapObject(entryMap);
         assertNotNull(content);
-        assertEquals("key3=value3\nkey2=value2\nkey1=value1", content);
+        List<String> lines = Arrays.asList(content.split("\n"));
+        assertTrue(lines.contains("key1=value1"));
+        assertTrue(lines.contains("key2=value2"));
+        assertTrue(lines.contains("key3=value3"));
     }
 
 }

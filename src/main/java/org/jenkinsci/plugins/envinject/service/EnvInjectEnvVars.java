@@ -203,7 +203,6 @@ public class EnvInjectEnvVars implements Serializable {
         return variables;
     }
 
-
     public void resolveVars(Map<String, String> variables, Map<String, String> env) {
 
         //Resolve variables against env
@@ -220,7 +219,11 @@ public class EnvInjectEnvVars implements Serializable {
             int previousNbUnresolvedVar = nbUnresolvedVar;
             nbUnresolvedVar = 0;
             for (Map.Entry<String, String> entry : variables.entrySet()) {
-                String value = Util.replaceMacro(entry.getValue(), variables);
+                Map<String, String> resolveVariables = new HashMap<String, String>(variables);
+                // avoid self reference expansion
+                // FOO=$FOO-X -> FOO=$FOO-X-X -> FOO=$FOO-X-X-X etc.
+                resolveVariables.remove(entry.getKey());
+                String value = Util.replaceMacro(entry.getValue(), resolveVariables);
                 entry.setValue(value);
                 if (isUnresolvedVar(value)) {
                     nbUnresolvedVar++;
