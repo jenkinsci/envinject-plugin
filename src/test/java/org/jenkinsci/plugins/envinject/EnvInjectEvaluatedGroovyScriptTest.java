@@ -46,11 +46,10 @@ public class EnvInjectEvaluatedGroovyScriptTest {
                         "            return map \n" +
                         "            } ");
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
-        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);
         envInjectJobProperty.setKeepBuildVariables(true);
         envInjectJobProperty.setOn(true);
-        envInjectJobProperty.setInfo(jobPropertyInfo);
         project.addProperty(envInjectJobProperty);
 
         List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();
@@ -87,11 +86,10 @@ public class EnvInjectEvaluatedGroovyScriptTest {
                         "return map");
 
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
-        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);
         envInjectJobProperty.setKeepBuildVariables(true);
         envInjectJobProperty.setOn(true);
-        envInjectJobProperty.setInfo(jobPropertyInfo);
         project.addProperty(envInjectJobProperty);
 
         List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();

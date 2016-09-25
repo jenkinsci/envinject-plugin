@@ -9,6 +9,7 @@ import org.jenkinsci.lib.envinject.EnvInjectAction;
 
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -16,7 +17,7 @@ import javax.annotation.Nonnull;
  */
 public class EnvInjectPluginAction extends EnvInjectAction implements EnvironmentContributingAction {
 
-    public EnvInjectPluginAction(AbstractBuild build, Map<String, String> envMap) {
+    public EnvInjectPluginAction(@Nonnull AbstractBuild build, @CheckForNull Map<String, String> envMap) {
         super(build, envMap);
     }
 
@@ -58,7 +59,8 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                 }));
     }
 
-    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+    @Override
+    public void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @Nonnull EnvVars env) {
         if (envMap != null) {
             env.putAll(envMap);
         }

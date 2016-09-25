@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -20,7 +21,10 @@ public class EnvInjectContributorManagement {
         return descriptors.size() != 0;
     }
 
-    public EnvInjectJobPropertyContributor[] getNewContributorsInstance() throws org.jenkinsci.lib.envinject.EnvInjectException {
+    //TODO: Create a method, which returns collection
+    @Nonnull
+    public EnvInjectJobPropertyContributor[] getNewContributorsInstance() 
+            throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         List<EnvInjectJobPropertyContributor> result = new ArrayList<EnvInjectJobPropertyContributor>();
 

@@ -61,8 +61,7 @@ public class EnvInjectPlugin extends Plugin {
      * @throws IllegalStateException the plugin has not been loaded yet
      */
     public static @Nonnull EnvInjectPlugin getInstance() {
-        Jenkins j = Jenkins.getInstance();
-        EnvInjectPlugin plugin = j != null ? j.getPlugin(EnvInjectPlugin.class) : null;
+        EnvInjectPlugin plugin = Jenkins.getActiveInstance().getPlugin(EnvInjectPlugin.class);
         if (plugin == null) { // Fail horribly
             // TODO: throw a graceful error
             throw new IllegalStateException("Cannot get the plugin's instance. Jenkins or the plugin have not been initialized yet");
@@ -100,16 +99,5 @@ public class EnvInjectPlugin extends Plugin {
     @Override 
     public void start() throws Exception {
         VIEW_INJECTED_VARS.setEnabled(getConfiguration().isEnablePermissions());
-    }  
-    
-    // TODO: Replace by Jenkins::getActiveInstance() in 1.590+
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public static Jenkins getJenkinsInstance() throws IllegalStateException {
-        final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-            throw new IllegalStateException("Jenkins instance is not ready");
-        }
-        return jenkins;
     }
 }

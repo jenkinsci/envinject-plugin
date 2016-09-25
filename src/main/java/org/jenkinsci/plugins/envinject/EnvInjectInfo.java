@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -18,8 +19,9 @@ import javax.annotation.Nullable;
  */
 public class EnvInjectInfo implements Serializable {
 
-    protected String propertiesFilePath;
-    protected String propertiesContent;
+    //TODO: Should be final, but binary compatibility...
+    protected @CheckForNull String propertiesFilePath;
+    protected @CheckForNull String propertiesContent;
 
     @DataBoundConstructor
     public EnvInjectInfo(String propertiesFilePath, String propertiesContent) {
@@ -27,10 +29,12 @@ public class EnvInjectInfo implements Serializable {
         this.propertiesContent = fixCrLf(Util.fixEmpty(propertiesContent));
     }
 
+    @CheckForNull
     public String getPropertiesFilePath() {
         return propertiesFilePath;
     }
 
+    @CheckForNull
     @SuppressWarnings({"unused", "deprecation"})
     public String getPropertiesContent() {
 
@@ -44,7 +48,7 @@ public class EnvInjectInfo implements Serializable {
 
     @CheckForNull
     @SuppressWarnings("deprecation")
-    public Map<String, String> getPropertiesContentMap(Map<String, String> currentEnvVars) {
+    public Map<String, String> getPropertiesContentMap(@Nonnull Map<String, String> currentEnvVars) {
 
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
@@ -73,7 +77,7 @@ public class EnvInjectInfo implements Serializable {
      * @return String with fixed line endings. May return {@code null} only for {@code null} input
      */
     @Nullable
-    protected String fixCrLf(String s) {
+    protected String fixCrLf(@CheckForNull String s) {
         if (s == null) {
             return null;
         }
@@ -86,9 +90,11 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @Deprecated
+    @CheckForNull
     @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     private transient Map<String, String> propertiesContentMap;
     @Deprecated
+    @CheckForNull
     @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     protected transient boolean populateTriggerCause;
 

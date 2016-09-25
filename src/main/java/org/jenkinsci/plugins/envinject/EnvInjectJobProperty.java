@@ -23,19 +23,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
+    @CheckForNull
     private EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo();
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
     private boolean overrideBuildParameters;
+    @CheckForNull
+    @GuardedBy("this")
     private EnvInjectJobPropertyContributor[] contributors;
-
+    @CheckForNull
+    @GuardedBy("this")
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
 
     @DataBoundConstructor
@@ -48,6 +54,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     public EnvInjectJobProperty() {
     }
 
+    @CheckForNull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -73,8 +80,9 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return overrideBuildParameters;
     }
 
+    @Nonnull
     @SuppressWarnings("unused")
-    public EnvInjectJobPropertyContributor[] getContributors() {
+    public synchronized EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
             try {
                 contributorsComputed = computeEnvInjectContributors();
@@ -84,10 +92,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             contributors = contributorsComputed;
         }
 
-        return Arrays.copyOf(contributors, contributors.length);
+        return contributors != null ? Arrays.copyOf(contributors, contributors.length) : new EnvInjectJobPropertyContributor[0];
     }
 
-    private EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
+    @Nonnull
+    private synchronized EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
                 descriptors = EnvInjectJobPropertyContributor.all();
@@ -119,7 +128,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return result.toArray(new EnvInjectJobPropertyContributor[result.size()]);
     }
 
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    /**
+     * @deprecated Use constructor with parameter
+     */
+    @Deprecated
+    public void setInfo(@CheckForNull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
@@ -144,7 +157,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @DataBoundSetter
-    public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
+    public synchronized void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
     }
 
@@ -188,11 +201,13 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             return null;
         }
 
+        @Nonnull 
         public DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> getEnvInjectContributors() {
             return EnvInjectJobPropertyContributor.all();
         }
 
-        public @CheckForNull EnvInjectJobPropertyContributor[] getContributorsInstance() {
+        @CheckForNull 
+        public EnvInjectJobPropertyContributor[] getContributorsInstance() {
             EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
             try {
                 return envInjectContributorManagement.getNewContributorsInstance();
@@ -223,6 +238,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @Deprecated
+    @CheckForNull
     public EnvInjectPasswordEntry[] getPasswordEntries() {
         return passwordEntries;
     }

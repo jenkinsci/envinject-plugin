@@ -11,6 +11,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -19,7 +21,8 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
 
     private boolean unsetSystemVariables;
 
-    private String propertiesFilePath;
+    @CheckForNull
+    private final String propertiesFilePath;
 
     @DataBoundConstructor
     public EnvInjectNodeProperty(boolean unsetSystemVariables, String propertiesFilePath) {
@@ -31,6 +34,7 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
         return unsetSystemVariables;
     }
 
+    @CheckForNull
     public String getPropertiesFilePath() {
         return propertiesFilePath;
     }
@@ -38,6 +42,7 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
     @Extension
     public static class EnvInjectNodePropertyDescriptor extends NodePropertyDescriptor {
 
+        @Nonnull
         private EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = new EnvInjectGlobalPasswordEntry[0];
         public static final String ENVINJECT_CONFIG = "envInject";
 

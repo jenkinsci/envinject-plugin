@@ -38,6 +38,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
+        @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
             if (envInjectPasswordEntry == null) {
                 throw new NullPointerException("Received null EnvInject password entry");
@@ -47,6 +48,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     };
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
+        @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
             if (envInjectPasswordEntry == null) {
                 throw new NullPointerException("Received null EnvInject password entry");
@@ -57,6 +59,8 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private boolean injectGlobalPasswords;
     private boolean maskPasswordParameters;
+    
+    @CheckForNull
     private EnvInjectPasswordEntry[] passwordEntries;
 
     @DataBoundConstructor
@@ -125,8 +129,9 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      * Returns a listing of passwords: globals (if active) and locals (job passwords)
      *
      * @return Listing of {@link EnvInjectPasswordEntry}
-     * @throws EnvInjectException
+     * @throws EnvInjectException Operation error
      */
+    @Nonnull
     private List<EnvInjectPasswordEntry> getEnvInjectPasswordEntries() throws EnvInjectException {
 
         List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
@@ -190,10 +195,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      */
     class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
 
+        @Nonnull
         private final OutputStream logger;
+        @CheckForNull
         private final Pattern passwordsAsPattern;
 
-        EnvInjectPasswordsOutputStream(OutputStream logger, Collection<String> passwords) {
+        EnvInjectPasswordsOutputStream(@Nonnull OutputStream logger, @CheckForNull Collection<String> passwords) {
 
             this.logger = logger;
 
