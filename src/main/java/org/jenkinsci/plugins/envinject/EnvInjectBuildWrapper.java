@@ -43,6 +43,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
     @Deprecated
     public EnvInjectBuildWrapper() {
+        this.info = null;
     }
 
     /**
