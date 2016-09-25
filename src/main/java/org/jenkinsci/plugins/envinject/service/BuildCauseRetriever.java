@@ -17,6 +17,7 @@ import java.util.Set;
 import static com.google.common.base.Joiner.on;
 import java.util.Locale;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
@@ -32,7 +33,8 @@ public class BuildCauseRetriever {
     public static final String ENV_CAUSE = "BUILD_CAUSE";
     public static final String ENV_ROOT_CAUSE = "ROOT_BUILD_CAUSE";
 
-    public Map<String, String> getTriggeredCause(AbstractBuild<?, ?> build) {
+    @Nonnull
+    public Map<String, String> getTriggeredCause(@Nonnull AbstractBuild<?, ?> build) {
         CauseAction causeAction = build.getAction(CauseAction.class);
         Map<String, String> env = new HashMap<String, String>();
         List<String> directCauseNames = new ArrayList<String>();
@@ -53,18 +55,26 @@ public class BuildCauseRetriever {
         return env;
     }
 
-    private static void insertRootCauseNames(Set<String> causeNames, Cause cause, int depth) {
+    /**
+     * Inserts root cause names to the specified target container.
+     * @param causeNamesTarget Target set. May receive null items
+     * @param cause Cause to be added. For {@code Cause.UstreamCause} there will be in-depth search
+     * @param depth Current search depth. {@link #MAX_UPSTREAM_DEPTH} is a limit
+     */
+    private static void insertRootCauseNames(@Nonnull Set<String> causeNamesTarget, @CheckForNull Cause cause, int depth) {
         if (cause instanceof Cause.UpstreamCause) {
             if (depth == MAX_UPSTREAM_DEPTH) {
-                causeNames.add("DEEPLYNESTEDCAUSES");
+                causeNamesTarget.add("DEEPLYNESTEDCAUSES");
             } else {
                 Cause.UpstreamCause c = (Cause.UpstreamCause) cause;
                 List<Cause> upstreamCauses = c.getUpstreamCauses();
                 for (Cause upstreamCause : upstreamCauses)
-                    insertRootCauseNames(causeNames, upstreamCause, depth + 1);
+                    insertRootCauseNames(causeNamesTarget, upstreamCause, depth + 1);
             }
         } else {
-            causeNames.add(getTriggerName(cause));
+            //TODO: Accordig to the current design this list may receive null for unknown trigger. Bug?
+            // Should actually return UNKNOWN
+            causeNamesTarget.add(getTriggerName(cause));
         }
     }
 

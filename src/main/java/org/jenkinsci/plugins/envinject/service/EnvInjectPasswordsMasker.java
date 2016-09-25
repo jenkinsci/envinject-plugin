@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -22,12 +23,13 @@ import javax.annotation.CheckForNull;
 public class EnvInjectPasswordsMasker implements Serializable {
 
 
-    public void maskPasswordsIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
+    public void maskPasswordsIfAny(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
         maskPasswordsJobParameterIfAny(build, logger, envVars);
         maskPasswordsEnvInjectIfAny(build, logger, envVars);
     }
 
-    private void maskPasswordsJobParameterIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
+    private void maskPasswordsJobParameterIfAny(@Nonnull AbstractBuild build, 
+            @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVarsTarget) {
         ParametersAction parametersAction = build.getAction(ParametersAction.class);
         if (parametersAction != null) {
             List<ParameterValue> parameters = parametersAction.getParameters();
@@ -35,14 +37,15 @@ public class EnvInjectPasswordsMasker implements Serializable {
                 for (ParameterValue parameter : parameters) {
                     if (parameter instanceof PasswordParameterValue) {
                         PasswordParameterValue passwordParameterValue = ((PasswordParameterValue) parameter);
-                        envVars.put(passwordParameterValue.getName(), passwordParameterValue.getValue().getEncryptedValue());
+                        envVarsTarget.put(passwordParameterValue.getName(), passwordParameterValue.getValue().getEncryptedValue());
                     }
                 }
             }
         }
     }
 
-    private void maskPasswordsEnvInjectIfAny(AbstractBuild build, EnvInjectLogger logger, Map<String, String> envVars) {
+    private void maskPasswordsEnvInjectIfAny(@Nonnull AbstractBuild build, 
+            @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
         try {
 
             EnvInjectPasswordWrapper envInjectPasswordWrapper = getEnvInjectPasswordWrapper(build);
@@ -65,7 +68,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
     }
 
     @CheckForNull
-    private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(AbstractBuild build) throws EnvInjectException {
+    private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(@Nonnull AbstractBuild build) throws EnvInjectException {
 
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
         if (build instanceof MatrixRun) {
@@ -90,20 +93,20 @@ public class EnvInjectPasswordsMasker implements Serializable {
         return null;
     }
 
-    private void maskGlobalPasswords(Map<String, String> envVars) throws EnvInjectException {
+    private void maskGlobalPasswords(Map<String, String> envVarsTarget) throws EnvInjectException {
         EnvInjectGlobalPasswordRetriever globalPasswordRetriever = new EnvInjectGlobalPasswordRetriever();
         EnvInjectGlobalPasswordEntry[] globalPasswordEntries = globalPasswordRetriever.getGlobalPasswords();
         if (globalPasswordEntries != null) {
             for (EnvInjectGlobalPasswordEntry globalPasswordEntry : globalPasswordEntries) {
-                envVars.put(globalPasswordEntry.getName(),
+                envVarsTarget.put(globalPasswordEntry.getName(),
                         globalPasswordEntry.getValue().getEncryptedValue());
             }
         }
     }
 
-    private void maskJobPasswords(Map<String, String> envVars, List<EnvInjectPasswordEntry> passwordEntries) {
+    private void maskJobPasswords(@Nonnull Map<String, String> envVarsTarget, @Nonnull List<EnvInjectPasswordEntry> passwordEntries) {
         for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
-            envVars.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
+            envVarsTarget.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
         }
     }
 

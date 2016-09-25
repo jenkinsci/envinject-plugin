@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -24,9 +25,11 @@ public class PropertiesLoader implements Serializable {
      * @param propertiesFile the properties file
      * @param currentEnvVars the current environment variables to resolve against
      * @return the environment variables
-     * @throws EnvInjectException
+     * @throws EnvInjectException Issue with content loading or processing
      */
-    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException {
+    @Nonnull
+    public Map<String, String> getVarsFromPropertiesFile(@Nonnull File propertiesFile, @Nonnull Map<String, String> currentEnvVars) 
+            throws EnvInjectException {
         if (propertiesFile == null) {
             throw new NullPointerException("The properties file object must be set.");
         }
@@ -48,9 +51,10 @@ public class PropertiesLoader implements Serializable {
      * @param content        the properties content to parse
      * @param currentEnvVars the current environment variables to resolve against
      * @return the environment variables
-     * @throws EnvInjectException
+     * @throws EnvInjectException Issue with content loading or processing
      */
-    public Map<String, String> getVarsFromPropertiesContent(String content, Map<String, String> currentEnvVars) throws EnvInjectException {
+    @Nonnull
+    public Map<String, String> getVarsFromPropertiesContent(@Nonnull String content, @Nonnull Map<String, String> currentEnvVars) throws EnvInjectException {
         if (content == null) {
             throw new NullPointerException("A properties content must be set.");
         }
@@ -61,7 +65,9 @@ public class PropertiesLoader implements Serializable {
         return getVars(content, currentEnvVars);
     }
 
-    private Map<String, String> getVars(String content, Map<String, String> currentEnvVars) throws EnvInjectException {
+    @Nonnull
+    private Map<String, String> getVars(@Nonnull String content, @Nonnull Map<String, String> currentEnvVars) 
+            throws EnvInjectException {
         Map<String, String> result = new LinkedHashMap<String, String>();
         StringReader stringReader = new StringReader(content);
         Properties properties = new Properties();
@@ -81,7 +87,7 @@ public class PropertiesLoader implements Serializable {
     }
 
     @CheckForNull
-    private String processElement(Object prop, Map<String, String> currentEnvVars) {
+    private String processElement(@CheckForNull Object prop, @Nonnull Map<String, String> currentEnvVars) {
         String macroProcessedElement = Util.replaceMacro(String.valueOf(prop), currentEnvVars);
         if (macroProcessedElement == null) {
             return null;

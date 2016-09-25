@@ -13,27 +13,48 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributorDescriptor;
 import org.jenkinsci.plugins.envinject.service.EnvInjectContributorManagement;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
+    @CheckForNull
     private EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo();
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
     private boolean overrideBuildParameters;
+    @CheckForNull
+    @GuardedBy("this")
     private EnvInjectJobPropertyContributor[] contributors;
-
+    @CheckForNull
+    @GuardedBy("this")
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
 
+    @DataBoundConstructor
+    public EnvInjectJobProperty(EnvInjectJobPropertyInfo info) {
+        this.info = info;
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Deprecated
+    public EnvInjectJobProperty() {
+    }
+
+    @CheckForNull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -59,8 +80,9 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return overrideBuildParameters;
     }
 
+    @Nonnull
     @SuppressWarnings("unused")
-    public EnvInjectJobPropertyContributor[] getContributors() {
+    public synchronized EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
             try {
                 contributorsComputed = computeEnvInjectContributors();
@@ -70,10 +92,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             contributors = contributorsComputed;
         }
 
-        return Arrays.copyOf(contributors, contributors.length);
+        return contributors != null ? Arrays.copyOf(contributors, contributors.length) : new EnvInjectJobPropertyContributor[0];
     }
 
-    private EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
+    @Nonnull
+    private synchronized EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
                 descriptors = EnvInjectJobPropertyContributor.all();
@@ -105,27 +128,36 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return result.toArray(new EnvInjectJobPropertyContributor[result.size()]);
     }
 
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    /**
+     * @deprecated Use constructor with parameter
+     */
+    @Deprecated
+    public void setInfo(@CheckForNull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
+    @DataBoundSetter
     public void setOn(boolean on) {
         this.on = on;
     }
 
+    @DataBoundSetter
     public void setKeepJenkinsSystemVariables(boolean keepJenkinsSystemVariables) {
         this.keepJenkinsSystemVariables = keepJenkinsSystemVariables;
     }
 
+    @DataBoundSetter
     public void setKeepBuildVariables(boolean keepBuildVariables) {
         this.keepBuildVariables = keepBuildVariables;
     }
 
+    @DataBoundSetter
     public void setOverrideBuildParameters(boolean overrideBuildParameters) {
         this.overrideBuildParameters = overrideBuildParameters;
     }
 
-    public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
+    @DataBoundSetter
+    public synchronized void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
     }
 
@@ -163,50 +195,19 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
         @Override
         public EnvInjectJobProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            Object onObject = formData.get("on");
-
-            if (onObject != null) {
-                EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
-                EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoJobProperty.");
-                envInjectJobProperty.setInfo(info);
-                envInjectJobProperty.setOn(true);
-                if (onObject instanceof JSONObject) {
-                    JSONObject onJSONObject = (JSONObject) onObject;
-                    envInjectJobProperty.setKeepJenkinsSystemVariables(onJSONObject.getBoolean("keepJenkinsSystemVariables"));
-                    envInjectJobProperty.setKeepBuildVariables(onJSONObject.getBoolean("keepBuildVariables"));
-                    envInjectJobProperty.setOverrideBuildParameters(onJSONObject.getBoolean("overrideBuildParameters"));
-
-                    //Process contributions
-                    setContributors(req, envInjectJobProperty, onJSONObject);
-
-                    return envInjectJobProperty;
-                }
+            if (formData.optBoolean("on")) {
+                return (EnvInjectJobProperty)super.newInstance(req, formData);
             }
-
             return null;
         }
 
-        private void setContributors(StaplerRequest req, EnvInjectJobProperty envInjectJobProperty, JSONObject onJSONObject) {
-            if (!onJSONObject.containsKey("contributors")) {
-                envInjectJobProperty.setContributors(new EnvInjectJobPropertyContributor[0]);
-            } else {
-                JSON contribJSON;
-                try {
-                    contribJSON = onJSONObject.getJSONArray("contributors");
-                } catch (JSONException jsone) {
-                    contribJSON = onJSONObject.getJSONObject("contributors");
-                }
-                List<EnvInjectJobPropertyContributor> contributions = req.bindJSONToList(EnvInjectJobPropertyContributor.class, contribJSON);
-                EnvInjectJobPropertyContributor[] contributionsArray = contributions.toArray(new EnvInjectJobPropertyContributor[contributions.size()]);
-                envInjectJobProperty.setContributors(contributionsArray);
-            }
-        }
-
+        @Nonnull 
         public DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> getEnvInjectContributors() {
             return EnvInjectJobPropertyContributor.all();
         }
 
-        public @CheckForNull EnvInjectJobPropertyContributor[] getContributorsInstance() {
+        @CheckForNull 
+        public EnvInjectJobPropertyContributor[] getContributorsInstance() {
             EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
             try {
                 return envInjectContributorManagement.getNewContributorsInstance();
@@ -237,6 +238,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @Deprecated
+    @CheckForNull
     public EnvInjectPasswordEntry[] getPasswordEntries() {
         return passwordEntries;
     }

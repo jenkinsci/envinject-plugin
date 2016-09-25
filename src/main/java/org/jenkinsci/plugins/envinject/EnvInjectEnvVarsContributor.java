@@ -20,9 +20,11 @@ public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
             EnvInjectJobPropertyInfo jobPropertyInfo = jobProperty.getInfo();
 
             // Processes "Properties Content"
-            Map<String, String> result = jobPropertyInfo.getPropertiesContentMap(env);
-            if (result != null) {
-                env.putAll(result);
+            if (jobPropertyInfo != null) {
+                Map<String, String> result = jobPropertyInfo.getPropertiesContentMap(env);
+                if (result != null) {
+                    env.putAll(result);
+                }
             }
         }
     }

@@ -20,12 +20,14 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -33,14 +35,30 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
 
+    @Nonnull
     private EnvInjectJobPropertyInfo info;
     
     private static final Logger LOGGER = Logger.getLogger(EnvInjectBuildWrapper.class.getName());
-
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    
+    @DataBoundConstructor
+    public EnvInjectBuildWrapper(@Nonnull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
+    @Deprecated
+    public EnvInjectBuildWrapper() {
+        this.info = null;
+    }
+
+    /**
+     * @deprecated Use constructor with the parameter
+     */
+    @Deprecated
+    public void setInfo(@Nonnull EnvInjectJobPropertyInfo info) {
+        this.info = info;
+    }
+
+    @Nonnull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -52,7 +70,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Override
-    public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUp(@Nonnull AbstractBuild build, final @Nonnull Launcher launcher, final @Nonnull BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Executing scripts and injecting environment variables after the SCM step.");
@@ -129,14 +147,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         @Override
         public String getDisplayName() {
             return Messages.envinject_wrapper_displayName();
-        }
-
-        @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-            EnvInjectJobPropertyInfo info = req.bindJSON(EnvInjectJobPropertyInfo.class, formData);
-            wrapper.setInfo(info);
-            return wrapper;
         }
 
         @Override

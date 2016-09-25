@@ -15,6 +15,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -22,7 +24,9 @@ import jenkins.model.Jenkins;
  */
 public class EnvironmentVariablesNodeLoader implements Serializable {
 
-    public Map<String, String> gatherEnvironmentVariablesNode(AbstractBuild build, Node buildNode, EnvInjectLogger logger) throws EnvInjectException {
+    @Nonnull
+    public Map<String, String> gatherEnvironmentVariablesNode(@Nonnull AbstractBuild build, 
+            @CheckForNull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
 
         logger.info("Loading node environment variables.");
 

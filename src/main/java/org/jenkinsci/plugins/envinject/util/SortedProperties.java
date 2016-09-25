@@ -5,34 +5,41 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.LinkedHashMap;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
- * Use java.util.Properties now instead
+ * @deprecated Use {@code java.util.Properties} now instead
  */
 @Deprecated
 public class SortedProperties extends LinkedHashMap<Object, Object> {
 
 
     class LineReader {
-        public LineReader(InputStream inStream) {
+        public LineReader(@Nonnull InputStream inStream) {
             this.inStream = inStream;
-            inByteBuf = new byte[8192];
+            this.inByteBuf = new byte[8192];
+            this.reader = null;
+            this.inCharBuf = null;
         }
 
-        public LineReader(Reader reader) {
+        public LineReader(@Nonnull Reader reader) {
+            this.inStream = null;
+            this.inByteBuf = null;
             this.reader = reader;
-            inCharBuf = new char[8192];
+            this.inCharBuf = new char[8192];
         }
 
-        byte[] inByteBuf;
-        char[] inCharBuf;
+        final byte[] inByteBuf;
+        final char[] inCharBuf;
+        final @CheckForNull InputStream inStream;
+        final @CheckForNull Reader reader;
+        
         char[] lineBuf = new char[1024];
         int inLimit = 0;
         int inOff = 0;
-        InputStream inStream;
-        Reader reader;
-
+        
         int readLine() throws IOException {
             int len = 0;
             char c = 0;
@@ -43,6 +50,12 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
             boolean appendedLineBegin = false;
             boolean precedingBackslash = false;
             boolean skipLF = false;
+            
+            if (reader == null && inStream == null) {
+                // Impossible case, but FindBugs does not know about it
+                throw new IllegalStateException("Both input stream and reader are not defined");
+            }
+            
             while (true) {
                 if (inOff >= inLimit) {
                     inLimit = (inStream == null) ? reader.read(inCharBuf)
@@ -148,7 +161,7 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
     }
 
 
-    private void load0(LineReader lr) throws IOException {
+    private void load0(@Nonnull LineReader lr) throws IOException {
         char[] convtBuf = new char[1024];
         int limit;
         int keyLen;
@@ -201,6 +214,7 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
 
     }
 
+    @Nonnull
     private String loadConvert(char[] in, int off, int len, char[] convtBuf) {
         if (convtBuf.length < len) {
             int newLen = len * 2;

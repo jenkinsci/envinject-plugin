@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -29,16 +30,13 @@ public class EnvInjectVariableGetter {
 
     private static Logger LOG = Logger.getLogger(EnvInjectVariableGetter.class.getName());
 
+    @Nonnull
     public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
 
         Map<String, String> result = new TreeMap<String, String>();
 
         final Computer computer;
-        final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-             throw new IOException("The caller requested getting Jenkins System variables, "
-                    + "but the master has not been started, or was already shut down");
-        }
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         if (forceOnMaster) {
             
             computer = jenkins.toComputer();
@@ -74,7 +72,7 @@ public class EnvInjectVariableGetter {
 
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> getBuildVariables(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
+    public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
         //Add build process variables
@@ -124,12 +122,12 @@ public class EnvInjectVariableGetter {
 
     @CheckForNull
     @SuppressWarnings("unchecked")
-    public EnvInjectJobProperty getEnvInjectJobProperty(AbstractBuild build) {
+    public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull AbstractBuild build) {
         if (build == null) {
             throw new IllegalArgumentException("A build object must be set.");
         }
 
-        Job job;
+        final Job job;
         if (build instanceof MatrixRun) {
             job = ((MatrixRun) build).getParentBuild().getParent();
         } else {
@@ -146,7 +144,10 @@ public class EnvInjectVariableGetter {
         return null;
     }
 
-    public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
+    @Nonnull
+    public Map<String, String> getEnvVarsPreviousSteps(
+            @Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) 
+            throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
         List<Environment> environmentList = build.getEnvironments();
@@ -172,7 +173,8 @@ public class EnvInjectVariableGetter {
         return result;
     }
 
-    private Map<String, String> getCurrentInjectedEnvVars(EnvInjectPluginAction envInjectPluginAction) {
+    @Nonnull
+    private Map<String, String> getCurrentInjectedEnvVars(@Nonnull EnvInjectPluginAction envInjectPluginAction) {
         Map<String, String> envVars = envInjectPluginAction.getEnvMap();
         return (envVars) == null ? new HashMap<String, String>() : envVars;
     }
