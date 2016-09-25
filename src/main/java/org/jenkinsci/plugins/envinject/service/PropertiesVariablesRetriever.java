@@ -72,7 +72,18 @@ public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<
             if (propertiesContent != null) {
                 PropertiesGetter propertiesGetter = new PropertiesGetter();
                 logger.info(String.format("Injecting as environment variables the properties content %n%s%n", propertiesGetter.getPropertiesContentFromMapObject(propertiesContent)));
-                result.putAll(propertiesContent);
+                for (Map.Entry<String, String> entry : propertiesContent.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
+                    if (result.containsKey(key)) {
+                        // a variable is defined in both propertiesFilePath and propertiesContent
+                        // instead of just overwriting it we possibly resolve it against the old value
+                        Map<String, String> oldValueMap = new LinkedHashMap<String, String>();
+                        oldValueMap.put(key, result.get(key));
+                        value = Util.replaceMacro(value, oldValueMap);
+                    }
+                    result.put(key, value);
+                }
                 logger.info("Variables injected successfully.");
             }
 
