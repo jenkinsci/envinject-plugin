@@ -72,7 +72,8 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      * Gets the default configuration of {@link EnvInjectPlugin}
      * @return Default configuration
      */
-    public static final @Nonnull EnvInjectPluginConfiguration getDefault() {
+    @Nonnull 
+    public static final EnvInjectPluginConfiguration getDefault() {
         return DEFAULT;
     }
 

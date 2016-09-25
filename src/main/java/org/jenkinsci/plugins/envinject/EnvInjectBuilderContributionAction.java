@@ -5,6 +5,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributingAction;
 
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -13,13 +15,15 @@ public class EnvInjectBuilderContributionAction implements EnvironmentContributi
 
     public static final String ENVINJECT_BUILDER_ACTION_NAME = "EnvInjectBuilderAction";
 
+    @CheckForNull
     private transient Map<String, String> resultVariables;
 
-    public EnvInjectBuilderContributionAction(Map<String, String> resultVariables) {
+    public EnvInjectBuilderContributionAction(@CheckForNull Map<String, String> resultVariables) {
         this.resultVariables = resultVariables;
     }
 
-    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars envVars) {
+    @Override
+    public void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @CheckForNull EnvVars envVars) {
 
         if (envVars == null) {
             return;
@@ -38,14 +42,17 @@ public class EnvInjectBuilderContributionAction implements EnvironmentContributi
         }
     }
 
+    @Override
     public String getIconFileName() {
         return null;
     }
 
+    @Override
     public String getDisplayName() {
         return ENVINJECT_BUILDER_ACTION_NAME;
     }
 
+    @Override
     public String getUrlName() {
         return null;
     }

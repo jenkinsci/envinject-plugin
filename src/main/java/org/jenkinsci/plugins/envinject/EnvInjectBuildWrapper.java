@@ -18,6 +18,7 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -32,10 +33,11 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
 
+    @Nonnull
     private EnvInjectJobPropertyInfo info;
 
     @DataBoundConstructor
-    public EnvInjectBuildWrapper(EnvInjectJobPropertyInfo info) {
+    public EnvInjectBuildWrapper(@Nonnull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
@@ -47,10 +49,11 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
      * @deprecated Use constructor with the parameter
      */
     @Deprecated
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    public void setInfo(@Nonnull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
+    @Nonnull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -62,7 +65,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Override
-    public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUp(@Nonnull AbstractBuild build, final @Nonnull Launcher launcher, final @Nonnull BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Executing scripts and injecting environment variables after the SCM step.");

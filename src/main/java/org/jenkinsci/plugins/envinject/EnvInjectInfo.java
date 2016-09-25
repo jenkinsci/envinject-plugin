@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -33,6 +34,7 @@ public class EnvInjectInfo implements Serializable {
         return propertiesFilePath;
     }
 
+    @CheckForNull
     @SuppressWarnings({"unused", "deprecation"})
     public String getPropertiesContent() {
 
@@ -46,7 +48,7 @@ public class EnvInjectInfo implements Serializable {
 
     @CheckForNull
     @SuppressWarnings("deprecation")
-    public Map<String, String> getPropertiesContentMap(Map<String, String> currentEnvVars) {
+    public Map<String, String> getPropertiesContentMap(@Nonnull Map<String, String> currentEnvVars) {
 
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
@@ -88,9 +90,11 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @Deprecated
+    @CheckForNull
     @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     private transient Map<String, String> propertiesContentMap;
     @Deprecated
+    @CheckForNull
     @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "Deprecated")
     protected transient boolean populateTriggerCause;
 

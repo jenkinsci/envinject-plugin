@@ -12,6 +12,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -41,6 +42,7 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
     @Extension
     public static class EnvInjectNodePropertyDescriptor extends NodePropertyDescriptor {
 
+        @Nonnull
         private EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = new EnvInjectGlobalPasswordEntry[0];
         public static final String ENVINJECT_CONFIG = "envInject";
 

@@ -21,19 +21,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
+    @CheckForNull
     private EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo();
     private boolean on;
     private boolean keepJenkinsSystemVariables;
     private boolean keepBuildVariables;
     private boolean overrideBuildParameters;
+    @CheckForNull
     private EnvInjectJobPropertyContributor[] contributors;
-
+    @CheckForNull
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
 
     @DataBoundConstructor
@@ -46,7 +49,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
 
-
+    @CheckForNull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -72,6 +75,8 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return overrideBuildParameters;
     }
 
+    // TODO: Methods lack the synchronization
+    @Nonnull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
@@ -86,6 +91,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return Arrays.copyOf(contributors, contributors.length);
     }
 
+    @Nonnull
     private EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
@@ -118,7 +124,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return result.toArray(new EnvInjectJobPropertyContributor[result.size()]);
     }
 
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    /**
+     * @deprecated Use constructor with parameter
+     */
+    @Deprecated
+    public void setInfo(@CheckForNull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
@@ -187,11 +197,13 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             return null;
         }
 
+        @Nonnull 
         public DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> getEnvInjectContributors() {
             return EnvInjectJobPropertyContributor.all();
         }
 
-        public @CheckForNull EnvInjectJobPropertyContributor[] getContributorsInstance() {
+        @CheckForNull 
+        public EnvInjectJobPropertyContributor[] getContributorsInstance() {
             EnvInjectContributorManagement envInjectContributorManagement = new EnvInjectContributorManagement();
             try {
                 return envInjectContributorManagement.getNewContributorsInstance();
@@ -222,6 +234,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @Deprecated
+    @CheckForNull
     public EnvInjectPasswordEntry[] getPasswordEntries() {
         return passwordEntries;
     }

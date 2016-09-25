@@ -9,6 +9,7 @@ import org.jenkinsci.plugins.envinject.service.EnvironmentVariablesNodeLoader;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /**
  * Overriding job parameters with environment variables populated by EnvInject plugin
@@ -19,7 +20,7 @@ import java.util.Map;
 public class EnvInjectBuildVariableContributor extends BuildVariableContributor {
 
     @Override
-    public void buildVariablesFor(AbstractBuild build, Map<String, String> variables) {
+    public void buildVariablesFor(@Nonnull AbstractBuild build, @Nonnull Map<String, String> variablesOut) {
         ParametersAction parameters = build.getAction(ParametersAction.class);
         //Only for a parameterized job
         if (parameters != null) {
@@ -66,7 +67,7 @@ public class EnvInjectBuildVariableContributor extends BuildVariableContributor 
                     // key in parameter, in job (not in global and already injected)
                     // --> override
                     if (injectedEnvVars.containsKey(key) && !nodeEnvVars.containsKey(key)) {
-                        variables.put(key, injectedEnvVars.get(key));
+                        variablesOut.put(key, injectedEnvVars.get(key));
                     }
                 }
             }

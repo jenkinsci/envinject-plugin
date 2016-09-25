@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -29,7 +30,8 @@ import javax.annotation.CheckForNull;
 public class EnvInjectListener extends RunListener<Run> implements Serializable {
 
     @Override
-    public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUpEnvironment(@Nonnull AbstractBuild build, @Nonnull Launcher launcher, 
+            @Nonnull BuildListener listener) throws IOException, InterruptedException {
         if (isEligibleJobType(build)) {
             EnvInjectLogger logger = new EnvInjectLogger(listener);
             try {
@@ -60,12 +62,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private boolean isEligibleJobType(AbstractBuild build) {
-        if (build == null) {
-            throw new IllegalArgumentException("A build object must be set.");
-        }
-
-        Job job;
+    private boolean isEligibleJobType(@Nonnull AbstractBuild build) {
+        final Job job;
         if (build instanceof MatrixRun) {
             job = ((MatrixRun) build).getParentBuild().getParent();
         } else {
@@ -76,7 +74,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     }
 
-    private void loadEnvironmentVariablesNode(AbstractBuild build, Node buildNode, EnvInjectLogger logger) throws EnvInjectException {
+    private void loadEnvironmentVariablesNode(@Nonnull AbstractBuild build, @Nonnull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
 
         EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
         Map<String, String> configNodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, buildNode, logger);
@@ -92,7 +90,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
 
-    private boolean isEnvInjectJobPropertyActive(AbstractBuild build) {
+    private boolean isEnvInjectJobPropertyActive(@Nonnull AbstractBuild build) {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
         return envInjectJobProperty != null;
@@ -143,7 +141,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
+    private Environment setUpEnvironmentJobPropertyObject(@Nonnull AbstractBuild build, 
+            @Nonnull Launcher launcher, @Nonnull BuildListener listener, @Nonnull EnvInjectLogger logger) 
+            throws IOException, InterruptedException, EnvInjectException {
 
         logger.info("Preparing an environment for the build.");
 
@@ -221,7 +221,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private Environment setUpEnvironmentWithoutJobPropertyObject(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
+    @Nonnull
+    private Environment setUpEnvironmentWithoutJobPropertyObject(@Nonnull AbstractBuild build, 
+            @Nonnull Launcher launcher, @Nonnull BuildListener listener) throws IOException, InterruptedException, EnvInjectException {
 
         final Map<String, String> resultVariables = new HashMap<String, String>();
 
@@ -264,10 +266,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         return null;
     }
 
-    private Map<String, String> getEnvVarsByContribution(AbstractBuild build, EnvInjectJobProperty envInjectJobProperty,
-                                                         EnvInjectLogger logger, BuildListener listener) throws EnvInjectException {
-
-        assert envInjectJobProperty != null;
+    @Nonnull
+    private Map<String, String> getEnvVarsByContribution(@Nonnull AbstractBuild build, 
+            @Nonnull EnvInjectJobProperty envInjectJobProperty, @Nonnull EnvInjectLogger logger, 
+            @Nonnull BuildListener listener) throws EnvInjectException {
+        
         Map<String, String> contributionVariables = new HashMap<String, String>();
 
         EnvInjectJobPropertyContributor[] contributors = envInjectJobProperty.getContributors();
