@@ -82,7 +82,7 @@ public class EnvInjectEnvVars implements Serializable {
 
     public int executeScript(boolean loadFromMaster,
                              @CheckForNull String scriptContent,
-                             @Nonnull FilePath scriptExecutionRoot,
+                             @CheckForNull FilePath scriptExecutionRoot,
                              @CheckForNull String scriptFilePath,
                              @Nonnull Map<String, String> infraEnvVarsMaster,
                              @Nonnull Map<String, String> infraEnvVarsNode,
@@ -169,7 +169,7 @@ public class EnvInjectEnvVars implements Serializable {
 
     public int executeScript(
             @CheckForNull String scriptContent,
-            @Nonnull FilePath scriptExecutionRoot,
+            @CheckForNull FilePath scriptExecutionRoot,
             @CheckForNull String scriptFilePath,
             @Nonnull Map<String, String> envVars,
             @Nonnull Launcher launcher,

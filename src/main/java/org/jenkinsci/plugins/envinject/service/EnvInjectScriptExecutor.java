@@ -31,7 +31,7 @@ public class EnvInjectScriptExecutor {
         this.logger = logger;
     }
 
-    public int executeScriptSection(@Nonnull FilePath scriptExecutionRoot,
+    public int executeScriptSection(@CheckForNull FilePath scriptExecutionRoot,
                                     @CheckForNull String scriptFilePath,
                                     @CheckForNull String scriptContent,
                                     @Nonnull Map<String, String> scriptPathExecutionEnvVars,
@@ -62,7 +62,7 @@ public class EnvInjectScriptExecutor {
 
     // TODO: Null file path leads to NOP, maybe safe here
     private int executeScriptPath(
-            @Nonnull FilePath scriptExecutionRoot, @Nonnull String scriptFilePath, 
+            @CheckForNull FilePath scriptExecutionRoot, @Nonnull String scriptFilePath, 
             @Nonnull Map<String, String> scriptExecutionEnvVars) throws EnvInjectException {
         try {
             launcher.getListener().getLogger().println(String.format("Executing '%s'.", scriptFilePath));
