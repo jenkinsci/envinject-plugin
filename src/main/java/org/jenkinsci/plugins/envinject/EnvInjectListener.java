@@ -174,7 +174,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
 
         final FilePath rootPath = getNodeRootPath();
-        if (rootPath != null) {
+        if (rootPath != null && info != null) {
 
             final EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
@@ -216,7 +216,11 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     env.putAll(mergedVariables);
                 }
             };
+        } else {
+            logger.info(rootPath != null ? "Cannot retrieve info from the EnvInject job property. It may be missing, hence skipping injection."
+                                         : "Node root path is not available. Likely node is offline. Skipping injection");
         }
+
         return new Environment() {
         };
     }
