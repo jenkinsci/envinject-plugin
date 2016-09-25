@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import static org.jenkinsci.plugins.envinject.EnvInjectPlugin.getJenkinsInstance;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -79,7 +78,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
 
     @Override
     protected XmlFile getConfigFile() {
-        return new XmlFile(Jenkins.XSTREAM, new File(getJenkinsInstance().getRootDir(), 
+        return new XmlFile(Jenkins.XSTREAM, new File(Jenkins.getActiveInstance().getRootDir(), 
                 "envinject-plugin-configuration.xml"));
     }
 

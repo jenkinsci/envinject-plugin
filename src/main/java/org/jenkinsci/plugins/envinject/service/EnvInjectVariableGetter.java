@@ -36,11 +36,7 @@ public class EnvInjectVariableGetter {
         Map<String, String> result = new TreeMap<String, String>();
 
         final Computer computer;
-        final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-             throw new IOException("The caller requested getting Jenkins System variables, "
-                    + "but the master has not been started, or was already shut down");
-        }
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         if (forceOnMaster) {
             
             computer = jenkins.toComputer();

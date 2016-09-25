@@ -134,7 +134,7 @@ public class EnvInjectEnvVars implements Serializable {
         Binding binding = new Binding();
         String jobName = envVars.get("JOB_NAME");
         if (jobName != null) {
-            Item job = Jenkins.getInstance().getItemByFullName(jobName);
+            Item job = Jenkins.getActiveInstance().getItemByFullName(jobName);
             binding.setProperty("currentJob", job);
             String b = envVars.get("BUILD_NUMBER");
             if (b != null && job instanceof AbstractProject) {
