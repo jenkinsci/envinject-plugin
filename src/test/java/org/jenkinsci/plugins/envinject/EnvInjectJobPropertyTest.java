@@ -41,8 +41,8 @@ public class EnvInjectJobPropertyTest {
     public void shouldNotInjectVariablesIfPropertyIsDisabled() throws Exception {   
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         
-        EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>();
-        prop.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
+        EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
+                new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
         // prop.setOn(false); // It is default
         project.addProperty(prop);
         
@@ -162,8 +162,8 @@ public class EnvInjectJobPropertyTest {
     @Nonnull
     public EnvInjectJobProperty<FreeStyleProject>
             forPropertiesContent(@Nonnull FreeStyleProject job, @Nonnull String content) throws IOException {
-        final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>();
-        prop.setInfo(new EnvInjectJobPropertyInfo(null, content, null, null, null, false));
+        final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
+                new EnvInjectJobPropertyInfo(null, content, null, null, null, false));
         prop.setOn(true); // Property becomes enabled by default
         job.addProperty(prop);
         return prop;
