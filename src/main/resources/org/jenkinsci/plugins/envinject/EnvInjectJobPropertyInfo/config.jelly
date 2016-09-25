@@ -37,5 +37,4 @@
                       value="false"/>
         </j:otherwise>
     </j:choose>
-
 </j:jelly>

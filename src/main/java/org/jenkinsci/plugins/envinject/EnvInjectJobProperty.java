@@ -13,6 +13,8 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributorDescriptor;
 import org.jenkinsci.plugins.envinject.service.EnvInjectContributorManagement;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,10 +49,10 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         this.info = info;
     }
 
+    @Restricted(NoExternalUse.class)
     @Deprecated
     public EnvInjectJobProperty() {
     }
-
 
     @CheckForNull
     @SuppressWarnings("unused")
