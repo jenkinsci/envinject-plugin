@@ -62,8 +62,12 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             if (node != null && nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
+                final FilePath rootPath = node.getRootPath();
+                if (rootPath == null) {
+                    throw new EnvInjectException("Node is offline, cannot calculate the injected variables");
+                }
                 globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(
-                        node.getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), 
+                        rootPath, logger, envInjectNodeProperty.getPropertiesFilePath(), 
                         null, nodeEnvVars));
             }
 
@@ -113,7 +117,11 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(node.getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+                final FilePath rootPath = node.getRootPath();
+                if (rootPath == null) {
+                    throw new EnvInjectException("Node is offline, cannot calculate the injected variables");
+                }
+                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(rootPath, logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
             }
         }
 
