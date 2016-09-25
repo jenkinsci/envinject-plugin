@@ -78,7 +78,6 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return overrideBuildParameters;
     }
 
-    // TODO: Methods lack the synchronization
     @Nonnull
     @SuppressWarnings("unused")
     public synchronized EnvInjectJobPropertyContributor[] getContributors() {
