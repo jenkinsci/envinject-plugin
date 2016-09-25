@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * @author Gregory Boissinot
@@ -35,8 +36,10 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     private boolean keepBuildVariables;
     private boolean overrideBuildParameters;
     @CheckForNull
+    @GuardedBy("this")
     private EnvInjectJobPropertyContributor[] contributors;
     @CheckForNull
+    @GuardedBy("this")
     private transient EnvInjectJobPropertyContributor[] contributorsComputed;
 
     @DataBoundConstructor
@@ -78,7 +81,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     // TODO: Methods lack the synchronization
     @Nonnull
     @SuppressWarnings("unused")
-    public EnvInjectJobPropertyContributor[] getContributors() {
+    public synchronized EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
             try {
                 contributorsComputed = computeEnvInjectContributors();
@@ -88,11 +91,11 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             contributors = contributorsComputed;
         }
 
-        return Arrays.copyOf(contributors, contributors.length);
+        return contributors != null ? Arrays.copyOf(contributors, contributors.length) : new EnvInjectJobPropertyContributor[0];
     }
 
     @Nonnull
-    private EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
+    private synchronized EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
                 descriptors = EnvInjectJobPropertyContributor.all();
@@ -153,7 +156,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @DataBoundSetter
-    public void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
+    public synchronized void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
         this.contributors = jobPropertyContributors;
     }
 
