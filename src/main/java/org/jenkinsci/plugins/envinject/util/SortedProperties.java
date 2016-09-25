@@ -50,6 +50,12 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
             boolean appendedLineBegin = false;
             boolean precedingBackslash = false;
             boolean skipLF = false;
+            
+            if (reader == null && inStream == null) {
+                // Impossible case, but FindBugs does not know about it
+                throw new IllegalStateException("Both input stream and reader are not defined");
+            }
+            
             while (true) {
                 if (inOff >= inLimit) {
                     inLimit = (inStream == null) ? reader.read(inCharBuf)
