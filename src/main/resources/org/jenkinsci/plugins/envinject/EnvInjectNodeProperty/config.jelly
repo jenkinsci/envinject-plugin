@@ -9,9 +9,7 @@
                 checked="${it.unsetSystemVariables}" default="${true}"/>
     </f:entry>
 
-    <f:entry field="propertiesFilePath"
-             title="${%Properties File Path}"
-             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
+    <f:entry field="propertiesFilePath" title="${%Properties File Path}">
         <f:textbox
                 name="propertiesFilePath"
                 value="${it.propertiesFilePath}"/>
