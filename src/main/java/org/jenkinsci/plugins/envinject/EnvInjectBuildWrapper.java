@@ -18,6 +18,8 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 
@@ -35,7 +37,9 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
     @Nonnull
     private EnvInjectJobPropertyInfo info;
-
+    
+    private static final Logger LOGGER = Logger.getLogger(EnvInjectBuildWrapper.class.getName());
+    
     @DataBoundConstructor
     public EnvInjectBuildWrapper(@Nonnull EnvInjectJobPropertyInfo info) {
         this.info = info;
@@ -120,8 +124,13 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 }
             };
         } catch (Throwable throwable) {
-            logger.error("Problems occurs on injecting env vars as a build wrap: " + throwable.getMessage());
+            logger.error("Problems occurs on injecting env vars defined in the build wrapper: " + throwable + ". See system log for more info");
+            LOGGER.log(Level.WARNING, String.format("Problems occurs on injecting env vars defined in the build wrapper for build {0}", build), throwable);
             build.setResult(Result.FAILURE);
+            if (throwable instanceof Error) {
+                // Errors must be always propagated since we cannot recover from them
+                throw (Error)throwable;
+            }
             return null;
         }
     }
