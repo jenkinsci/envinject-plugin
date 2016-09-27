@@ -25,7 +25,7 @@ public class EnvInjectPasswordMatrixProjectTest {
 
     @Test
     public void testEnvInjectPasswordWrapper() throws Exception {
-        MatrixProject project = jenkins.createMatrixProject();
+        MatrixProject project = jenkins.createProject(MatrixProject.class);
         EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
         passwordWrapper.setPasswordEntries(new EnvInjectPasswordEntry[]{
                 new EnvInjectPasswordEntry(PWD_KEY, PWD_VALUE)

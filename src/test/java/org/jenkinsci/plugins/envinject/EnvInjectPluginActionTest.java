@@ -6,9 +6,7 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
-import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
@@ -22,7 +20,7 @@ import org.junit.Test;
 import org.junit.Before;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * Tests for {@link EnvInjectPluginAction}.
@@ -100,11 +98,9 @@ public class EnvInjectPluginActionTest {
         
         // Create a test user
         User user = User.get("testUser", true, null);
-             
-        final GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
-        strategy.add(Jenkins.READ, user.getId());
-        strategy.add(Item.READ, user.getId());
-        strategy.add(Item.DISCOVER, user.getId());
+
+        MockAuthorizationStrategy strategy = new MockAuthorizationStrategy().
+            grant(Jenkins.READ, Item.READ, Item.DISCOVER).everywhere().to(user.getId());
         j.jenkins.setAuthorizationStrategy(strategy);
         
         // Run build and retrieve results
@@ -114,8 +110,8 @@ public class EnvInjectPluginActionTest {
         assertFalse("User should have no permission to see injected vars", 
                 canViewInjectedVars(user, build));
             
-        // Grant permissions and check the results 
-        strategy.add(EnvInjectPlugin.VIEW_INJECTED_VARS, user.getId());
+        // Grant permissions and check the results
+        strategy.grant(EnvInjectPlugin.VIEW_INJECTED_VARS).everywhere().to(user.getId());
         assertTrue("User should have the View Injected Vars permission", 
                 hasPermission(user, build, EnvInjectPlugin.VIEW_INJECTED_VARS));
         assertTrue("User should have a permission to see injected vars", 
