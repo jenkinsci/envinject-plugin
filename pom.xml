@@ -61,7 +61,6 @@
         <mockito.version>1.10.19</mockito.version>
 
         <jenkins.version>1.609.3</jenkins.version>
-        <jenkins-test-harness.version>1.609.3</jenkins-test-harness.version>
         <java.level>6</java.level>
         <java.level.test>${java.level}</java.level.test>
         <findbugs.failOnError>false</findbugs.failOnError>
