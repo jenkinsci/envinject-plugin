@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>1.93.1</version>
+    <version>1.93.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin</url>
@@ -69,7 +69,7 @@
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/envinject-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
-        <tag>envinject-1.93.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
