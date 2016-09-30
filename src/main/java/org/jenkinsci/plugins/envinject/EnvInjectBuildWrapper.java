@@ -45,9 +45,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         this.info = info;
     }
 
+    /**
+     * @deprecated Use constructor with parameter
+     */
     @Deprecated
     public EnvInjectBuildWrapper() {
-        this.info = null;
+        this.info = new EnvInjectJobPropertyInfo();
     }
 
     /**
