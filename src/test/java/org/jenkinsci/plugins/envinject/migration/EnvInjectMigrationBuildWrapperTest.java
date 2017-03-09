@@ -47,6 +47,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
 import java.util.List;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
 
 
 /**
@@ -101,7 +102,7 @@ public class EnvInjectMigrationBuildWrapperTest {
         QueueTaskFuture<FreeStyleBuild> future = project.scheduleBuild2(0);
         FreeStyleBuild run = j.assertBuildStatus(Result.FAILURE, future);
         //Check that it failed for the correct reason
-        j.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", run);
+        j.assertLogContains(UnapprovedUsageException.class.getName(), run);
 
         //Now let alice approve the scripts
         ScriptApproval.get().preapproveAll();

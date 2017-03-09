@@ -142,7 +142,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to("alice")
-                .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.DISCOVER, Job.CONFIGURE).everywhere().to("bob");
+                .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE).everywhere().to("bob");
         jenkins.jenkins.setAuthorizationStrategy(auth);
 
         FreeStyleProject project = jenkins.createFreeStyleProject();

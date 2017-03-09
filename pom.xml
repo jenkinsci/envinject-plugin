@@ -60,7 +60,6 @@
         <envinject.lib.version>1.24</envinject.lib.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <mockito.version>1.10.19</mockito.version>
-        <jenkins-test-harness.version>2.15</jenkins-test-harness.version>
         <jenkins.version>1.609.3</jenkins.version>
         <java.level>6</java.level>
         <java.level.test>${java.level}</java.level.test>
@@ -117,7 +116,6 @@
         <dependency>
             <groupId>org.jenkins-ci</groupId>
             <artifactId>test-annotations</artifactId>
-            <version>1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>

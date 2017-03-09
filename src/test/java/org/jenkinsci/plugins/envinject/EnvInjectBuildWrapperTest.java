@@ -27,6 +27,7 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 import java.io.IOException;
+import static org.hamcrest.Matchers.containsString;
 
 public class EnvInjectBuildWrapperTest {
 
@@ -194,8 +195,7 @@ public class EnvInjectBuildWrapperTest {
     	FreeStyleBuild build = p.scheduleBuild2(0).get();
 
     	assertEquals(Result.FAILURE, build.getResult());
-    	String output = IOUtils.toString(build.getLogReader());
-    	assertThat("Excepted error message it's not logged", output.contains("No such property: FOOVAR"));
+    	assertThat("Excepted error message it's not logged", build.getLog(), containsString("No such property: FOOVAR"));
     }
 
     @Test

@@ -127,8 +127,14 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 }
             };
         } catch (Throwable throwable) {
-            logger.error("Problems occurs on injecting env vars defined in the build wrapper: " + throwable + ". See system log for more info");
-            LOGGER.log(Level.WARNING, String.format("Problems occurs on injecting env vars defined in the build wrapper for build {0}", build), throwable);
+            final Throwable cause = throwable.getCause();
+            StringBuilder message = new StringBuilder(throwable.toString());
+            if (cause != null) {
+                message.append(". ");
+                message.append(cause.toString());
+            }
+            logger.error("Problems occurs on injecting env vars defined in the build wrapper: " + message + ". See system log for more info");
+            LOGGER.log(Level.WARNING, String.format("Problems occurs on injecting env vars defined in the build wrapper for build %s", build), throwable);
             build.setResult(Result.FAILURE);
             if (throwable instanceof Error) {
                 // Errors must be always propagated since we cannot recover from them
