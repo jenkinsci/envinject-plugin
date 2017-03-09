@@ -15,6 +15,8 @@ import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.Result;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.util.IOUtils;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
@@ -27,7 +29,11 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 import java.io.IOException;
+import jenkins.model.Jenkins;
 import static org.hamcrest.Matchers.containsString;
+import org.jenkinsci.plugins.envinject.util.TestUtils;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 public class EnvInjectBuildWrapperTest {
 
@@ -281,6 +287,40 @@ public class EnvInjectBuildWrapperTest {
         assertEquals(scriptContent, info.getScriptContent());
         assertEquals(groovyScriptContent, info.getSecureGroovyScript().getScript());
         assertFalse("loadFilesFromMaster should be false", info.isLoadFilesFromMaster());
+    }
+    
+    @Test
+    @Issue("SECURITY-256")
+    public void testGroovyScriptInBuildWrapper() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("alice")
+                .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE).everywhere().to("bob");
+        j.jenkins.setAuthorizationStrategy(auth);
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        String script = "return [IT_IS_GROOVY: \"Indeed\"]";
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, false,
+                                                                     new SecureGroovyScript(script, false, null));
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(info);
+        project.getBuildWrappersList().add(wrapper);
+
+        //The script is not approved so should fail
+        QueueTaskFuture<FreeStyleBuild> future = project.scheduleBuild2(0);
+        j.assertBuildStatus(Result.FAILURE, future);
+        //Now let bob configure the build, it should also fail
+        TestUtils.saveConfigurationAs(j, project, "bob");
+
+        future = project.scheduleBuild2(0);
+        FreeStyleBuild run = j.assertBuildStatus(Result.FAILURE, future);
+        //Check that it failed for the correct reason
+        j.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", run);
+
+        //Now let alice approve the script
+        ScriptApproval.get().preapproveAll();
+
+        //Then the build should succeed
+        j.buildAndAssertSuccess(project);
     }
 
     private EnvInjectJobPropertyInfo withPropContent(String propertiesContent) {

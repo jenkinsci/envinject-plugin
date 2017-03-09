@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -28,6 +29,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
@@ -132,9 +135,12 @@ public class EnvInjectEnvVars implements Serializable {
      * @see #executeGroovyScript(EnvInjectLogger, SecureGroovyScript, Map)
      * @since 1.38 Initial implementation
      * @since 2.0 Uses Secure Groovy Script. It will require approvals for non-admin users
+     *            It is also restricted.
      * 
      */
     @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.0")
     public Map<String, String> executeAndGetMapGroovyScript(
             @Nonnull EnvInjectLogger logger,
             @CheckForNull String scriptContent,
@@ -163,6 +169,7 @@ public class EnvInjectEnvVars implements Serializable {
      * @since 2.0
      */
     @Nonnull
+    @Restricted(NoExternalUse.class)
     public Map<String, String> executeGroovyScript(
             @Nonnull EnvInjectLogger logger,
             @CheckForNull SecureGroovyScript script,

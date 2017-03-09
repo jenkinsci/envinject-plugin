@@ -34,6 +34,7 @@ import java.util.Set;
 
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.StringContains.containsString;
+import org.jenkinsci.plugins.envinject.util.TestUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -138,7 +139,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
     @Test
     @Issue("SECURITY-256")
-    public void testBuildUnderSecureJenkins() throws Exception {
+    public void testGroovyScriptInJobPropertyUnderSecureJenkins() throws Exception {
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().to("alice")
@@ -159,7 +160,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         QueueTaskFuture<FreeStyleBuild> future = project.scheduleBuild2(0);
         jenkins.assertBuildStatus(Result.FAILURE, future);
         //Now let bob configure the build, it should also fail
-        saveConfigurationAs(project, "bob");
+        TestUtils.saveConfigurationAs(jenkins, project, "bob");
 
         future = project.scheduleBuild2(0);
         FreeStyleBuild run = jenkins.assertBuildStatus(Result.FAILURE, future);
@@ -171,11 +172,6 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
         //Then the build should succeed
         jenkins.buildAndAssertSuccess(project);
-    }
-
-    private void saveConfigurationAs(FreeStyleProject project, String userId) throws Exception {
-        JenkinsRule.WebClient w = jenkins.createWebClient().login(userId);
-        jenkins.submit(w.getPage(project, "configure").getFormByName("config"));
     }
 
     @Test
@@ -198,7 +194,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         property.setOn(true);
         job.addProperty(property);
 
-        saveConfigurationAs(job, "alice");
+        TestUtils.saveConfigurationAs(jenkins, job, "alice");
         //Since alice is an admin the script should be approved automagically
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(job);
 
@@ -214,7 +210,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         property.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, false, new SecureGroovyScript(
                 "echo \"1337 h4x0r\"\n" + script, false, null
         )));
-        saveConfigurationAs(job, "user");
+        TestUtils.saveConfigurationAs(jenkins, job, "user");
         //Should now fail
         QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
         jenkins.assertBuildStatus(Result.FAILURE, future);
