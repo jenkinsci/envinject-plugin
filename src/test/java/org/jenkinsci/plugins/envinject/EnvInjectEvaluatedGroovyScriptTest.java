@@ -30,10 +30,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -51,7 +53,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
         hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
 
-        StringBuffer groovyScriptContent = new StringBuffer();
+        StringBuilder groovyScriptContent = new StringBuilder();
         groovyScriptContent.append(
                 "            if (CASE==null){\n" +
                         "            return null; \n" +
@@ -67,7 +69,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
                         "            if (\"lower\".equals(CASE)){ \n" +
                         "            def map = [COMPUTE_VAR: stringValue.toLowerCase()] \n" +
                         "            return map \n" +
-                        "            } ");
+                        "            } ");        
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);
@@ -99,7 +101,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
         hudson.EnvVars.masterEnvVars.remove("BUILD_NUMBER");
 
-        StringBuffer groovyScriptContent = new StringBuffer();
+        StringBuilder groovyScriptContent = new StringBuilder();
         groovyScriptContent.append(
                 "def env = currentJob.getLastBuild().getEnvironment()\n" +
                         "def buildNumber1 = env['BUILD_NUMBER']\n" +
@@ -119,10 +121,9 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
         ParametersAction parametersAction = new ParametersAction(parameterValueList);
 
-        @SuppressWarnings("deprecation")
-        FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
-        assertEquals(Result.SUCCESS, build.getResult());
 
+        FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
+        
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         assertNotNull(envInjectAction);
         Map<String, String> envVars = envInjectAction.getEnvMap();
@@ -240,5 +241,9 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         build = jenkins.assertBuildStatus(Result.FAILURE, future);
         //Check that it failed for the correct reason
         jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", build);
+    }
+    
+    private void approveScript(SecureGroovyScript script) {
+        
     }
 }

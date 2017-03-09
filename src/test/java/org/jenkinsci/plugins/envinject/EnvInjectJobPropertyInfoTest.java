@@ -1,7 +1,9 @@
 package org.jenkinsci.plugins.envinject;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.springframework.util.Assert;
 
 /**
@@ -10,11 +12,15 @@ import org.springframework.util.Assert;
  */
 public class EnvInjectJobPropertyInfoTest {
     
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    
     @Test
     @Issue("SECURITY-256")
     public void shouldCreateSandboxedScriptWithOldAPI() throws Exception {
         final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, "System.exit(0)", false);
-        Assert.isTrue(info.getSecureGroovyScript().isSandbox(), "Groovy sandbox must be enabled by default");
+        //TODO: should it be enabled by default?
+        Assert.isTrue(!info.getSecureGroovyScript().isSandbox(), "Groovy sandbox must be disabled by default");
     }
     
     @Test
