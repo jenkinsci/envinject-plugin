@@ -29,6 +29,16 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
         this(null, null, null, null, false, null);
     }
 
+    /**
+     * Creates the job property definition.
+     * @param propertiesFilePath Path to the property file to be injected
+     * @param propertiesContent Property definition
+     * @param scriptFilePath Path to the Shell/batch script file, which should be executed to retrieve the EnvVars
+     * @param scriptContent Shell/batch script, which should be executed to retrieve the EnvVars
+     * @param loadFilesFromMaster If {@code true}, the script file will be loaded from the master
+     * @param secureGroovyScript Groovy script to be executed in order to produce the environment variables.
+     *      This script will be verified by the Script Security plugin if defined.
+     */
     @DataBoundConstructor
     public EnvInjectJobPropertyInfo(
             @CheckForNull String propertiesFilePath,
@@ -54,11 +64,10 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
             @CheckForNull String scriptContent,
             @CheckForNull String groovyScriptContent,
             boolean loadFilesFromMaster) {
-        super(propertiesFilePath, propertiesContent);
-        this.scriptFilePath = Util.fixEmpty(scriptFilePath);
-        this.scriptContent = fixCrLf(Util.fixEmpty(scriptContent));
-        secureGroovyScript = new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create());
-        this.loadFilesFromMaster = loadFilesFromMaster;
+        
+        // If the groovy script is specified, it should become the SecureGroovyScript
+        this(propertiesFilePath, propertiesContent, scriptFilePath, scriptContent, loadFilesFromMaster,
+                StringUtils.isNotBlank(groovyScriptContent) ? new SecureGroovyScript(groovyScriptContent, true, null).configuring(ApprovalContext.create()) : null);
     }
 
     @CheckForNull
