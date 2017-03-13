@@ -70,7 +70,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
                         "            if (\"lower\".equals(CASE)){ \n" +
                         "            def map = [COMPUTE_VAR: stringValue.toLowerCase()] \n" +
                         "            return map \n" +
-                        "            } ");        
+                        "            } ");
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);

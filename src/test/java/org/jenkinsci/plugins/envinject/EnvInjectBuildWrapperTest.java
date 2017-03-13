@@ -17,7 +17,6 @@ import hudson.model.Result;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.util.IOUtils;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
@@ -28,11 +27,11 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
-import java.io.IOException;
 import jenkins.model.Jenkins;
 import static org.hamcrest.Matchers.containsString;
 import org.jenkinsci.plugins.envinject.util.TestUtils;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 public class EnvInjectBuildWrapperTest {
@@ -201,7 +200,7 @@ public class EnvInjectBuildWrapperTest {
     	FreeStyleBuild build = p.scheduleBuild2(0).get();
 
     	assertEquals(Result.FAILURE, build.getResult());
-    	assertThat("Excepted error message it's not logged", build.getLog(), containsString("No such property: FOOVAR"));
+        j.assertLogContains("No such property: FOOVAR", build);
     }
 
     @Test
@@ -314,7 +313,7 @@ public class EnvInjectBuildWrapperTest {
         future = project.scheduleBuild2(0);
         FreeStyleBuild run = j.assertBuildStatus(Result.FAILURE, future);
         //Check that it failed for the correct reason
-        j.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", run);
+        j.assertLogContains(UnapprovedUsageException.class.getName(), run);
 
         //Now let alice approve the script
         ScriptApproval.get().preapproveAll();
