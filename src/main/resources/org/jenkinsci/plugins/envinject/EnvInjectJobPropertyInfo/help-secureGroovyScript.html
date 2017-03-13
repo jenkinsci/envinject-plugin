@@ -1,34 +1,52 @@
 <div>
     <p>
-        Evaluate a Groovy script and inject a map result.<br/>
-        The groovy script must return a map Java object.<br/>
-        You can access parameters and other environment variables through variables in the Groovy script.<br/>
-
-        For example, the Groovy can compute environment variables from user input parameters, such as:<br/>
-        <i>
-            if (CASE==null){<br/>
-            return null; <br/>
-            } <br/>
-
-            def stringValue="StRinG"; <br/>
-
-            if ("upper".equals(CASE)){ <br/>
-            def map = [COMPUTE_VAR: stringValue.toUpperCase()]<br/>
-            return map <br/>
-            } <br/>
-            <br/>
-            if ("lower".equals(CASE)){ <br/>
-            def map = [COMPUTE_VAR: stringValue.toLowerCase()] <br/>
-            return map <br/>
-            } <br/>
-        </i>
-        <br/>
-        This script injects the COMPUTE_VAR environment variable according the CASE parameter value.
-        <br/>
-        <br/>
-        Moreover, 'currentJob' variable, 'currentBuild' variable and 'currentListener' are available if you want to have an access to the current Job instance, the current Run instance
-        and the current TaskListener instance.<br/>
-        You are also able to add logging through the 'out' variable.
-
+      Evaluates a Groovy script and injects the results into the environment.
+      This script s powered by the <a href="https://plugins.jenkins.io/script-security">Script Security Plugin</a>;
+      both Approved Script and Groovy Sandbox modes are available.
+      For the new scripts it is recommended to use the Sandbox mode.
     </p>
+    
+    <h3>Usage</h3>
+    <p>
+      The groovy script must return a <code>Map&lt;String,String&gt;</code> Java object.
+      You can access parameters and other environment variables through variables in the Groovy script.
+      In the scripts you can also use the following variables.
+    </p>
+    <dl>
+      <dt>currentJob</dt>
+      <dd>Current <a href="http://javadoc.jenkins-ci.org/hudson/model/Job.html">hudson.model.Job</a> instance.</dd>
+      <dt>currentBuid</dt>
+      <dd>Current <a href="http://javadoc.jenkins-ci.org/hudson/model/Run.html">hudson.model.Run</a> instance.</dd>
+      <dt>currentListener</dt>
+      <dd>Current <a href="http://javadoc.jenkins.io/hudson/model/TaskListener.html">hudson.model.TaskListener</a> instance,
+          which can be used for logging purposes.
+      </dd>
+      <dt>out</dt>
+      <dd>Another logging instance as 
+        <a href="https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html">java.io.PrintStream</a>.
+        It is recommended to use <code>currentListener</code> instead of this variable when possible.
+      </dd>
+    </dl>
+    <p>
+      All listed variables can be used in both script modes.
+      In the Sandbox mode the access to particular fields and methods may require an additional approval.
+    </p>
+    
+    <h3>Example</h3>
+    <p>
+      For example, the Groovy can compute environment variables from user input parameters.
+      The script below injects the <code>COMPUTE_VAR</code> environment variable according the CASE parameter value.
+    </p>
+        <pre><code>
+          def stringValue="StRinG";
+          if ("upper".equals(CASE)){
+            def map = [COMPUTE_VAR: stringValue.toUpperCase()]
+            return map
+          } else if ("lower".equals(CASE)){
+            def map = [COMPUTE_VAR: stringValue.toLowerCase()]
+            return map
+          } else {
+            return null;
+          }
+        </code></pre>
 </div>
