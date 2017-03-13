@@ -79,9 +79,13 @@
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
           <configuration>
-            <!-- Fix of JENKINS-31573 changed the property file parsing approach. 
-                 Now it follows the Java property file standard. -->
-            <compatibleSinceVersion>1.93</compatibleSinceVersion>
+            <!-- 
+              Incompatible changes:
+                1.93 - Fix of JENKINS-31573 changed the property file parsing approach. 
+                     Now it follows the Java property file standard.
+                2.0: - Security fixes (SECURITY-256) 
+            -->
+            <compatibleSinceVersion>2.0</compatibleSinceVersion>
           </configuration>
         </plugin>
       </plugins>
