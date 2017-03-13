@@ -1,9 +1,17 @@
 <div>
     <p>
-        Load files (properties or scripts) from the master node. <br/>
-        Without check this option, Jenkins loads the files from the target node (slave or master). <br/>
+        If enabled, load files (properties or scripts) from the master node.
+        Without check this option, Jenkins loads the files from the target node (slave/agent or master).
         Loading the files from the master may enable you to avoid conflicts between to have a generic
-        path, such as the problematic between Windows and Linux when your job is not attached to a specific node. <br/>
+        path, such as the problematic between Windows and Linux when your job is not attached to a specific node.
         Anyway, the file will be processed from the target node.
+    </p>
+    <p>
+        Starting from EnvInject 2.0, this option may take no effect if the feature is disabled globally.
+        In such case you will see a notice in the option display name.
+        Once the option is saved with <code>false</code>, it will dissappear from the UI.
+    </p>
+    <p>
+        It is <b>not recommended</b> to use this option in new jobs even if it is enabled.
     </p>
 </div>

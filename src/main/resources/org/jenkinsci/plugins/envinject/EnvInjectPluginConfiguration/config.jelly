@@ -26,14 +26,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" 
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:sl="/hudson/plugins/sidebar_link">
-  <f:section title="${%Environment Injector Plugin}" description="${%Settings of the EnvInject plugin}">
-    <f:advanced title="${%Security options}">
+  <f:section title="${%Environment Injector Plugin}" description="${%Security settings of the EnvInject plugin}">
       <f:entry field="enablePermissions" title="${%enablePermissions.title}">
         <f:checkbox/>
       </f:entry>
       <f:entry field="hideInjectedVars" title="${%hideInjectedVars.title}">
         <f:checkbox/>
       </f:entry>
-    </f:advanced>
+      <f:entry field="enableLoadingFromMaster" title="${%enableLoadingFromMaster.title}">
+        <f:checkbox title="${%Warning! Enabling this option is not recommended, see the documentation}"/>
+      </f:entry>
   </f:section>
 </j:jelly>

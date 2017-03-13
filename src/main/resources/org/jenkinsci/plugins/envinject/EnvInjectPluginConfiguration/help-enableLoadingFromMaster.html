@@ -1,0 +1,16 @@
+<div>
+  <p>
+    If enabled, users will be able to use the "Load script and properties files from the master" option in job configurations.
+    It was a default behavior in EnvInject versions before 2.0, but it has been disabled due to the security reasons.
+    It is <b>not recommended</b> to enable this option on new installations.
+  </p>
+  <p>
+    If common Jenkins users are allowed to run jobs on the master,
+    this option <b>is not enough</b> to protect files on the master instance.
+    Job runs may be access these files by loading of local files in the EnvInject configuration
+    or just by executing a Shell/Batch build step.
+    The only way to protect your instance from such threat is to disable the job execution
+    on the master node.
+    It can be done via plugins like <a href="https://plugins.jenkins.io/job-restrictions">Job Restrictions Plugin</a>.
+  </p>
+</div>

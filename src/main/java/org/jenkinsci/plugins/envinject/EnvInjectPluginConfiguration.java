@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.envinject;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.RestrictedSince;
 import hudson.XmlFile;
 import java.io.File;
 import javax.annotation.CheckForNull;
@@ -33,13 +34,17 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Configuration of {@link EnvInjectPlugin}.
+ * Configuration of security options for {@link EnvInjectPlugin}.
  * @author Oleg Nenashev
  * @since 1.92
+ * @since 2.0 Moved to the Security Global configuration
  */
 @Extension
 public class EnvInjectPluginConfiguration extends GlobalConfiguration {
@@ -50,14 +55,42 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     private boolean hideInjectedVars;
 
     private boolean enablePermissions;
+    
+    /**
+     * If enabled, users will be able to use the {@link EnvInjectJobPropertyInfo#loadFilesFromMaster}
+     * option.
+     * This option is disable by default due to the potential security concerns (SECURITY-348).
+     * @since 2.0
+     */
+    private boolean enableLoadingFromMaster;
 
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.0")
     public EnvInjectPluginConfiguration() {
         load();
     }
     
+    /**
+     * @deprecated Use {@link #EnvInjectPluginConfiguration(boolean, boolean, boolean)}
+     * @since 2.0 Loading of files from master is disabled by default
+     */
+    @Deprecated
     public EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions) {
+        // Breaking change in 2.0
+        this(hideInjectedVars, enablePermissions, false);
+    }
+    
+    /**
+     * Constructor.
+     * @param hideInjectedVars Hides the Injected Env Vars action in all builds.
+     * @param enablePermissions Enables a specific permission for viewing Injected Env Vars
+     * @param enableLoadingFromMaster Enables remote loading of property and script files from the master in builds
+     * @since 2.0
+     */
+    public EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions, boolean enableLoadingFromMaster) {
         this.hideInjectedVars = hideInjectedVars;
         this.enablePermissions = enablePermissions;
+        this.enableLoadingFromMaster = enableLoadingFromMaster;
     }
 
     public boolean isHideInjectedVars() {
@@ -67,7 +100,18 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public boolean isEnablePermissions() {
         return enablePermissions;
     }
- 
+
+    /**
+     * Check if the instance supports loading of scripts and property files from the master.
+     * It does not prevent lcal loading of files.
+     * @return {@code true} if it is enabled
+     * @see EnvInjectJobPropertyInfo#loadFilesFromMaster
+     * @since 2.0
+     */
+    public boolean isEnableLoadingFromMaster() {
+        return enableLoadingFromMaster;
+    }
+    
     /**
      * Gets the default configuration of {@link EnvInjectPlugin}
      * @return Default configuration
@@ -87,7 +131,8 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         final boolean newEnablePermissions = json.getBoolean("enablePermissions");
         final boolean newHideInjectedVars = json.getBoolean("hideInjectedVars");
-        return configure(newHideInjectedVars, newEnablePermissions);
+        final boolean enableLoadingFromMaster = json.getBoolean("enableLoadingFromMaster");
+        return configure(newHideInjectedVars, newEnablePermissions, enableLoadingFromMaster);
     }
     
     /**
@@ -98,13 +143,14 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      * @throws IllegalStateException Cannot retrieve the plugin config instance
      */
     @VisibleForTesting
-    /*package*/ static boolean configure(boolean hideInjectedVars, boolean enablePermissions)  {
+    /*package*/ static boolean configure(boolean hideInjectedVars, boolean enablePermissions, boolean enableLoadingFromMaster)  {
         EnvInjectPluginConfiguration instance = getInstance();
         if (instance == null) {
             throw new IllegalStateException("Cannot retrieve the plugin config instance");
         }
         instance.hideInjectedVars = hideInjectedVars;
         instance.enablePermissions = enablePermissions;
+        instance.enableLoadingFromMaster = enableLoadingFromMaster;
         EnvInjectPlugin.getInstance().onConfigChange(instance);
         instance.save();
         return true;
@@ -114,6 +160,21 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public static EnvInjectPluginConfiguration getInstance() {
         return EnvInjectPluginConfiguration.all().get(EnvInjectPluginConfiguration.class);
     }
+    
+    /**
+     * Retrieves the EnvInject global configuration.
+     * @return Settings
+     * @throws EnvInjectException The configuration cannot be retrieved
+     */
+    @Nonnull
+    public static EnvInjectPluginConfiguration getOrFail() throws EnvInjectException {
+        EnvInjectPluginConfiguration c = EnvInjectPluginConfiguration.all().get(EnvInjectPluginConfiguration.class);
+        if (c == null) {
+            throw new EnvInjectException("Cannot retrieve the EnvInject plugin configuration");
+        }
+        return c;
+    }
+    
     @Override
     public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);

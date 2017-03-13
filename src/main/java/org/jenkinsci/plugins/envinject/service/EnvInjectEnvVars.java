@@ -25,6 +25,8 @@ import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.jenkinsci.plugins.envinject.EnvInjectPluginConfiguration;
+import org.jenkinsci.plugins.envinject.util.EnvInjectExceptionFormatter;
 
 /**
  * @author Gregory Boissinot
@@ -47,6 +49,11 @@ public class EnvInjectEnvVars implements Serializable {
         final Map<String, String> resultMap = new LinkedHashMap<String, String>();
         try {
             if (loadFilesFromMaster) {
+                // Even if the propertiesFilePath is null, we do not want to allow loading
+                // from the master, because it may expose sensitive Environment Variables
+                if (!EnvInjectPluginConfiguration.getOrFail().isEnableLoadingFromMaster()) {
+                    throw EnvInjectExceptionFormatter.forProhibitedLoadFromMaster(propertiesFilePath);
+                }
                 resultMap.putAll(Jenkins.getActiveInstance().getRootPath().act(
                         new PropertiesVariablesRetriever(
                                 propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
@@ -89,13 +96,22 @@ public class EnvInjectEnvVars implements Serializable {
                              @Nonnull Launcher launcher,
                              @Nonnull BuildListener listener) throws EnvInjectException {
 
+        if (scriptContent == null && scriptFilePath == null) {
+            // Both options are not specified, no sense to run the logic
+            return 0;
+        }
+        
         final EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectScriptExecutor scriptExecutor = new EnvInjectScriptExecutor(launcher, logger);
 
         Map<String, String> scriptExecutionEnvVars = new HashMap<String, String>();
         scriptExecutionEnvVars.putAll(infraEnvVarsNode);
-
+        
         if (loadFromMaster) {
+            if (!EnvInjectPluginConfiguration.getOrFail().isEnableLoadingFromMaster()) {
+                throw EnvInjectExceptionFormatter.forProhibitedLoadFromMaster(scriptFilePath);
+            }
+            
             Map<String, String> scriptPathExecutionEnvVars = new HashMap<String, String>();
             scriptPathExecutionEnvVars.putAll(infraEnvVarsMaster);
             if (scriptFilePath != null) {
