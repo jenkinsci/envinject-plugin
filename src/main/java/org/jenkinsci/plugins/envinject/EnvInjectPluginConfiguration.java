@@ -30,6 +30,7 @@ import java.io.File;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -112,5 +113,9 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     @CheckForNull
     public static EnvInjectPluginConfiguration getInstance() {
         return EnvInjectPluginConfiguration.all().get(EnvInjectPluginConfiguration.class);
+    }
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 }
