@@ -21,7 +21,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     private final String groovyScriptContent;
     
     /**
-     * If enabled, .
+     * If enabled, Jenkins will try taking scripts and property files from the master instead of the agent.
      * @since 2.0 Enabled if and only if the global setting allows it.
      * @see EnvInjectPluginConfiguration#enableLoadingFromMaster
      */

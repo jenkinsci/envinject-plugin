@@ -44,7 +44,6 @@ import org.kohsuke.stapler.StaplerRequest;
  * Configuration of security options for {@link EnvInjectPlugin}.
  * @author Oleg Nenashev
  * @since 1.92
- * @since 2.0 Moved to the Security Global configuration
  */
 @Extension
 public class EnvInjectPluginConfiguration extends GlobalConfiguration {
@@ -59,7 +58,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     /**
      * If enabled, users will be able to use the {@link EnvInjectJobPropertyInfo#loadFilesFromMaster}
      * option.
-     * This option is disable by default due to the potential security concerns (SECURITY-348).
+     * This option is disabled by default due to the potential security concerns (SECURITY-348).
      * @since 2.0
      */
     private boolean enableLoadingFromMaster;
@@ -80,14 +79,14 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
         this(hideInjectedVars, enablePermissions, false);
     }
     
+    //TODO: consider enabling it for Groovy Boot Hook Scripts and other configuration-as-code stuff
     /**
      * Constructor.
      * @param hideInjectedVars Hides the Injected Env Vars action in all builds.
      * @param enablePermissions Enables a specific permission for viewing Injected Env Vars
      * @param enableLoadingFromMaster Enables remote loading of property and script files from the master in builds
-     * @since 2.0
      */
-    public EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions, boolean enableLoadingFromMaster) {
+    /*package*/ EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions, boolean enableLoadingFromMaster) {
         this.hideInjectedVars = hideInjectedVars;
         this.enablePermissions = enablePermissions;
         this.enableLoadingFromMaster = enableLoadingFromMaster;

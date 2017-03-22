@@ -97,7 +97,7 @@ public class EnvInjectEnvVars implements Serializable {
                              @Nonnull BuildListener listener) throws EnvInjectException {
 
         if (scriptContent == null && scriptFilePath == null) {
-            // Both options are not specified, no sense to run the logic
+            // Neither option is specified, no sense in running the logic
             return 0;
         }
         
