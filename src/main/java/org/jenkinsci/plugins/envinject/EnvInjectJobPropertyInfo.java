@@ -25,6 +25,12 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     private final String scriptContent;
     @CheckForNull
     private SecureGroovyScript secureGroovyScript;
+    
+    /**
+     * If enabled, Jenkins will try taking scripts and property files from the master instead of the agent.
+     * @since 2.0 Enabled if and only if the global setting allows it.
+     * @see EnvInjectPluginConfiguration#enableLoadingFromMaster
+     */
     private final boolean loadFilesFromMaster;
 
     public EnvInjectJobPropertyInfo() {
@@ -93,6 +99,11 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
         return secureGroovyScript != null ? Util.fixEmpty(secureGroovyScript.getScript()) : null;
     }
 
+    /**
+     * Check if the configuration requires loading of script and property files from the master.
+     * @return {@code true} if the loading from the master is required.
+     *         Note that this option may be rejected due to the value of {@link EnvInjectPluginConfiguration#enableLoadingFromMaster}.
+     */
     public boolean isLoadFilesFromMaster() {
         return loadFilesFromMaster;
     }
