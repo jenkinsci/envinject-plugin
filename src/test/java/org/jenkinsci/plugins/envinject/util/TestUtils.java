@@ -3,14 +3,11 @@ package org.jenkinsci.plugins.envinject.util;
 import hudson.model.FreeStyleProject;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Test utilities
+ * Test utilities for the plugin.
  * @author Oleg Nenashev
  */
-@Restricted(NoExternalUse.class)
 public class TestUtils {
     
     /**

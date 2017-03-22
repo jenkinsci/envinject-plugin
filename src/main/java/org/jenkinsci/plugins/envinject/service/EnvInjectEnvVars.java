@@ -133,8 +133,8 @@ public class EnvInjectEnvVars implements Serializable {
      * @throws AbortException if so
      * @deprecated use {@link #executeGroovyScript(EnvInjectLogger, SecureGroovyScript, Map)} instead.
      * @see #executeGroovyScript(EnvInjectLogger, SecureGroovyScript, Map)
-     * @since 1.38 Initial implementation
-     * @since 2.0 Uses Secure Groovy Script. It will require approvals for non-admin users
+     * @since 1.38 - Initial implementation
+     * @since 2.0 - Uses Secure Groovy Script. It will require approvals for non-admin users
      *            It is also restricted.
      * 
      */

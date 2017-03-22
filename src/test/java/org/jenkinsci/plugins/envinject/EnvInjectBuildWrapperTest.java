@@ -293,7 +293,6 @@ public class EnvInjectBuildWrapperTest {
     public void testGroovyScriptInBuildWrapper() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("alice")
                 .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE).everywhere().to("bob");
         j.jenkins.setAuthorizationStrategy(auth);
 
