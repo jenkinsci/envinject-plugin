@@ -56,7 +56,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
-        <envinject.lib.version>1.24</envinject.lib.version>
+        <envinject.lib.version>1.25-SNAPSHOT</envinject.lib.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <mockito.version>1.10.19</mockito.version>
         <jenkins.version>1.609.3</jenkins.version>

@@ -3,8 +3,15 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Environment;
+import hudson.model.EnvironmentContributor;
+import hudson.model.Executor;
 import hudson.model.Hudson.MasterComputer;
+import hudson.model.Job;
+import hudson.model.Node;
+import hudson.model.Run;
 import hudson.util.LogTaskListener;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -22,6 +29,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * @author Gregory Boissinot
@@ -72,49 +80,43 @@ public class EnvInjectVariableGetter {
 
 
     @SuppressWarnings("unchecked")
-    public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
-        Map<String, String> result = new HashMap<String, String>();
+    public Map<String, String> getBuildVariables(@Nonnull Run<?, ?> run, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+        EnvVars result = new EnvVars();
 
         //Add build process variables
-        result.putAll(build.getCharacteristicEnvVars());
+        result.putAll(run.getCharacteristicEnvVars());
 
         try {
             EnvVars envVars = new EnvVars();
             for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
+                ec.buildEnvironmentFor(run, envVars, new LogTaskListener(LOG, Level.ALL));
                 result.putAll(envVars);
             }
-
-            JDK jdk = build.getProject().getJDK();
-            if (jdk != null) {
-                Node node = build.getBuiltOn();
-                if (node != null) {
-                    jdk = jdk.forNode(node, logger.getListener());
-                }
-                jdk.buildEnvVars(result);
-            }
+            
+            // Handle JDK
+            RunHelper.getJDKVariables(run, logger.getListener(), result);
         } catch (IOException ioe) {
             throw new EnvInjectException(ioe);
         } catch (InterruptedException ie) {
             throw new EnvInjectException(ie);
         }
 
-        Executor e = build.getExecutor();
+        Executor e = run.getExecutor();
         if (e != null) {
             result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
         }
 
         String rootUrl = Jenkins.getActiveInstance().getRootUrl();
         if (rootUrl != null) {
-            result.put("BUILD_URL", rootUrl + build.getUrl());
-            result.put("JOB_URL", rootUrl + build.getParent().getUrl());
+            result.put("BUILD_URL", rootUrl + run.getUrl());
+            result.put("JOB_URL", rootUrl + run.getParent().getUrl());
         }
 
         //Add build variables such as parameters, plugins contributions, ...
-        result.putAll(build.getBuildVariables());
+        RunHelper.getBuildVariables(run, result);
 
         //Retrieve triggered cause
-        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
+        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(run);
         result.putAll(triggerVariable);
 
         return result;
@@ -122,7 +124,7 @@ public class EnvInjectVariableGetter {
 
     @CheckForNull
     @SuppressWarnings("unchecked")
-    public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull AbstractBuild build) {
+    public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull Run<?, ?> build) {
         if (build == null) {
             throw new IllegalArgumentException("A build object must be set.");
         }
@@ -146,15 +148,18 @@ public class EnvInjectVariableGetter {
 
     @Nonnull
     public Map<String, String> getEnvVarsPreviousSteps(
-            @Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) 
+            @Nonnull Run<?, ?> build, @Nonnull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
-        List<Environment> environmentList = build.getEnvironments();
-        if (environmentList != null) {
-            for (Environment e : environmentList) {
-                if (e != null) {
-                    e.buildEnvVars(result);
+        // Env vars contributed by build wrappers; no replacement in Pipeline
+        if (build instanceof AbstractBuild) {
+            List<Environment> environmentList = ((AbstractBuild)build).getEnvironments();
+            if (environmentList != null) {
+                for (Environment e : environmentList) {
+                    if (e != null) {
+                        e.buildEnvVars(result);
+                    }
                 }
             }
         }
@@ -164,7 +169,7 @@ public class EnvInjectVariableGetter {
             result.putAll(getCurrentInjectedEnvVars(envInjectAction));
             //Add build variables with axis for a MatrixRun
             if (build instanceof MatrixRun) {
-                result.putAll(build.getBuildVariables());
+                result.putAll(((MatrixRun)build).getBuildVariables());
             }
         } else {
             result.putAll(getJenkinsSystemVariables(false));

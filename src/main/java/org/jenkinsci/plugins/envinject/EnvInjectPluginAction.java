@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributingAction;
+import hudson.model.Run;
 import java.util.Collections;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 
@@ -17,8 +18,8 @@ import javax.annotation.Nonnull;
  */
 public class EnvInjectPluginAction extends EnvInjectAction implements EnvironmentContributingAction {
 
-    public EnvInjectPluginAction(@Nonnull AbstractBuild build, @CheckForNull Map<String, String> envMap) {
-        super(build, envMap);
+    public EnvInjectPluginAction(@Nonnull Run<?, ?> run, @CheckForNull Map<String, String> envMap) {
+        super(run, envMap);
     }
 
     @Override

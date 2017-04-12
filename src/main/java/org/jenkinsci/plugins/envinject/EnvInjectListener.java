@@ -62,7 +62,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private boolean isEligibleJobType(@Nonnull AbstractBuild build) {
+    private boolean isEligibleJobType(@Nonnull Run<?, ?> build) {
         final Job job;
         if (build instanceof MatrixRun) {
             job = ((MatrixRun) build).getParentBuild().getParent();
@@ -74,7 +74,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     }
 
-    private void loadEnvironmentVariablesNode(@Nonnull AbstractBuild build, @Nonnull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    private void loadEnvironmentVariablesNode(@Nonnull Run<?, ?> build, @Nonnull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
 
         EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
         Map<String, String> configNodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, buildNode, logger);
@@ -90,9 +90,9 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
 
-    private boolean isEnvInjectJobPropertyActive(@Nonnull AbstractBuild build) {
+    private boolean isEnvInjectJobPropertyActive(@Nonnull Run<?, ?> run) {
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(run);
         return envInjectJobProperty != null;
     }
 
@@ -141,7 +141,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentJobPropertyObject(@Nonnull AbstractBuild build, 
+    private Environment setUpEnvironmentJobPropertyObject(@Nonnull Run<?, ?> build, 
             @Nonnull Launcher launcher, @Nonnull BuildListener listener, @Nonnull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
 
@@ -271,7 +271,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
     @Nonnull
-    private Map<String, String> getEnvVarsByContribution(@Nonnull AbstractBuild build, 
+    private Map<String, String> getEnvVarsByContribution(@Nonnull Run<?, ?> run, 
             @Nonnull EnvInjectJobProperty envInjectJobProperty, @Nonnull EnvInjectLogger logger, 
             @Nonnull BuildListener listener) throws EnvInjectException {
         
@@ -281,7 +281,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (contributors != null) {
             logger.info("Injecting contributions.");
             for (EnvInjectJobPropertyContributor contributor : contributors) {
-                contributionVariables.putAll(contributor.getEnvVars(build, listener));
+                contributor.contributeEnvVarsToRun(run, listener, contributionVariables);
             }
         }
         return contributionVariables;
@@ -294,8 +294,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             return;
         }
 
-        AbstractBuild build = (AbstractBuild) run;
-        if (!isEligibleJobType(build)) {
+        if (!isEligibleJobType(run)) {
             return;
         }
 
@@ -303,14 +302,14 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-        passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
+        passwordsMasker.maskPasswordsIfAny(run, logger, envVars);
 
-        if (!(build instanceof MatrixBuild)) {
+        if (!(run instanceof MatrixBuild)) {
 
             EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
             if (envInjectAction == null) {
                 try {
-                    envVars.putAll(build.getEnvironment(listener));
+                    envVars.putAll(run.getEnvironment(listener));
                 } catch (IOException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
@@ -324,7 +323,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(run, envVars);
         } catch (EnvInjectException e) {
             logger.error("SEVERE ERROR occurs: " + e.getMessage());
             throw new Run.RunnerAbortedException();

@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 
 /**
@@ -27,12 +28,12 @@ public class EnvInjectActionSetter implements Serializable {
         this.rootPath = rootPath;
     }
 
-    public void addEnvVarsToEnvInjectBuildAction(@Nonnull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
+    public void addEnvVarsToEnvInjectBuildAction(@Nonnull Run<?, ?> build, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {
 
         EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
-            envInjectAction.overrideAll(build.getSensitiveBuildVariables(), envMap);
+            envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(build), envMap);
         } else {
             if (rootPath != null) {
                 envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
@@ -42,7 +43,7 @@ public class EnvInjectActionSetter implements Serializable {
                         return result;
                     }
                 }));
-                envInjectAction.overrideAll(build.getSensitiveBuildVariables(), envMap);
+                envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(build), envMap);
                 build.addAction(envInjectAction);
             }
         }
