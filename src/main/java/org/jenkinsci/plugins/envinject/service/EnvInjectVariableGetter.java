@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.matrix.MatrixRun;
 import hudson.model.*;
@@ -77,6 +78,9 @@ public class EnvInjectVariableGetter {
 
         //Add build process variables
         result.putAll(build.getCharacteristicEnvVars());
+        FilePath ws = build.getWorkspace();
+        if (ws != null)
+            result.put("WORKSPACE", ws.getRemote());
 
         try {
             EnvVars envVars = new EnvVars();
