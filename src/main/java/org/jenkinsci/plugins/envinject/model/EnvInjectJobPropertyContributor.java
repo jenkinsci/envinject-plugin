@@ -22,7 +22,7 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
     public abstract void init();
 
     /**
-     * @deprecated Use {@link #contributeToRun(hudson.model.Run, hudson.model.TaskListener, java.util.Map)}
+     * @deprecated Use {@link #contributeEnvVarsToRun(hudson.model.Run, hudson.model.TaskListener, java.util.Map)}
      */
     @Deprecated
     public Map<String, String> getEnvVars(

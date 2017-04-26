@@ -5,13 +5,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.service.EnvInjectSavable;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
 import java.io.ObjectStreamException;
 import java.util.Map;
 import java.util.Set;
+import org.jenkinsci.plugins.envinjectapi.util.EnvInjectVarsIO;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -109,12 +109,11 @@ public class EnvInjectAction implements Action, StaplerProxy {
         }
 
         try {
-            EnvInjectSavable dao = new EnvInjectSavable();
             if (rootDir == null) {
-                dao.saveEnvironment(build.getRootDir(), envMap);
+                EnvInjectVarsIO.saveEnvironment(build.getRootDir(), envMap);
                 return this;
             }
-            dao.saveEnvironment(rootDir, envMap);
+            EnvInjectVarsIO.saveEnvironment(rootDir, envMap);
         } catch (EnvInjectException e) {
             e.printStackTrace();
         }
@@ -129,13 +128,12 @@ public class EnvInjectAction implements Action, StaplerProxy {
             return this;
         }
 
-        EnvInjectSavable dao = new EnvInjectSavable();
         Map<String, String> resultMap = null;
         try {
             if (build != null) {
-                resultMap = dao.getEnvironment(build.getRootDir());
+                resultMap = EnvInjectVarsIO.getEnvironment(build.getRootDir());
             } else if (rootDir != null) {
-                resultMap = dao.getEnvironment(rootDir);
+                resultMap = EnvInjectVarsIO.getEnvironment(rootDir);
             }
             if (resultMap != null) {
                 envMap = resultMap;

@@ -3,13 +3,13 @@ package org.jenkinsci.plugins.envinject;
 import hudson.Extension;
 import hudson.model.*;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.envinject.service.EnvironmentVariablesNodeLoader;
 
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
 /**
  * Overriding job parameters with environment variables populated by EnvInject plugin
