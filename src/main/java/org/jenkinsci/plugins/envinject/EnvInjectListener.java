@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * @author Gregory Boissinot
@@ -91,8 +92,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
 
     private boolean isEnvInjectJobPropertyActive(@Nonnull Run<?, ?> run) {
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(run);
+        EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(run);
         return envInjectJobProperty != null;
     }
 
@@ -148,13 +148,13 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         logger.info("Preparing an environment for the build.");
 
         EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+        EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(build);
         assert envInjectJobProperty != null;
         EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
         assert envInjectJobProperty.isOn();
 
         //Init infra env vars
-        Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+        Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
         Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>(previousEnvVars);
         Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>(previousEnvVars);
 
@@ -168,7 +168,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add build variables
         if (envInjectJobProperty.isKeepBuildVariables()) {
             logger.info("Keeping Jenkins build variables.");
-            Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
+            Map<String, String> buildVariables = RunHelper.getBuildVariables(build, logger);
             infraEnvVarsMaster.putAll(buildVariables);
             infraEnvVarsNode.putAll(buildVariables);
         }
@@ -205,7 +205,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     contributionVariables);
 
             //Add an action to share injected environment variables
-            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, mergedVariables);
+            new EnvInjectActionSetter(rootPath).addEnvVarsToRun(build, mergedVariables);
 
 
             return new Environment() {
@@ -302,7 +302,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-        passwordsMasker.maskPasswordsIfAny(run, logger, envVars);
+        passwordsMasker.maskPasswordParameterssIfAny(run, envVars, logger);
 
         if (!(run instanceof MatrixBuild)) {
 

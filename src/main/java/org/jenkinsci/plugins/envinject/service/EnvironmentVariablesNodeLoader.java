@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.RestrictedSince;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
@@ -19,13 +20,28 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
+// TODO: Restrict?
 /**
  * @author Gregory Boissinot
  */
 public class EnvironmentVariablesNodeLoader implements Serializable {
 
+    @Deprecated
+    public EnvironmentVariablesNodeLoader() {
+    }
+
+    /**
+     * @deprecated Use {@link #gatherEnvVarsForNode(hudson.model.Run, hudson.model.Node, org.jenkinsci.lib.envinject.EnvInjectLogger)}
+     */
     @Nonnull
+    @Deprecated
     public Map<String, String> gatherEnvironmentVariablesNode(@Nonnull Run<?, ?> build, 
+            @CheckForNull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+        return gatherEnvVarsForNode(build, buildNode, logger);
+    }
+    
+    @Nonnull
+    public static Map<String, String> gatherEnvVarsForNode(@Nonnull Run<?, ?> build, 
             @CheckForNull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
 
         logger.info("Loading node environment variables.");

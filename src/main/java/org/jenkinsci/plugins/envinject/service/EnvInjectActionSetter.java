@@ -28,23 +28,44 @@ public class EnvInjectActionSetter implements Serializable {
         this.rootPath = rootPath;
     }
 
+    /**
+     * @deprecated Use {@link #addEnvVarsToRun(hudson.model.Run, java.util.Map)}
+     */
+    @Deprecated
     public void addEnvVarsToEnvInjectBuildAction(@Nonnull Run<?, ?> build, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {
+        addEnvVarsToRun(build, envMap);
+    }
+    
+    /**
+     * Adds EnvironmentVariables to the run.
+     * {@link EnvInjectPluginAction} will be created on-demand.
+     * @param run Run
+     * @param envMap Environment variables to be added or overridden
+     * @throws EnvInjectException Injection failure
+     * @throws IOException Remote operation failure
+     * @throws InterruptedException Remote call is interrupted
+     */
+    public void addEnvVarsToRun(@Nonnull Run<?, ?> run, @CheckForNull Map<String, String> envMap) 
+            throws EnvInjectException, IOException, InterruptedException {
 
-        EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
+        EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
-            envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(build), envMap);
+            envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
         } else {
             if (rootPath != null) {
-                envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
+                envInjectAction = new EnvInjectPluginAction(rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
+                    private static final long serialVersionUID = 1L;
+                      
+                    @Override
                     public Map<String, String> call() throws EnvInjectException {
                         HashMap<String, String> result = new HashMap<String, String>();
                         result.putAll(EnvVars.masterEnvVars);
                         return result;
                     }
                 }));
-                envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(build), envMap);
-                build.addAction(envInjectAction);
+                envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
+                run.addAction(envInjectAction);
             }
         }
     }

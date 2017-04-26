@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.matrix.MatrixProject;
 import hudson.matrix.MatrixRun;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.Descriptor;
 import hudson.model.Job;
@@ -24,11 +25,27 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
+ * Masks {@link PasswordParameterValue}s
  * @author Gregory Boissinot
  */
 public class EnvInjectPasswordsMasker implements Serializable {
 
-    public void maskPasswordsIfAny(@Nonnull Run<?, ?> run, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
+    /**
+     * @deprecated Use {@link #maskPasswordsIfAny(hudson.model.Run, java.util.Map, org.jenkinsci.lib.envinject.EnvInjectLogger)} 
+     */
+    @Deprecated
+    public void maskPasswordsIfAny(@Nonnull AbstractBuild run, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
+        maskPasswordParameterssIfAny(run, envVars, logger);
+    }
+    
+    /**
+     * Masks {@link PasswordParameterValue}s.
+     * @param run Run
+     * @param envVars Target collection with Environment variables to be masked
+     * @param logger Logger
+     * @since 2.1
+     */
+    public void maskPasswordParameterssIfAny(@Nonnull Run<?, ?> run, @Nonnull Map<String, String> envVars, @Nonnull EnvInjectLogger logger) {
         maskPasswordsJobParameterIfAny(run, logger, envVars);
         maskPasswordsEnvInjectIfAny(run, logger, envVars);
     }
