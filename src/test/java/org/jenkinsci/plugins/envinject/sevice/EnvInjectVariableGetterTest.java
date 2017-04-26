@@ -4,12 +4,12 @@ import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -20,13 +20,10 @@ import static org.mockito.Mockito.when;
  */
 public class EnvInjectVariableGetterTest {
 
-    private EnvInjectVariableGetter variableGetter;
-
     private AbstractBuild build;
 
     @Before
     public void setUp() {
-        variableGetter = new EnvInjectVariableGetter();
         build = mock(AbstractBuild.class);
     }
 
@@ -48,7 +45,7 @@ public class EnvInjectVariableGetterTest {
     public void getEnvVarsPreviousStepsWithEnvInjectAction() throws Exception {
         EnvInjectPluginAction envInjectPluginAction = new EnvInjectPluginAction(build, envVarsSample1);
         when(build.getAction(EnvInjectPluginAction.class)).thenReturn(envInjectPluginAction);
-        Map<String, String> envVars = variableGetter.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
+        Map<String, String> envVars = RunHelper.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
         assertTrue(sameMap(envVarsSample1, envVars));
     }
 
@@ -58,7 +55,7 @@ public class EnvInjectVariableGetterTest {
         EnvInjectPluginAction envInjectPluginAction = new EnvInjectPluginAction(build, envVarsSample1);
         when(build.getAction(EnvInjectPluginAction.class)).thenReturn(envInjectPluginAction);
         when(build.getBuildVariables()).thenReturn(buildEnvVarsSample1);
-        Map<String, String> resultEnvVars = variableGetter.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
+        Map<String, String> resultEnvVars = RunHelper.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
         Map<String, String> expectedEnvVars = new HashMap<String, String>();
         expectedEnvVars.putAll(envVarsSample1);
         expectedEnvVars.putAll(buildEnvVarsSample1);

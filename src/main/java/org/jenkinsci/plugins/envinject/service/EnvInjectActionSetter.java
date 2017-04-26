@@ -45,6 +45,7 @@ public class EnvInjectActionSetter implements Serializable {
      * @throws EnvInjectException Injection failure
      * @throws IOException Remote operation failure
      * @throws InterruptedException Remote call is interrupted
+     * @since 2.1
      */
     public void addEnvVarsToRun(@Nonnull Run<?, ?> run, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {

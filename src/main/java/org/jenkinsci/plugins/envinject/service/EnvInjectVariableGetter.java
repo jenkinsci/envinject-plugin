@@ -31,9 +31,22 @@ public class EnvInjectVariableGetter {
 
     private static Logger LOG = Logger.getLogger(EnvInjectVariableGetter.class.getName());
 
-    @Nonnull
-    public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
+    @Deprecated
+    public EnvInjectVariableGetter() {
+    }
 
+    /**
+     * @deprecated Use {@link #getJenkinsSystemEnvVars(boolean)}
+     */
+    @Nonnull
+    @Deprecated
+    public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
+        return getJenkinsSystemEnvVars(forceOnMaster);
+    }
+    
+    //TODO: Move to Another utility class in EnvInject API 
+    @Nonnull
+    public static Map<String, String> getJenkinsSystemEnvVars(boolean forceOnMaster) throws IOException, InterruptedException {
         Map<String, String> result = new TreeMap<String, String>();
 
         final Computer computer;
@@ -72,18 +85,27 @@ public class EnvInjectVariableGetter {
     }
 
 
-    @SuppressWarnings("unchecked")
+    /**
+     * @deprecated Use {@link RunHelper#getBuildVariables(hudson.model.Run, hudson.EnvVars)}
+     */
     public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
         return RunHelper.getBuildVariables(build, logger);
     }
 
+    /**
+     * @deprecated Use {@link RunHelper#getEnvInjectJobProperty(hudson.model.Run)}
+     */
     @CheckForNull
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull AbstractBuild build) {
         return RunHelper.getEnvInjectJobProperty(build);
     }
 
+    /**
+     * @deprecated Use {@link RunHelper#getEnvVarsPreviousSteps(hudson.model.Run, org.jenkinsci.lib.envinject.EnvInjectLogger)}
+     */
     @Nonnull
+    @Deprecated
     public Map<String, String> getEnvVarsPreviousSteps(
             @Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {

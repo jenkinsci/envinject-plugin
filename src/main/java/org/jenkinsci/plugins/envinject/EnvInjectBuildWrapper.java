@@ -26,7 +26,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -78,13 +78,12 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Executing scripts and injecting environment variables after the SCM step.");
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+            Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
 
             //Add workspace if not set
@@ -118,7 +117,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             }
 
             //Add or get the existing action to add new env vars
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToRun(build, resultVariables);
 
             return new Environment() {
                 @Override

@@ -210,7 +210,7 @@ public class RunHelper {
                 result.putAll(((MatrixRun)build).getBuildVariables());
             }
         } else {
-            result.putAll(new EnvInjectVariableGetter().getJenkinsSystemVariables(false));
+            result.putAll(EnvInjectVariableGetter.getJenkinsSystemEnvVars(false));
             result.putAll(getBuildVariables(build, logger));
         }
         return result;

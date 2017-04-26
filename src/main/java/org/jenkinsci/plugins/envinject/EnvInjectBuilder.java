@@ -13,7 +13,6 @@ import hudson.tasks.Builder;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -21,6 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * @author Gregory Boissinot
@@ -52,9 +52,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-
-            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+            Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
 
             //Get current envVars
             Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
@@ -87,7 +85,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             build.addAction(new EnvInjectBuilderContributionAction(resultVariables));
 
             //Add or get the existing action to add new env vars
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToRun(build, resultVariables);
 
         } catch (Throwable throwable) {
             logger.error("Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
