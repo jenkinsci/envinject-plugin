@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
@@ -32,7 +33,7 @@ public class EnvInjectActionSetter implements Serializable {
      * @deprecated Use {@link #addEnvVarsToRun(hudson.model.Run, java.util.Map)}
      */
     @Deprecated
-    public void addEnvVarsToEnvInjectBuildAction(@Nonnull Run<?, ?> build, @CheckForNull Map<String, String> envMap) 
+    public void addEnvVarsToEnvInjectBuildAction(@Nonnull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {
         addEnvVarsToRun(build, envMap);
     }
