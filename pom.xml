@@ -54,7 +54,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <envinject.api.version>1.0-SNAPSHOT</envinject.api.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <mockito.version>1.10.19</mockito.version>
         <jenkins.version>1.625.3</jenkins.version>
@@ -89,15 +88,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version> <!-- assertLogContains is incompatible with whatever hamcrest junit 4.12 adds -->
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>envinject-api</artifactId>
-            <version>${envinject.api.version}</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
