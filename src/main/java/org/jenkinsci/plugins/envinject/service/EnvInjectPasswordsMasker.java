@@ -35,7 +35,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
      */
     @Deprecated
     public void maskPasswordsIfAny(@Nonnull AbstractBuild run, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
-        maskPasswordParameterssIfAny(run, envVars, logger);
+        maskPasswordParametersIfAny(run, envVars, logger);
     }
     
     /**
@@ -45,7 +45,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
      * @param logger Logger
      * @since 2.1
      */
-    public void maskPasswordParameterssIfAny(@Nonnull Run<?, ?> run, @Nonnull Map<String, String> envVars, @Nonnull EnvInjectLogger logger) {
+    public void maskPasswordParametersIfAny(@Nonnull Run<?, ?> run, @Nonnull Map<String, String> envVars, @Nonnull EnvInjectLogger logger) {
         maskPasswordsJobParameterIfAny(run, logger, envVars);
         maskPasswordsEnvInjectIfAny(run, logger, envVars);
     }

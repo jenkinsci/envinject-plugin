@@ -298,7 +298,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-        passwordsMasker.maskPasswordParameterssIfAny(run, envVars, logger);
+        passwordsMasker.maskPasswordParametersIfAny(run, envVars, logger);
 
         if (!(run instanceof MatrixBuild)) {
 
