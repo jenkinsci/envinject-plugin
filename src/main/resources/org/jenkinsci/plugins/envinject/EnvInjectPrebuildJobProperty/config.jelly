@@ -1,0 +1,40 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:u="/util">
+
+    <f:optionalBlock name="on"
+                     title="${%Prepare an environment for the run, prebuild phase}"
+                     checked="${instance.on}"
+                     help="/plugin/envinject/help_prebuild.html">
+
+        <f:entry title="${%Script File Path}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
+            <f:textbox
+                    name="envInjectInfoPrebuildJobProperty.scriptFilePath"
+                    value="${instance.info.scriptFilePath}"/>
+        </f:entry>
+
+        <f:entry title="${%Script Content}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
+            <f:textarea
+                    name="envInjectInfoPrebuildJobProperty.scriptContent"
+                    value="${instance.info.scriptContent}"/>
+        </f:entry>
+
+        <f:entry title="${%Evaluated Groovy script}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContent">
+            <j:getStatic var="permission" className="hudson.model.Hudson" field="RUN_SCRIPTS"/>
+            <f:textarea readonly="${h.hasPermission(it,permission) ? null : 'readonly'}"
+                    name="envInjectInfoPrebuildJobProperty.groovyScriptContent"
+                    value="${instance.info.groovyScriptContent}"/>
+        </f:entry>
+
+
+        <f:entry title="${%Load script files from the master}"
+                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/loadFilesFromMaster">
+            <f:checkbox
+                    name="envInjectInfoPrebuildJobProperty.loadFilesFromMaster"
+                    checked="${instance.info.loadFilesFromMaster}"/>
+        </f:entry>
+
+    </f:optionalBlock>
+
+</j:jelly>
