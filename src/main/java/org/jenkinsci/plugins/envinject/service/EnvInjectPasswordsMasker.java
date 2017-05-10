@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
 public class EnvInjectPasswordsMasker implements Serializable {
 
     /**
-     * @deprecated Use {@link #maskPasswordsIfAny(hudson.model.Run, java.util.Map, org.jenkinsci.lib.envinject.EnvInjectLogger)} 
+     * @deprecated Use {@link #maskPasswordParametersIfAny(hudson.model.Run, java.util.Map, org.jenkinsci.lib.envinject.EnvInjectLogger)} 
      */
     @Deprecated
     public void maskPasswordsIfAny(@Nonnull AbstractBuild run, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {

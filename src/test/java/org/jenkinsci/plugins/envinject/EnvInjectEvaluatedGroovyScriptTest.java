@@ -31,9 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import static org.hamcrest.Matchers.containsString;
 
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.core.StringContains.containsString;
 import org.jenkinsci.plugins.envinject.util.TestUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

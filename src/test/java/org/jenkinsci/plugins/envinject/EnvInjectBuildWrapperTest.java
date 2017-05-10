@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static hudson.Util.replaceMacro;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
@@ -28,10 +27,10 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 import jenkins.model.Jenkins;
-import static org.hamcrest.Matchers.containsString;
 import org.jenkinsci.plugins.envinject.util.TestUtils;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+import static org.junit.Assert.assertThat;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 public class EnvInjectBuildWrapperTest {
