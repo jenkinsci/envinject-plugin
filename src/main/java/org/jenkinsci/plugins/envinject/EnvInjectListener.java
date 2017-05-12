@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * @author Gregory Boissinot
@@ -62,7 +63,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         };
     }
 
-    private boolean isEligibleJobType(@Nonnull AbstractBuild build) {
+    private boolean isEligibleJobType(@Nonnull Run<?, ?> build) {
         final Job job;
         if (build instanceof MatrixRun) {
             job = ((MatrixRun) build).getParentBuild().getParent();
@@ -74,13 +75,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
     }
 
-    private void loadEnvironmentVariablesNode(@Nonnull AbstractBuild build, @Nonnull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    private void loadEnvironmentVariablesNode(@Nonnull Run<?, ?> build, @Nonnull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
 
-        EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
-        Map<String, String> configNodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, buildNode, logger);
+        Map<String, String> configNodeEnvVars = EnvironmentVariablesNodeLoader.gatherEnvVarsForNode(build, buildNode, logger);
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(buildNode.getRootPath());
         try {
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, configNodeEnvVars);
+            envInjectActionSetter.addEnvVarsToRun(build, configNodeEnvVars);
 
         } catch (IOException ioe) {
             throw new EnvInjectException(ioe);
@@ -90,9 +90,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
 
-    private boolean isEnvInjectJobPropertyActive(@Nonnull AbstractBuild build) {
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+    private boolean isEnvInjectJobPropertyActive(@Nonnull Run<?, ?> run) {
+        EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(run);
         return envInjectJobProperty != null;
     }
 
@@ -102,8 +101,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         @Override
         public void beforeUse(AbstractBuild build, FilePath ws, BuildListener listener) {
 
-            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+            EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(build);
             if (envInjectJobProperty == null) return;
 
             EnvInjectLogger envInjectLogger = new EnvInjectLogger(listener);
@@ -111,7 +109,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             if (envInjectJobProperty.isKeepBuildVariables()) {
                 try {
                     //Get previous
-                    Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, envInjectLogger);
+                    Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, envInjectLogger);
 
                     //Add workspace
                     if (previousEnvVars.get("WORKSPACE") == null) {
@@ -128,7 +126,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     //Set new env vars
                     final Node builtOn = build.getBuiltOn();
                     new EnvInjectActionSetter(builtOn != null ? builtOn.getRootPath() : null)
-                            .addEnvVarsToEnvInjectBuildAction(build, cleanVariables);
+                            .addEnvVarsToRun(build, cleanVariables);
 
                 } catch (EnvInjectException e) {
                     throw new RuntimeException(e);
@@ -141,34 +139,33 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentJobPropertyObject(@Nonnull AbstractBuild build, 
+    private Environment setUpEnvironmentJobPropertyObject(@Nonnull Run<?, ?> build, 
             @Nonnull Launcher launcher, @Nonnull BuildListener listener, @Nonnull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
 
         logger.info("Preparing an environment for the build.");
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-        EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+        EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(build);
         assert envInjectJobProperty != null;
         EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
         assert envInjectJobProperty.isOn();
 
         //Init infra env vars
-        Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+        Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
         Map<String, String> infraEnvVarsNode = new LinkedHashMap<String, String>(previousEnvVars);
         Map<String, String> infraEnvVarsMaster = new LinkedHashMap<String, String>(previousEnvVars);
 
         //Add Jenkins System variables
         if (envInjectJobProperty.isKeepJenkinsSystemVariables()) {
             logger.info("Keeping Jenkins system variables.");
-            infraEnvVarsMaster.putAll(variableGetter.getJenkinsSystemVariables(true));
-            infraEnvVarsNode.putAll(variableGetter.getJenkinsSystemVariables(false));
+            infraEnvVarsMaster.putAll(EnvInjectVariableGetter.getJenkinsSystemEnvVars(true));
+            infraEnvVarsNode.putAll(EnvInjectVariableGetter.getJenkinsSystemEnvVars(false));
         }
 
         //Add build variables
         if (envInjectJobProperty.isKeepBuildVariables()) {
             logger.info("Keeping Jenkins build variables.");
-            Map<String, String> buildVariables = variableGetter.getBuildVariables(build, logger);
+            Map<String, String> buildVariables = RunHelper.getBuildVariables(build, logger);
             infraEnvVarsMaster.putAll(buildVariables);
             infraEnvVarsNode.putAll(buildVariables);
         }
@@ -205,7 +202,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                     contributionVariables);
 
             //Add an action to share injected environment variables
-            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, mergedVariables);
+            new EnvInjectActionSetter(rootPath).addEnvVarsToRun(build, mergedVariables);
 
 
             return new Environment() {
@@ -231,17 +228,16 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
 
         final Map<String, String> resultVariables = new HashMap<String, String>();
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
-        Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+        Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
         resultVariables.putAll(previousEnvVars);
 
-        resultVariables.putAll(variableGetter.getJenkinsSystemVariables(false));
-        resultVariables.putAll(variableGetter.getBuildVariables(build, logger));
+        resultVariables.putAll(EnvInjectVariableGetter.getJenkinsSystemEnvVars(false));
+        resultVariables.putAll(RunHelper.getBuildVariables(build, logger));
 
         final FilePath rootPath = getNodeRootPath();
         if (rootPath != null) {
-            new EnvInjectActionSetter(rootPath).addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            new EnvInjectActionSetter(rootPath).addEnvVarsToRun(build, resultVariables);
         }
 
         return new Environment() {
@@ -271,7 +267,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
     }
 
     @Nonnull
-    private Map<String, String> getEnvVarsByContribution(@Nonnull AbstractBuild build, 
+    private Map<String, String> getEnvVarsByContribution(@Nonnull Run<?, ?> run, 
             @Nonnull EnvInjectJobProperty envInjectJobProperty, @Nonnull EnvInjectLogger logger, 
             @Nonnull BuildListener listener) throws EnvInjectException {
         
@@ -281,7 +277,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         if (contributors != null) {
             logger.info("Injecting contributions.");
             for (EnvInjectJobPropertyContributor contributor : contributors) {
-                contributionVariables.putAll(contributor.getEnvVars(build, listener));
+                contributor.contributeEnvVarsToRun(run, listener, contributionVariables);
             }
         }
         return contributionVariables;
@@ -294,8 +290,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             return;
         }
 
-        AbstractBuild build = (AbstractBuild) run;
-        if (!isEligibleJobType(build)) {
+        if (!isEligibleJobType(run)) {
             return;
         }
 
@@ -303,18 +298,15 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         EnvVars envVars = new EnvVars();
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectPasswordsMasker passwordsMasker = new EnvInjectPasswordsMasker();
-        passwordsMasker.maskPasswordsIfAny(build, logger, envVars);
+        passwordsMasker.maskPasswordParametersIfAny(run, envVars, logger);
 
-        if (!(build instanceof MatrixBuild)) {
+        if (!(run instanceof MatrixBuild)) {
 
             EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
             if (envInjectAction == null) {
                 try {
-                    envVars.putAll(build.getEnvironment(listener));
-                } catch (IOException e) {
-                    logger.error("SEVERE ERROR occurs: " + e.getMessage());
-                    throw new Run.RunnerAbortedException();
-                } catch (InterruptedException e) {
+                    envVars.putAll(run.getEnvironment(listener));
+                } catch (IOException | InterruptedException e) {
                     logger.error("SEVERE ERROR occurs: " + e.getMessage());
                     throw new Run.RunnerAbortedException();
                 }
@@ -324,14 +316,8 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         //Add or override EnvInject Action
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(getNodeRootPath());
         try {
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction((AbstractBuild<?, ?>) run, envVars);
-        } catch (EnvInjectException e) {
-            logger.error("SEVERE ERROR occurs: " + e.getMessage());
-            throw new Run.RunnerAbortedException();
-        } catch (IOException e) {
-            logger.error("SEVERE ERROR occurs: " + e.getMessage());
-            throw new Run.RunnerAbortedException();
-        } catch (InterruptedException e) {
+            envInjectActionSetter.addEnvVarsToRun(run, envVars);
+        } catch (EnvInjectException | IOException | InterruptedException e) {
             logger.error("SEVERE ERROR occurs: " + e.getMessage());
             throw new Run.RunnerAbortedException();
         }

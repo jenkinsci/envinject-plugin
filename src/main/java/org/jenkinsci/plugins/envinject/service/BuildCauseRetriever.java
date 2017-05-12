@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.triggers.SCMTrigger;
@@ -15,10 +14,13 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Joiner.on;
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import java.util.Locale;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import org.jenkinsci.plugins.envinjectapi.util.EnvVarsResolver;
 
 
 /**
@@ -33,9 +35,18 @@ public class BuildCauseRetriever {
     public static final String ENV_CAUSE = "BUILD_CAUSE";
     public static final String ENV_ROOT_CAUSE = "ROOT_BUILD_CAUSE";
 
+    /**
+     * @deprecated Use {@link EnvVarsResolver#getCauseEnvVars(hudson.model.Run)}
+     */
     @Nonnull
+    @Deprecated
     public Map<String, String> getTriggeredCause(@Nonnull AbstractBuild<?, ?> build) {
-        CauseAction causeAction = build.getAction(CauseAction.class);
+        return EnvVarsResolver.getCauseEnvVars(build);
+    }
+    
+    @Nonnull
+    public Map<String, String> getTriggeredCause(@Nonnull Run<?, ?> run) {
+        CauseAction causeAction = run.getAction(CauseAction.class);
         Map<String, String> env = new HashMap<String, String>();
         List<String> directCauseNames = new ArrayList<String>();
         Set<String> rootCauseNames = new LinkedHashSet<String>();

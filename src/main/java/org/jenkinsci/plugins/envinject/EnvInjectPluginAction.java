@@ -11,14 +11,30 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.model.RunAction2;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectPluginAction extends EnvInjectAction implements EnvironmentContributingAction {
 
+    /**
+     * Constructor.
+     * @deprecated This is a {@link RunAction2} instance, not need to pass build explicitly.
+     *             Use {@link #EnvInjectPluginAction(java.util.Map)}
+     */
+    @Deprecated
     public EnvInjectPluginAction(@Nonnull AbstractBuild build, @CheckForNull Map<String, String> envMap) {
         super(build, envMap);
+    }
+    
+    /**
+     * Constructor.
+     * @param envMap Environment variables to be injected
+     * @since 2.1
+     */
+    public EnvInjectPluginAction(@CheckForNull Map<String, String> envMap) {
+        super(envMap);
     }
 
     @Override

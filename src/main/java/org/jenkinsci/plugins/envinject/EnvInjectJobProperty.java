@@ -2,13 +2,10 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import jenkins.model.Jenkins;
-import net.sf.json.JSON;
-import net.sf.json.JSONException;
+
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributorDescriptor;

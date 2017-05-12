@@ -14,10 +14,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import static com.google.common.base.Joiner.on;
 import static hudson.model.Result.SUCCESS;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCause;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCausesIsTrue;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Gregory Boissinot
