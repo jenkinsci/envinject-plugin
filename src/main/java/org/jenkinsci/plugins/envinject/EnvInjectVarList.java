@@ -117,7 +117,7 @@ public class EnvInjectVarList implements Serializable {
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("<envVars>".getBytes());
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", entry.getKey(), entry.getValue()).getBytes());
+            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", escapeXml(entry.getKey()), escapeXml(entry.getValue())).getBytes());
         }
         outputStream.write("</envVars>".getBytes());
     }
@@ -128,11 +128,19 @@ public class EnvInjectVarList implements Serializable {
         outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", entry.getKey(), entry.getValue()));
+            sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", escapeJson(entry.getKey()), escapeJson(entry.getValue())));
         }
         sb.delete(0, 1);
         outputStream.write(sb.toString().getBytes());
         outputStream.write("]}}".getBytes());
+    }
+
+    private String escapeXml(String xml) {
+        return xml.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
+    }
+
+    private String escapeJson(String json) {
+        return json.replace("\"", "\\\"").replace("\\", "\\\\");
     }
     
     //TODO: Throw errors in responses?
