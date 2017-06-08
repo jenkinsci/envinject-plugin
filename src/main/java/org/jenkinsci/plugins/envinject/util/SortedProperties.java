@@ -206,7 +206,7 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
                 }
                 valueStart++;
             }
-            String key = loadConvert(lr.lineBuf, 0, keyLen, convtBuf);
+            String key = loadConvert(lr.lineBuf, 0, keyLen, convtBuf).replace('.', '_');
             String value = loadConvert(lr.lineBuf, valueStart, limit - valueStart, convtBuf);
             put(key, value);
         }
