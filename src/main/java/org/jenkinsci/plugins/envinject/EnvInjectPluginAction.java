@@ -63,10 +63,11 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
     
     @Nonnull
     private EnvInjectVarList getEnvInjectVarList() {
-        if (envMap == null) {
+        final Map<String, String> currentEnvMap = getEnvMap();
+        if (currentEnvMap == null) {
             return new EnvInjectVarList(Collections.<String,String>emptyMap());
         }
-        return new EnvInjectVarList(Maps.transformEntries(envMap,
+        return new EnvInjectVarList(Maps.transformEntries(currentEnvMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
                         final Set<String> sensibleVars = getSensibleVariables();
@@ -77,8 +78,9 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     @Override
     public void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @Nonnull EnvVars env) {
-        if (envMap != null) {
-            env.putAll(envMap);
+        final Map<String, String> currentEnvMap = getEnvMap();
+        if (currentEnvMap != null) {
+            env.putAll(currentEnvMap);
         }
     }
 }
