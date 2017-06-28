@@ -140,7 +140,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
     private String escapeJson(String json) {
-        return json.replace("\"", "\\\"").replace("\\", "\\\\");
+        return json.replace("\\", "\\\\").replace("\"", "\\\"");
     }
     
     //TODO: Throw errors in responses?
