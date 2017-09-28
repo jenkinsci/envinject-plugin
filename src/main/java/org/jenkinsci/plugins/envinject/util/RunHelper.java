@@ -134,7 +134,7 @@ public class RunHelper {
     public static void consultOtherEnvironmentContributors(@Nonnull Run<?, ?> run, @Nonnull EnvVars envVars,
                                                @Nonnull BuildListener listener)
         throws InterruptedException, IOException {
-        for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView()) {
             if (ec instanceof EnvInjectEnvVarsContributor) {
                 // We skip EnvInject plugin, it should be invoked elsewhere
                 continue;
@@ -163,7 +163,7 @@ public class RunHelper {
         try {
             // TODO: rework to consultEnvironmentContributors(), why result is within the cycle?
             EnvVars envVars = new EnvVars();
-            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+            for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView()) {
                 ec.buildEnvironmentFor(run, envVars, new LogTaskListener(LOGGER, Level.ALL));
                 result.putAll(envVars);
             }
