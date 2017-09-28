@@ -28,6 +28,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.InvisibleAction;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributor;
@@ -39,6 +40,7 @@ import hudson.tasks.BuildWrapper;
 import java.io.IOException;
 import java.util.Map;
 
+import jenkins.model.RunAction2;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -170,35 +172,40 @@ public class EnvInjectActionTest {
                 AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener
         ) throws InterruptedException, IOException {
             // Start serving envvar from EnvironmentContributor
-            contributor.values(key, value);
+            build.addAction(new ContributorAction(key, value));
             return true;
         }
     }
 
-    @TestExtension
-    public static final Contributor contributor = new Contributor();
-
-    @Before
-    public void setUp() {
-        contributor.values(null, null);
-    }
-
-    private static class Contributor extends EnvironmentContributor {
+    public static class ContributorAction extends InvisibleAction implements RunAction2 {
         private String value = null;
         private String key = null;
 
-        private void values(String k, String v) {
+        public ContributorAction(String k, String v) {
             value = v;
             key = k;
         }
 
+        @Override
+        public void onAttached(Run<?, ?> r) {
+            // Do not care
+        }
+
+        @Override
+        public void onLoad(Run<?, ?> r) {
+            // Do not care
+        }
+    }
+
+    @TestExtension
+    public static class Contributor extends EnvironmentContributor {
+
         @SuppressWarnings("rawtypes")
         @Override
-        public void buildEnvironmentFor(
-                Run r, EnvVars envs, TaskListener listener
-        ) throws IOException, InterruptedException {
-            if (key != null && value != null) {
-                envs.put(key, value);
+        public void buildEnvironmentFor(Run r, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+            ContributorAction a = r.getAction(ContributorAction.class);
+            if (a != null) {
+                envs.put(a.key, a.value);
             }
         }
     }
