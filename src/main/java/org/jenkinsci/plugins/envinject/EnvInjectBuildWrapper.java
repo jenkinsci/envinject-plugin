@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,11 +18,16 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
+
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -29,12 +35,33 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
 
+    @Nonnull
     private EnvInjectJobPropertyInfo info;
-
-    public void setInfo(EnvInjectJobPropertyInfo info) {
+    
+    private static final Logger LOGGER = Logger.getLogger(EnvInjectBuildWrapper.class.getName());
+    
+    @DataBoundConstructor
+    public EnvInjectBuildWrapper(@Nonnull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
+    /**
+     * @deprecated Use constructor with parameter
+     */
+    @Deprecated
+    public EnvInjectBuildWrapper() {
+        this.info = new EnvInjectJobPropertyInfo();
+    }
+
+    /**
+     * @deprecated Use constructor with the parameter
+     */
+    @Deprecated
+    public void setInfo(@Nonnull EnvInjectJobPropertyInfo info) {
+        this.info = info;
+    }
+
+    @Nonnull
     @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
@@ -42,34 +69,26 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
 
     @Override
     public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
-        return super.decorateLogger(build, logger);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.decorateLogger(build, logger);
     }
 
     @Override
-    public Environment setUp(AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUp(@Nonnull AbstractBuild build, final @Nonnull Launcher launcher, final @Nonnull BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Executing scripts and injecting environment variables after the SCM step.");
 
-        EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
         FilePath ws = build.getWorkspace();
         EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-
-            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+            Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
             Map<String, String> injectedEnvVars = new HashMap<String, String>(previousEnvVars);
-            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeAndGetMapGroovyScript(logger,
-                    info.getGroovyScriptContent(), previousEnvVars);
-
-
 
             //Add workspace if not set
-            if (ws != null) {
-                if (injectedEnvVars.get("WORKSPACE") == null) {
-                    injectedEnvVars.put("WORKSPACE", ws.getRemote());
-                }
+            if (ws != null && injectedEnvVars.get(EnvInjectConstants.WORKSPACE) == null) {
+                injectedEnvVars.put(EnvInjectConstants.WORKSPACE, ws.getRemote());
             }
 
             //Add SCM variables if not set
@@ -78,14 +97,16 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 scm.buildEnvVars(build, injectedEnvVars);
             }
 
+            Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeGroovyScript(logger, info.getSecureGroovyScript(), injectedEnvVars);
+
             //Get result variables
-            final HashMap<String, String> EMPTY_VARS = new HashMap<String, String>();
+            final Map<String, String> emptyVars = Collections.emptyMap();
             final Map<String, String> propertiesEnvVars = (ws != null)
                     ? envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), injectedEnvVars)
-                    : EMPTY_VARS;
+                    : emptyVars;
 
             //Resolve variables
-            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, EMPTY_VARS);
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(injectedEnvVars, propertiesEnvVars, groovyMapEnvVars, emptyVars);
 
             //Execute script info
             int resultCode = envInjectEnvVarsService.executeScript(info.getScriptContent(), ws, info.getScriptFilePath(), resultVariables, launcher, listener);
@@ -96,7 +117,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             }
 
             //Add or get the existing action to add new env vars
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToRun(build, resultVariables);
 
             return new Environment() {
                 @Override
@@ -105,8 +126,19 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
                 }
             };
         } catch (Throwable throwable) {
-            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build wrap: " + throwable.getCause());
+            final Throwable cause = throwable.getCause();
+            StringBuilder message = new StringBuilder(throwable.toString());
+            if (cause != null) {
+                message.append(". ");
+                message.append(cause.toString());
+            }
+            logger.error("Problems occurs on injecting env vars defined in the build wrapper: " + message + ". See system log for more info");
+            LOGGER.log(Level.WARNING, String.format("Problems occurs on injecting env vars defined in the build wrapper for build %s", build), throwable);
             build.setResult(Result.FAILURE);
+            if (throwable instanceof Error) {
+                // Errors must be always propagated since we cannot recover from them
+                throw (Error)throwable;
+            }
             return null;
         }
     }
@@ -123,14 +155,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
         @Override
         public String getDisplayName() {
             return Messages.envinject_wrapper_displayName();
-        }
-
-        @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-            EnvInjectJobPropertyInfo info = req.bindParameters(EnvInjectJobPropertyInfo.class, "envInjectInfoWrapper.");
-            wrapper.setInfo(info);
-            return wrapper;
         }
 
         @Override

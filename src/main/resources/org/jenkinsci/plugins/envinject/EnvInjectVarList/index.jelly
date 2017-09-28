@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
     <l:layout title="${it.displayName}">
         <j:invokeStatic var="currentThread" className="java.lang.Thread" method="currentThread"/>

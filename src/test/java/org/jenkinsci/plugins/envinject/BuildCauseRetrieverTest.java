@@ -1,120 +1,146 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.model.*;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Run;
+
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-import junit.framework.Assert;
-import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.JenkinsRule;
 
-import java.util.HashMap;
-import java.util.Map;
+import static com.google.common.base.Joiner.on;
+import static hudson.model.Result.SUCCESS;
+import static org.hamcrest.Matchers.is;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCause;
+import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withCausesIsTrue;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Gregory Boissinot
  */
 @SuppressWarnings("deprecation")
-public class BuildCauseRetrieverTest extends HudsonTestCase {
+public class BuildCauseRetrieverTest {
 
-    private FreeStyleProject project;
+    public static final String BUILD_CAUSE = "BUILD_CAUSE";
+    public static final String ROOT_BUILD_CAUSE = "ROOT_BUILD_CAUSE";
 
-    private static Map<Class<? extends Cause>, String> causeMatchingNames = new HashMap<Class<? extends Cause>, String>();
+    public static final String MANUAL_TRIGGER = "MANUALTRIGGER";
+    public static final String SCM_TRIGGER = "SCMTRIGGER";
+    public static final String TIMER_TRIGGER = "TIMERTRIGGER";
+    public static final String UPSTREAM_TRIGGER = "UPSTREAMTRIGGER";
 
-    static {
-        causeMatchingNames.put(Cause.UserCause.class, "MANUALTRIGGER");
-        causeMatchingNames.put(SCMTrigger.SCMTriggerCause.class, "SCMTRIGGER");
-        causeMatchingNames.put(TimerTrigger.TimerTriggerCause.class, "TIMERTRIGGER");
-        causeMatchingNames.put(Cause.UpstreamCause.class, "UPSTREAMTRIGGER");
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        project = createFreeStyleProject();
-    }
+    @ClassRule
+    public static JenkinsRule jenkins = new JenkinsRule();
 
     @SuppressWarnings("deprecation")
-    public void testManualBuildCause() throws Exception {
-        checkCauseArguments(Cause.UserCause.class);
+    @Test
+    public void shouldWriteInfoAboutManualBuildCause() throws Exception {
+        Cause cause = Cause.UserCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+        assertThat(build, withCause(BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, MANUAL_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
     }
 
-    public void testSCMBuildCause() throws Exception {
-        checkCauseArguments(SCMTrigger.SCMTriggerCause.class);
+    @Test
+    public void shouldWriteInfoAboutSCMBuildCause() throws Exception {
+        Cause cause = SCMTrigger.SCMTriggerCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+        assertThat(build, withCause(BUILD_CAUSE, SCM_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, SCM_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, SCM_TRIGGER), sub(ROOT_BUILD_CAUSE, SCM_TRIGGER)));
     }
 
-    public void testTIMERBuildCause() throws Exception {
-        checkCauseArguments(TimerTrigger.TimerTriggerCause.class);
+    @Test
+    public void shouldWriteInfoAboutTimerBuildCause() throws Exception {
+        Cause cause = TimerTrigger.TimerTriggerCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+
+        assertThat(build, withCause(BUILD_CAUSE, TIMER_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, TIMER_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, TIMER_TRIGGER), sub(ROOT_BUILD_CAUSE, TIMER_TRIGGER)));
     }
 
-    public void testUPSTREAMBuildCause() throws Exception {
-        FreeStyleProject upProject = createFreeStyleProject();
+    @Test
+    public void shouldWriteInfoAboutUpstreamBuildCause() throws Exception {
+        FreeStyleProject upProject = jenkins.createFreeStyleProject();
         FreeStyleBuild upBuild = upProject.scheduleBuild2(0, new Cause.UserCause()).get();
+
         Cause.UpstreamCause upstreamCause = new Cause.UpstreamCause((Run) upBuild);
-        FreeStyleBuild build = project.scheduleBuild2(0, upstreamCause).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
-        checkBuildCauses(build, "UPSTREAMTRIGGER", "MANUALTRIGGER",
-                         "BUILD_CAUSE_UPSTREAMTRIGGER" , "ROOT_BUILD_CAUSE_MANUALTRIGGER");
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, upstreamCause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+
+        assertThat(build, withCause(BUILD_CAUSE, UPSTREAM_TRIGGER));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, MANUAL_TRIGGER));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, UPSTREAM_TRIGGER), sub(ROOT_BUILD_CAUSE, MANUAL_TRIGGER)));
     }
 
-    public void testCustomBuildCause() throws Exception {
-        checkCauseArguments(CustomTestCause.class);
+    @Test
+    public void shouldWriteInfoAboutCustomBuildCause() throws Exception {
+        Cause cause = CustomTestCause.class.newInstance();
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, cause).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+
+        String customCauseName = CustomTestCause.class.getSimpleName().toUpperCase();
+
+        assertThat(build, withCause(BUILD_CAUSE, customCauseName));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, customCauseName));
+        assertThat(build, withCausesIsTrue(sub(BUILD_CAUSE, customCauseName), sub(ROOT_BUILD_CAUSE, customCauseName)));
     }
 
-    public void testMultipleBuildCause() throws Exception {
-
+    @Test
+    public void shouldWriteInfoAboutMultipleBuildCauses() throws Exception {
         Cause cause1 = new CustomTestCause();
         Cause cause2 = new SCMTrigger.SCMTriggerCause("TEST");
         CauseAction causeAction = new CauseAction(cause1);
         causeAction.getCauses().add(cause2);
 
-        FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), causeAction).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0,
+                new Cause.UserCause(), causeAction).get();
+        assertThat(build.getResult(), is(SUCCESS));
 
         String customCauseName = CustomTestCause.class.getSimpleName().toUpperCase();
-        checkBuildCauses(build, "CUSTOMTESTCAUSE,SCMTRIGGER", "CUSTOMTESTCAUSE,SCMTRIGGER",
-                         "BUILD_CAUSE_" + customCauseName, "BUILD_CAUSE_SCMTRIGGER",
-                         "ROOT_BUILD_CAUSE_" + customCauseName, "ROOT_BUILD_CAUSE_SCMTRIGGER");
+
+        assertThat(build, withCause(BUILD_CAUSE, on(",").join("CUSTOMTESTCAUSE", SCM_TRIGGER)));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, on(",").join("CUSTOMTESTCAUSE", SCM_TRIGGER)));
+        assertThat(build, withCausesIsTrue(
+                        sub(BUILD_CAUSE, customCauseName),
+                        sub(BUILD_CAUSE, SCM_TRIGGER),
+                        sub(ROOT_BUILD_CAUSE, customCauseName),
+                        sub(ROOT_BUILD_CAUSE, SCM_TRIGGER))
+        );
     }
 
-    private void checkCauseArguments(Class<? extends Cause> causeClass) throws Exception {
-        checkCauseArguments(causeClass.newInstance());
+    @Test
+    @Bug(28188)
+    public void shouldWriteInfoAboutAnonymousClassCause() throws Exception {
+        FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause() {
+            @Override
+            public String getShortDescription() {
+                return "This build was started by a hobbit Bilbo. Bilbo Baggins";
+            }
+        }).get();
+
+        assertThat(build.getResult(), is(SUCCESS));
+
+        assertThat(build, withCause(BUILD_CAUSE, ""));
+        assertThat(build, withCause(ROOT_BUILD_CAUSE, ""));
     }
 
-    private void checkCauseArguments(Cause cause) throws Exception {
-        FreeStyleBuild build = project.scheduleBuild2(0, cause).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
-        checkCauseArgumentsWithBuild(build, causeMatchingNames.get(cause.getClass()));
+    private String sub(String first, String second) {
+        return on("_").join(first, second);
     }
-
-    private void checkCauseArgumentsWithBuild(FreeStyleBuild build, String causeValue) throws Exception {
-        if (causeValue != null) {
-            checkBuildCauses(build, causeValue, causeValue, "BUILD_CAUSE_" + causeValue, "ROOT_BUILD_CAUSE_" + causeValue);
-        } else {
-            String customCauseName = CustomTestCause.class.getSimpleName().toUpperCase();
-            checkBuildCauses(build, customCauseName, customCauseName,
-                             "BUILD_CAUSE_" + customCauseName, "ROOT_BUILD_CAUSE_" + customCauseName);
-        }
-    }
-
-    private void checkBuildCauses(FreeStyleBuild build, String expectedMainCauseValue,
-                                  String expectedRootMainCauseValue, String... expectedCauseKeys) {
-
-        EnvInjectAction envInjectAction = build.getAction(EnvInjectAction.class);
-        Assert.assertNotNull(envInjectAction);
-
-        Map<String, String> envVars = envInjectAction.getEnvMap();
-        Assert.assertNotNull(envVars);
-
-        String causeValue = envVars.get("BUILD_CAUSE");
-        Assert.assertEquals(expectedMainCauseValue, causeValue);
-
-        String rootCauseValue = envVars.get("ROOT_BUILD_CAUSE");
-        Assert.assertNotNull(rootCauseValue);
-        Assert.assertEquals(expectedRootMainCauseValue, rootCauseValue);
-
-        for (String causeKey : expectedCauseKeys) {
-            Assert.assertEquals("true", envVars.get(causeKey));
-        }
-    }
-
 }

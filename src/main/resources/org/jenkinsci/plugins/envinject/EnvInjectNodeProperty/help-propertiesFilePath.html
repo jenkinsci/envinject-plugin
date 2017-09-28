@@ -1,0 +1,21 @@
+<div>
+  <p>
+    Specifies location of a property file with additional variables to be injected.
+  </p>
+  <p>
+    If you specify a relative path, then Jenkins will firstly try to resolve this path
+    against the HOME directory of the slave/master user.
+    If it fails to find a file there, then it will try resolution against the 
+    working directory of the node/slave.
+    This behavior is a subject to change 
+    (see <a href="https://issues.jenkins-ci.org/browse/JENKINS-23666">JENKINS-23666</a>).
+  </p>
+  <p>
+    <b>Warning!</b> The variables specified by this file are being cached and refreshed
+    only on node connection.
+    If you modify this entry or the file contents for a Jenkins slave/agent, 
+    will need to reconnect this slave/agent to the master in order to get
+    changes applied.
+    If you modify settings for the Master node, you will have to restart the master.
+  </p>
+</div>

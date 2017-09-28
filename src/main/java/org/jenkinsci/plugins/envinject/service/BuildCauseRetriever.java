@@ -1,11 +1,9 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +12,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Joiner.on;
+import hudson.model.AbstractBuild;
+import hudson.model.Run;
+import java.util.Locale;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import org.jenkinsci.plugins.envinjectapi.util.EnvVarsResolver;
+
 
 /**
  * @author Gregory Boissinot
@@ -27,51 +35,75 @@ public class BuildCauseRetriever {
     public static final String ENV_CAUSE = "BUILD_CAUSE";
     public static final String ENV_ROOT_CAUSE = "ROOT_BUILD_CAUSE";
 
-    public Map<String, String> getTriggeredCause(AbstractBuild<?, ?> build) {
-        CauseAction causeAction = build.getAction(CauseAction.class);
-        List<Cause> buildCauses = causeAction.getCauses();
+    /**
+     * @deprecated Use {@link EnvVarsResolver#getCauseEnvVars(hudson.model.Run)}
+     */
+    @Nonnull
+    @Deprecated
+    public Map<String, String> getTriggeredCause(@Nonnull AbstractBuild<?, ?> build) {
+        return EnvVarsResolver.getCauseEnvVars(build);
+    }
+    
+    @Nonnull
+    public Map<String, String> getTriggeredCause(@Nonnull Run<?, ?> run) {
+        CauseAction causeAction = run.getAction(CauseAction.class);
         Map<String, String> env = new HashMap<String, String>();
         List<String> directCauseNames = new ArrayList<String>();
         Set<String> rootCauseNames = new LinkedHashSet<String>();
-        for (Cause cause : buildCauses) {
-            directCauseNames.add(getTriggerName(cause));
-            insertRootCauseNames(rootCauseNames, cause, 0);
+
+        if (causeAction != null) {
+            List<Cause> buildCauses = causeAction.getCauses();
+            for (Cause cause : buildCauses) {
+                directCauseNames.add(getTriggerName(cause));
+                insertRootCauseNames(rootCauseNames, cause, 0);
+            }
+        } else {
+            directCauseNames.add("UNKNOWN");
+            rootCauseNames.add("UNKNOWN");
         }
         env.putAll(buildCauseEnvironmentVariables(ENV_CAUSE, directCauseNames));
         env.putAll(buildCauseEnvironmentVariables(ENV_ROOT_CAUSE, rootCauseNames));
         return env;
     }
 
-    private static void insertRootCauseNames(Set<String> causeNames, Cause cause, int depth) {
+    /**
+     * Inserts root cause names to the specified target container.
+     * @param causeNamesTarget Target set. May receive null items
+     * @param cause Cause to be added. For {@code Cause.UstreamCause} there will be in-depth search
+     * @param depth Current search depth. {@link #MAX_UPSTREAM_DEPTH} is a limit
+     */
+    private static void insertRootCauseNames(@Nonnull Set<String> causeNamesTarget, @CheckForNull Cause cause, int depth) {
         if (cause instanceof Cause.UpstreamCause) {
             if (depth == MAX_UPSTREAM_DEPTH) {
-                causeNames.add("DEEPLYNESTEDCAUSES");
+                causeNamesTarget.add("DEEPLYNESTEDCAUSES");
             } else {
-                Cause.UpstreamCause c = (Cause.UpstreamCause)cause;
+                Cause.UpstreamCause c = (Cause.UpstreamCause) cause;
                 List<Cause> upstreamCauses = c.getUpstreamCauses();
                 for (Cause upstreamCause : upstreamCauses)
-                    insertRootCauseNames(causeNames, upstreamCause, depth + 1);
+                    insertRootCauseNames(causeNamesTarget, upstreamCause, depth + 1);
             }
         } else {
-            causeNames.add(getTriggerName(cause));
+            //TODO: Accordig to the current design this list may receive null for unknown trigger. Bug?
+            // Should actually return UNKNOWN
+            causeNamesTarget.add(getTriggerName(cause));
         }
     }
 
     private static Map<String, String> buildCauseEnvironmentVariables(String envBase, Collection<String> causeNames) {
         Map<String, String> triggerVars = new HashMap<String, String>();
-        StringBuilder all = new StringBuilder();
+        List<String> nonEmptyNames = new ArrayList<String>();
         for (String name : causeNames) {
-            if (!StringUtils.isBlank(name)) {
-                triggerVars.put(envBase + "_" + name, "true");
-                all.append(",");
-                all.append(name);
+            if (isNotBlank(name)) {
+                triggerVars.put(on("_").join(envBase, name), "true");
+                nonEmptyNames.add(name);
             }
         }
         // add variable containing all the trigger names
-        triggerVars.put(envBase, all.toString().substring(1));
+        triggerVars.put(envBase, on(",").join(nonEmptyNames));
         return triggerVars;
     }
 
+    @CheckForNull
     @SuppressWarnings(value = "deprecation")
     private static String getTriggerName(Cause cause) {
         if (SCMTrigger.SCMTriggerCause.class.isInstance(cause)) {
@@ -85,7 +117,7 @@ public class BuildCauseRetriever {
         } else if (Cause.UpstreamCause.class.isInstance(cause)) {
             return "UPSTREAMTRIGGER";
         } else if (cause != null) {
-            return cause.getClass().getSimpleName().toUpperCase();
+            return cause.getClass().getSimpleName().toUpperCase(Locale.ENGLISH);
         }
 
         return null;

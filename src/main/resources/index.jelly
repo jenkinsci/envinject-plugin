@@ -1,6 +1,4 @@
+<?jelly escape-by-default='true'?>
 <div>
-    <p>
-        This plugin makes it possible to set an environment for the builds.
-        <br/>
-    </p>
+    This plugin makes it possible to set an environment for the builds.
 </div>

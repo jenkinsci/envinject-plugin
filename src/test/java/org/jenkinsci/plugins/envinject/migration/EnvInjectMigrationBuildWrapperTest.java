@@ -24,37 +24,90 @@
 
 package org.jenkinsci.plugins.envinject.migration;
 
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Functions;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
+import hudson.model.queue.QueueTaskFuture;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertNotNull;
+
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import java.io.File;
+import java.util.List;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+
 
 /**
  * Tests the migrations.
  *
- * @author Robert Sandell
  */
-public class EnvInjectMigrationBuildWrapperTest extends HudsonTestCase {
+public class EnvInjectMigrationBuildWrapperTest {
 
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    
     /**
      * Tests that an old project containing both a set-env setting and a envInject wrapper
      * doesn't get overwritten in the migration.
      */
+    @Test
     @LocalData
-    @Bug(22169)
+    @Issue("JENKINS-22169")
     public void testSetEnvAndEnvInject() {
-        FreeStyleProject project = (FreeStyleProject) jenkins.getItem("Experimental_SetEnvMigration");
-        assertNotNull(project);
+        FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("Experimental_SetEnvMigration");
+        assertThat("Project has not been properly loaded from the local data", project, notNullValue());
         EnvInjectBuildWrapper wrapper = project.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
         String content = wrapper.getInfo().getPropertiesContent();
 
-        assertStringContains(content, "ONE=one");
-        assertStringContains(content, "HELLO=world");
-        assertStringContains(content, "ME=you");
+        assertThat(content, containsString("ONE=one"));
+        assertThat(content, containsString("HELLO=world"));
+        assertThat(content, containsString("ME=you"));
 
         EnvInjectJobProperty property = project.getProperty(EnvInjectJobProperty.class);
-        assertStringContains(property.getInfo().getPropertiesContent(), "ZERO=0");
+        assertThat(property.getInfo().getPropertiesContent(), containsString("ZERO=0"));
+    }
+
+    @Test @Issue("SECURITY-256")
+    @LocalData
+    public void testMigratePreSandboxJob() throws Exception {
+        Assume.assumeThat(Functions.isWindows(), not(true));
+        FreeStyleProject old = j.jenkins.getItemByFullName("Old", FreeStyleProject.class);
+        FreeStyleBuild build = j.buildAndAssertSuccess(old);
+        for (int i = 0; i < 20; i++) {
+            j.assertLogContains("K" + i + "=" + "V" + i, build);
+        }
+    }
+
+    @Test @Issue("SECURITY-256")
+    @LocalData
+    public void testMigratePreSandboxJobInSecuredJenkins() throws Exception {
+        Assume.assumeThat(Functions.isWindows(), not(true));
+
+        //First build should fail
+        FreeStyleProject project = j.jenkins.getItemByFullName("Old", FreeStyleProject.class);
+
+        QueueTaskFuture<FreeStyleBuild> future = project.scheduleBuild2(0);
+        FreeStyleBuild run = j.assertBuildStatus(Result.FAILURE, future);
+        //Check that it failed for the correct reason
+        j.assertLogContains(UnapprovedUsageException.class.getName(), run);
+
+        //Now let alice approve the scripts
+        ScriptApproval.get().preapproveAll();
+
+        //And now it should work
+        j.buildAndAssertSuccess(project);
     }
 }

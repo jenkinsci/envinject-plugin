@@ -1,42 +1,5 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-
-    <f:entry field="propertiesFilePath"
-             title="${%Properties File Path}">
-        <f:textbox
-                name="envInjectInfoWrapper.propertiesFilePath"
-                value="${instance.info.propertiesFilePath}"/>
-    </f:entry>
-
-    <f:entry title="${%Properties Content}"
-             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
-        <f:textarea
-                name="envInjectInfoWrapper.propertiesContent"
-                value="${instance.info.propertiesContent}"/>
-    </f:entry>
-
-    <f:entry field="scriptFilePath"
-             title="${%Script File Path}">
-        <f:textbox
-                name="envInjectInfoWrapper.scriptFilePath"
-                value="${instance.info.scriptFilePath}"/>
-    </f:entry>
-
-    <f:entry title="${%Script Content}"
-             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
-        <f:textarea
-                name="envInjectInfoWrapper.scriptContent"
-                value="${instance.info.scriptContent}"/>
-    </f:entry>
-
-    <f:entry title="${%Evaluated Groovy script}"
-            help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContent">
-        <f:textarea
-                name="envInjectInfoWrapper.groovyScriptContent"
-                value="${instance.info.groovyScriptContent}"/>
-    </f:entry>
-
-    <f:hidden
-            name="envInjectInfoWrapper.loadFilesFromMaster"
-            value="false"/>
-
+    <j:set var="showLoadFilesFromMaster" value="${false}"/>
+    <f:property field="info"/>
 </j:jelly>

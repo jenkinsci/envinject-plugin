@@ -5,21 +5,29 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import org.apache.commons.collections.map.UnmodifiableMap;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.service.EnvInjectSavable;
 import org.kohsuke.stapler.StaplerProxy;
 
 import java.io.File;
 import java.io.ObjectStreamException;
 import java.util.Map;
 import java.util.Set;
+import org.jenkinsci.plugins.envinjectapi.util.EnvInjectVarsIO;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
+ * @deprecated Replaced by {@link EnvInjectPluginAction}.
  */
 @Deprecated
 public class EnvInjectAction implements Action, StaplerProxy {
-
-    public static String URL_NAME = "injectedEnvVars";
+    
+    /**
+     * @deprecated The field does nothing. It was public by mistake
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    public final static String URL_NAME = "injectedEnvVars";
 
     private transient Map<String, String> envMap;
 
@@ -45,24 +53,42 @@ public class EnvInjectAction implements Action, StaplerProxy {
         return UnmodifiableMap.decorate(envMap);
     }
 
+    @Override
     public String getIconFileName() {
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return null;
+        }
         return "document-properties.gif";
     }
 
+    @Override
     public String getDisplayName() {
         return "Environment Variables";
     }
 
+    @Override
     public String getUrlName() {
-        return URL_NAME;
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return null;
+        }
+        return "injectedEnvVars";
     }
 
+    protected AbstractBuild getBuild() {
+        return build;
+    }
+    
+    @Override
     public Object getTarget() {
         final Set sensitiveVariables = build.getSensitiveBuildVariables();
+        if (!EnvInjectPlugin.canViewInjectedVars(build)) {
+            return EnvInjectVarList.HIDDEN;
+        }
+        
         return new EnvInjectVarList(Maps.transformEntries(envMap,
                 new Maps.EntryTransformer<String, String, String>() {
                     public String transformEntry(String key, String value) {
-                        return sensitiveVariables.contains(key) ? "********" : value;
+                        return sensitiveVariables.contains(key) ? EnvInjectPlugin.DEFAULT_MASK : value;
                     }
                 }));
     }
@@ -83,12 +109,11 @@ public class EnvInjectAction implements Action, StaplerProxy {
         }
 
         try {
-            EnvInjectSavable dao = new EnvInjectSavable();
             if (rootDir == null) {
-                dao.saveEnvironment(build.getRootDir(), envMap);
+                EnvInjectVarsIO.saveEnvironment(build.getRootDir(), envMap);
                 return this;
             }
-            dao.saveEnvironment(rootDir, envMap);
+            EnvInjectVarsIO.saveEnvironment(rootDir, envMap);
         } catch (EnvInjectException e) {
             e.printStackTrace();
         }
@@ -103,13 +128,12 @@ public class EnvInjectAction implements Action, StaplerProxy {
             return this;
         }
 
-        EnvInjectSavable dao = new EnvInjectSavable();
         Map<String, String> resultMap = null;
         try {
             if (build != null) {
-                resultMap = dao.getEnvironment(build.getRootDir());
+                resultMap = EnvInjectVarsIO.getEnvironment(build.getRootDir());
             } else if (rootDir != null) {
-                resultMap = dao.getEnvironment(rootDir);
+                resultMap = EnvInjectVarsIO.getEnvironment(rootDir);
             }
             if (resultMap != null) {
                 envMap = resultMap;

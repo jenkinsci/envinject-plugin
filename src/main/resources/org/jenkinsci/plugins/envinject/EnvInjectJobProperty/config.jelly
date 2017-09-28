@@ -1,72 +1,26 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:u="/util">
 
     <f:optionalBlock name="on"
                      title="${%Prepare an environment for the run}"
-                     checked="${instance.on}"
+                     checked="${instance != null and instance.on}"
+                     inline="true"
                      help="/plugin/envinject/help.html">
 
         <f:entry field="keepJenkinsSystemVariables" title="${%Keep Jenkins Environment Variables}">
-            <f:checkbox
-                    name="keepJenkinsSystemVariables"
-                    checked="${instance.keepJenkinsSystemVariables}" default="${true}"/>
+            <f:checkbox default="${true}"/>
         </f:entry>
 
         <f:entry field="keepBuildVariables" title="${%Keep Jenkins Build Variables}">
-            <f:checkbox
-                    name="keepBuildVariables"
-                    checked="${instance.keepBuildVariables}" default="${true}"/>
+            <f:checkbox default="${true}"/>
         </f:entry>
 
         <f:entry field="overrideBuildParameters" title="${%Override Build Parameters}">
-            <f:checkbox
-                    name="overrideBuildParameters"
-                    checked="${instance.overrideBuildParameters}" default="${false}"/>
+            <f:checkbox default="${false}"/>
         </f:entry>
 
-
-        <f:entry title="${%Script File Path}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptFilePath">
-            <f:textbox
-                    name="envInjectInfoJobProperty.scriptFilePath"
-                    value="${instance.info.scriptFilePath}"/>
-        </f:entry>
-
-        <f:entry title="${%Script Content}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/scriptContent">
-            <f:textarea
-                    name="envInjectInfoJobProperty.scriptContent"
-                    value="${instance.info.scriptContent}"/>
-        </f:entry>
-
-        <f:entry title="${%Evaluated Groovy script}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/groovyScriptContent">
-            <j:getStatic var="permission" className="hudson.model.Hudson" field="RUN_SCRIPTS"/>
-            <f:textarea readonly="${h.hasPermission(it,permission) ? null : 'readonly'}"
-                    name="envInjectInfoJobProperty.groovyScriptContent"
-                    value="${instance.info.groovyScriptContent}"/>
-        </f:entry>
-
-        <f:entry
-                title="${%Properties File Path}"
-                help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
-            <f:textbox
-                    name="envInjectInfoJobProperty.propertiesFilePath"
-                    value="${instance.info.propertiesFilePath}"/>
-        </f:entry>
-
-        <f:entry title="${%Properties Content}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
-            <f:textarea
-                    name="envInjectInfoJobProperty.propertiesContent"
-                    value="${instance.info.propertiesContent}"/>
-        </f:entry>
-
-        <f:entry title="${%Load script and properties files from the master}"
-                 help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/loadFilesFromMaster">
-            <f:checkbox
-                    name="envInjectInfoJobProperty.loadFilesFromMaster"
-                    checked="${instance.info.loadFilesFromMaster}"/>
-        </f:entry>
+        <j:set var="showLoadFilesFromMaster" value="${true}"/>
+        <f:property field="info"/>
 
         <j:if test="${descriptor.envInjectContributionActivated}">
             <j:set var="jobPropertyContributors" value="${instance.contributors}"/>

@@ -13,19 +13,21 @@ import hudson.tasks.Builder;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectBuilder extends Builder implements Serializable {
 
+    @Nonnull 
     private EnvInjectInfo info;
 
     @DataBoundConstructor
@@ -33,13 +35,14 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         this.info = new EnvInjectInfo(propertiesFilePath, propertiesContent);
     }
 
+    @Nonnull 
     @SuppressWarnings("unused")
     public EnvInjectInfo getInfo() {
         return info;
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull Launcher launcher, @Nonnull BuildListener listener) throws InterruptedException, IOException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Injecting environment variables from a build step.");
@@ -49,9 +52,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         try {
-
-            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+            Map<String, String> previousEnvVars = RunHelper.getEnvVarsPreviousSteps(build, logger);
 
             //Get current envVars
             Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
@@ -84,10 +85,10 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             build.addAction(new EnvInjectBuilderContributionAction(resultVariables));
 
             //Add or get the existing action to add new env vars
-            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+            envInjectActionSetter.addEnvVarsToRun(build, resultVariables);
 
         } catch (Throwable throwable) {
-            logger.error("[EnvInject] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
+            logger.error("Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
             build.setResult(Result.FAILURE);
             return false;
         }
@@ -96,7 +97,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> getAndAddBuildVariables(AbstractBuild build) {
+    private Map<String, String> getAndAddBuildVariables(@Nonnull AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         result.putAll(build.getBuildVariables());
         FilePath ws = build.getWorkspace();

@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.Util;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.plugins.envinject.util.SortedProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +10,9 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -23,10 +25,11 @@ public class PropertiesLoader implements Serializable {
      * @param propertiesFile the properties file
      * @param currentEnvVars the current environment variables to resolve against
      * @return the environment variables
-     * @throws EnvInjectException
+     * @throws EnvInjectException Issue with content loading or processing
      */
-    public Map<String, String> getVarsFromPropertiesFile(File propertiesFile, Map<String, String> currentEnvVars) throws EnvInjectException {
-
+    @Nonnull
+    public Map<String, String> getVarsFromPropertiesFile(@Nonnull File propertiesFile, @Nonnull Map<String, String> currentEnvVars) 
+            throws EnvInjectException {
         if (propertiesFile == null) {
             throw new NullPointerException("The properties file object must be set.");
         }
@@ -34,21 +37,12 @@ public class PropertiesLoader implements Serializable {
             throw new IllegalArgumentException("The properties file object must be exist.");
         }
 
-        Map<String, String> result = new LinkedHashMap<String, String>();
-
-        SortedProperties properties = new SortedProperties();
         try {
             String fileContent = Util.loadFile(propertiesFile);
-            String fileContentResolved = Util.replaceMacro(fileContent, currentEnvVars);
-            fileContentResolved = processPath(fileContentResolved);
-            properties.load(new StringReader(fileContentResolved));
+            return getVars(fileContent, currentEnvVars);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
         }
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            result.put(processElement(entry.getKey()), processElement(entry.getValue()));
-        }
-        return result;
     }
 
     /**
@@ -57,10 +51,10 @@ public class PropertiesLoader implements Serializable {
      * @param content        the properties content to parse
      * @param currentEnvVars the current environment variables to resolve against
      * @return the environment variables
-     * @throws EnvInjectException
+     * @throws EnvInjectException Issue with content loading or processing
      */
-    public Map<String, String> getVarsFromPropertiesContent(String content, Map<String, String> currentEnvVars) throws EnvInjectException {
-
+    @Nonnull
+    public Map<String, String> getVarsFromPropertiesContent(@Nonnull String content, @Nonnull Map<String, String> currentEnvVars) throws EnvInjectException {
         if (content == null) {
             throw new NullPointerException("A properties content must be set.");
         }
@@ -68,12 +62,16 @@ public class PropertiesLoader implements Serializable {
             throw new IllegalArgumentException("A properties content must be not empty.");
         }
 
-        String contentResolved = Util.replaceMacro(content, currentEnvVars);
-        contentResolved = processPath(contentResolved);
+        return getVars(content, currentEnvVars);
+    }
 
+    @Nonnull
+    private Map<String, String> getVars(@Nonnull String content, @Nonnull Map<String, String> currentEnvVars) 
+            throws EnvInjectException {
         Map<String, String> result = new LinkedHashMap<String, String>();
-        StringReader stringReader = new StringReader(contentResolved);
-        SortedProperties properties = new SortedProperties();
+        StringReader stringReader = new StringReader(content);
+        Properties properties = new Properties();
+
         try {
             properties.load(stringReader);
         } catch (IOException ioe) {
@@ -83,27 +81,18 @@ public class PropertiesLoader implements Serializable {
         }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            result.put(processElement(entry.getKey()), processElement(entry.getValue()));
+            result.put(processElement(entry.getKey(), currentEnvVars), processElement(entry.getValue(), currentEnvVars));
         }
         return result;
     }
 
-    private String processElement(Object prop) {
-        if (prop == null) {
+    @CheckForNull
+    private String processElement(@CheckForNull Object prop, @Nonnull Map<String, String> currentEnvVars) {
+        String macroProcessedElement = Util.replaceMacro(String.valueOf(prop), currentEnvVars);
+        if (macroProcessedElement == null) {
             return null;
         }
-
-        return String.valueOf(prop).trim();
+        return macroProcessedElement.trim();
     }
-
-    private String processPath(String content) {
-        if (content == null) {
-            return null;
-        }
-
-        content = content.replace("\\", "\\\\");
-        return content.replace("\\\\\n", "\\\n");
-    }
-
 }
 

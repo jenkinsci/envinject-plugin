@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
+import jenkins.MasterToSlaveFileCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -10,28 +11,40 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
  */
-public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<String, String>> {
+public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<String, String>> {
 
+    @CheckForNull
     private String propertiesFilePath;
 
+    @CheckForNull
     private Map<String, String> propertiesContent;
 
+    @Nonnull
     private Map<String, String> currentEnvVars;
 
+    @Nonnull
     private EnvInjectLogger logger;
 
-    public PropertiesVariablesRetriever(String propertiesFilePath, Map<String, String> propertiesContent, Map<String, String> currentEnvVars, EnvInjectLogger logger) {
+    public PropertiesVariablesRetriever(
+            @CheckForNull String propertiesFilePath, 
+            @CheckForNull Map<String, String> propertiesContent, 
+            @Nonnull Map<String, String> currentEnvVars, 
+            @Nonnull EnvInjectLogger logger) {
         this.propertiesFilePath = propertiesFilePath;
         this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
         this.logger = logger;
     }
 
-    public Map<String, String> invoke(File base, VirtualChannel channel) throws IOException, InterruptedException {
+    //TODO: Actually Channel is not used here. Maybe a bug?
+    @Override
+    public Map<String, String> invoke(@CheckForNull File base, @CheckForNull VirtualChannel channel) throws IOException, InterruptedException {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
         try {
@@ -58,8 +71,19 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
             //Add the properties content
             if (propertiesContent != null) {
                 PropertiesGetter propertiesGetter = new PropertiesGetter();
-                logger.info(String.format("Injecting as environment variables the properties content \n%s\n", propertiesGetter.getPropertiesContentFromMapObject(propertiesContent)));
-                result.putAll(propertiesContent);
+                logger.info(String.format("Injecting as environment variables the properties content %n%s%n", propertiesGetter.getPropertiesContentFromMapObject(propertiesContent)));
+                for (Map.Entry<String, String> entry : propertiesContent.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
+                    if (result.containsKey(key)) {
+                        // a variable is defined in both propertiesFilePath and propertiesContent
+                        // instead of just overwriting it we possibly resolve it against the old value
+                        Map<String, String> oldValueMap = new LinkedHashMap<String, String>();
+                        oldValueMap.put(key, result.get(key));
+                        value = Util.replaceMacro(value, oldValueMap);
+                    }
+                    result.put(key, value);
+                }
                 logger.info("Variables injected successfully.");
             }
 
@@ -70,7 +94,8 @@ public class PropertiesVariablesRetriever implements FilePath.FileCallable<Map<S
         return result;
     }
 
-    private File getFile(File base, String scriptFilePath) {
+    @CheckForNull
+    private File getFile(@CheckForNull File base, @Nonnull String scriptFilePath) {
 
         File file = new File(scriptFilePath);
         if (file.exists()) {

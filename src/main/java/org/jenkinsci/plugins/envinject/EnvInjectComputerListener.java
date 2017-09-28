@@ -4,15 +4,14 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
-import hudson.model.Hudson;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -20,8 +19,13 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 
 /**
  * @author Gregory Boissinot
@@ -30,11 +34,12 @@ import java.util.Map;
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
 
 
-    private EnvVars getNewMasterEnvironmentVariables(Computer c, FilePath nodePath, TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+    private EnvVars getNewMasterEnvironmentVariables(@Nonnull Computer c, 
+            @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }
@@ -47,16 +52,23 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         boolean unsetSystemVariables = false;
         Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
-        for (NodeProperty<?> nodeProperty : Hudson.getInstance().getGlobalNodeProperties()) {
+        for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
 
             if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                 globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
             }
 
-            if (nodeProperty instanceof EnvInjectNodeProperty) {
+            final Node node = c.getNode();
+            if (node != null && nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+                final FilePath rootPath = node.getRootPath();
+                if (rootPath == null) {
+                    throw new EnvInjectException("Node is offline, cannot calculate the injected variables");
+                }
+                globalPropertiesEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(
+                        rootPath, logger, envInjectNodeProperty.getPropertiesFilePath(), 
+                        null, nodeEnvVars));
             }
 
         }
@@ -73,16 +85,22 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         return envVars2Set;
     }
 
-    private EnvVars getNewSlaveEnvironmentVariables(Computer c, FilePath nodePath, TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+    private EnvVars getNewSlaveEnvironmentVariables(@Nonnull Computer c, 
+            @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         Map<String, String> currentEnvVars = new HashMap<String, String>();
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
+        final Node node = c.getNode();
+        if (node == null) {
+            throw new EnvInjectException("Node is removed, but the computer has not gone yet");
+        } 
+        
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new Callable<Map<String, String>, IOException>() {
+                new MasterToSlaveCallable<Map<String, String>, IOException>() {
                     public Map<String, String> call() throws IOException {
                         return EnvVars.masterEnvVars;
                     }
@@ -90,7 +108,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         // -- Process slave properties
         boolean unsetSystemVariables = false;
-        for (NodeProperty<?> nodeProperty : c.getNode().getNodeProperties()) {
+        for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
 
             if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                 currentEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
@@ -99,7 +117,11 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 EnvInjectNodeProperty envInjectNodeProperty = ((EnvInjectNodeProperty) nodeProperty);
                 unsetSystemVariables = envInjectNodeProperty.isUnsetSystemVariables();
-                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(c.getNode().getRootPath(), logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
+                final FilePath rootPath = node.getRootPath();
+                if (rootPath == null) {
+                    throw new EnvInjectException("Node is offline, cannot calculate the injected variables");
+                }
+                currentEnvVars.putAll(envInjectEnvVarsService.getEnvVarsFileProperty(rootPath, logger, envInjectNodeProperty.getPropertiesFilePath(), null, nodeEnvVars));
             }
         }
 
@@ -121,7 +143,8 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
 
         //Get node path
-        FilePath nodePath = c.getNode().getRootPath();
+        final Node node = c.getNode();
+        final FilePath nodePath = node != null ? node.getRootPath() : null;
         if (nodePath == null) {
             return;
         }
@@ -150,17 +173,17 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         }
     }
 
-    private boolean isActiveSlave(Computer c) {
+    private boolean isActiveSlave(@CheckForNull Computer c) {
         if (c == null) {
             return false;
         }
 
-        Node slave = Hudson.getInstance().getNode(c.getName());
+        Node slave = Jenkins.getActiveInstance().getNode(c.getName());
         return slave != null;
     }
 
     private boolean isGlobalEnvInjectActivatedOnMaster() {
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         for (NodeProperty<?> nodeProperty : globalNodeProperties) {
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 return true;

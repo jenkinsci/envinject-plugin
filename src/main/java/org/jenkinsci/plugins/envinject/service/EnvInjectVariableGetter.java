@@ -1,38 +1,59 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.EnvVars;
+import hudson.RestrictedSince;
 import hudson.Util;
-import hudson.matrix.MatrixRun;
-import hudson.model.*;
-import hudson.util.LogTaskListener;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Hudson.MasterComputer;
+import hudson.model.Node;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
-import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
+ * Utility class for retrieving environment variables.
  * @author Gregory Boissinot
  */
+@Restricted(NoExternalUse.class)
+@RestrictedSince("2.1")
 public class EnvInjectVariableGetter {
 
     private static Logger LOG = Logger.getLogger(EnvInjectVariableGetter.class.getName());
 
-    public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
+    @Deprecated
+    public EnvInjectVariableGetter() {
+    }
 
+    /**
+     * @deprecated Use {@link #getJenkinsSystemEnvVars(boolean)}
+     */
+    @Nonnull
+    @Deprecated
+    public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
+        return getJenkinsSystemEnvVars(forceOnMaster);
+    }
+    
+    //TODO: Move to Another utility class in EnvInject API 
+    @Nonnull
+    public static Map<String, String> getJenkinsSystemEnvVars(boolean forceOnMaster) throws IOException, InterruptedException {
         Map<String, String> result = new TreeMap<String, String>();
 
-        Computer computer;
+        final Computer computer;
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         if (forceOnMaster) {
-            computer = Hudson.getInstance().toComputer();
+            
+            computer = jenkins.toComputer();
         } else {
             computer = Computer.currentComputer();
         }
@@ -40,126 +61,54 @@ public class EnvInjectVariableGetter {
         //test if there is at least one executor
         if (computer != null) {
             result = computer.getEnvironment().overrideAll(result);
+            if(computer instanceof MasterComputer) {
+                result.put("NODE_NAME", "master");
+            } else {
+                result.put("NODE_NAME", computer.getName());
+            }
+            
             Node n = computer.getNode();
             if (n != null) {
-                result.put("NODE_NAME", computer.getName());
                 result.put("NODE_LABELS", Util.join(n.getAssignedLabels(), " "));
             }
         }
 
-        String rootUrl = Hudson.getInstance().getRootUrl();
+        String rootUrl = jenkins.getRootUrl();
         if (rootUrl != null) {
             result.put("JENKINS_URL", rootUrl);
             result.put("HUDSON_URL", rootUrl); // Legacy compatibility
         }
-        result.put("JENKINS_HOME", Hudson.getInstance().getRootDir().getPath());
-        result.put("HUDSON_HOME", Hudson.getInstance().getRootDir().getPath());   // legacy compatibility
+        result.put("JENKINS_HOME", jenkins.getRootDir().getPath());
+        result.put("HUDSON_HOME", jenkins.getRootDir().getPath());   // legacy compatibility
 
         return result;
     }
 
 
-    @SuppressWarnings("unchecked")
-    public Map<String, String> getBuildVariables(AbstractBuild build, EnvInjectLogger logger) throws EnvInjectException {
-        Map<String, String> result = new HashMap<String, String>();
-
-        //Add build process variables
-        result.putAll(build.getCharacteristicEnvVars());
-
-        try {
-            EnvVars envVars = new EnvVars();
-            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
-                ec.buildEnvironmentFor(build, envVars, new LogTaskListener(LOG, Level.ALL));
-                result.putAll(envVars);
-            }
-
-            JDK jdk = build.getProject().getJDK();
-            if (jdk != null) {
-                Node node = build.getBuiltOn();
-                if (node != null) {
-                    jdk = jdk.forNode(node, logger.getListener());
-                }
-                jdk.buildEnvVars(result);
-            }
-        } catch (IOException ioe) {
-            throw new EnvInjectException(ioe);
-        } catch (InterruptedException ie) {
-            throw new EnvInjectException(ie);
-        }
-
-        Executor e = build.getExecutor();
-        if (e != null) {
-            result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
-        }
-
-        String rootUrl = Hudson.getInstance().getRootUrl();
-        if (rootUrl != null) {
-            result.put("BUILD_URL", rootUrl + build.getUrl());
-            result.put("JOB_URL", rootUrl + build.getParent().getUrl());
-        }
-
-        //Add build variables such as parameters, plugins contributions, ...
-        result.putAll(build.getBuildVariables());
-
-        //Retrieve triggered cause
-        Map<String, String> triggerVariable = new BuildCauseRetriever().getTriggeredCause(build);
-        result.putAll(triggerVariable);
-
-        return result;
+    /**
+     * @deprecated Use {@link RunHelper#getBuildVariables(hudson.model.Run, hudson.EnvVars)}
+     */
+    public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+        return RunHelper.getBuildVariables(build, logger);
     }
 
-    @SuppressWarnings("unchecked")
-    public EnvInjectJobProperty getEnvInjectJobProperty(AbstractBuild build) {
-        if (build == null) {
-            throw new IllegalArgumentException("A build object must be set.");
-        }
-
-        Job job;
-        if (build instanceof MatrixRun) {
-            job = ((MatrixRun) build).getParentBuild().getParent();
-        } else {
-            job = build.getParent();
-        }
-
-        EnvInjectJobProperty envInjectJobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
-        if (envInjectJobProperty != null) {
-            EnvInjectJobPropertyInfo info = envInjectJobProperty.getInfo();
-            if (info != null && envInjectJobProperty.isOn()) {
-                return envInjectJobProperty;
-            }
-        }
-        return null;
+    /**
+     * @deprecated Use {@link RunHelper#getEnvInjectJobProperty(hudson.model.Run)}
+     */
+    @CheckForNull
+    @Deprecated
+    public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull AbstractBuild build) {
+        return RunHelper.getEnvInjectJobProperty(build);
     }
 
-    public Map<String, String> getEnvVarsPreviousSteps(AbstractBuild build, EnvInjectLogger logger) throws IOException, InterruptedException, EnvInjectException {
-        Map<String, String> result = new HashMap<String, String>();
-
-        List<Environment> environmentList = build.getEnvironments();
-        if (environmentList != null) {
-            for (Environment e : environmentList) {
-                if (e != null) {
-                    e.buildEnvVars(result);
-                }
-            }
-        }
-
-        EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
-        if (envInjectAction != null) {
-            result.putAll(getCurrentInjectedEnvVars(envInjectAction));
-            //Add build variables with axis for a MatrixRun
-            if (build instanceof MatrixRun) {
-                result.putAll(build.getBuildVariables());
-            }
-        } else {
-            result.putAll(getJenkinsSystemVariables(false));
-            result.putAll(getBuildVariables(build, logger));
-        }
-        return result;
+    /**
+     * @deprecated Use {@link RunHelper#getEnvVarsPreviousSteps(hudson.model.Run, org.jenkinsci.lib.envinject.EnvInjectLogger)}
+     */
+    @Nonnull
+    @Deprecated
+    public Map<String, String> getEnvVarsPreviousSteps(
+            @Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) 
+            throws IOException, InterruptedException, EnvInjectException {
+        return RunHelper.getEnvVarsPreviousSteps(build, logger);
     }
-
-    private Map<String, String> getCurrentInjectedEnvVars(EnvInjectPluginAction envInjectPluginAction) {
-        Map<String, String> envVars = envInjectPluginAction.getEnvMap();
-        return (envVars) == null ? new HashMap<String, String>() : envVars;
-    }
-
 }

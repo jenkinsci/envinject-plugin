@@ -2,40 +2,39 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Hudson;
-import hudson.model.Result;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
-import junit.framework.Assert;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.Map;
+import jenkins.model.Jenkins;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gregory Boissinot
  */
-public class GlobalPropertiesTest extends HudsonTestCase {
+public class GlobalPropertiesTest {
 
+    @Rule
+    public JenkinsRule jenkins = new JenkinsRule();
 
-    private FreeStyleProject project;
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        project = createFreeStyleProject();
-    }
-
-
+    @Test
     public void testGlobalPropertiesWithWORKSPACE() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject();
 
         final String testWorkspaceVariableName = "TEST_WORKSPACE";
         final String testWorkspaceVariableValue = "${WORKSPACE}";
         final String workspaceName = "WORKSPACE";
 
         //A global node property TEST_WORKSPACE
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testWorkspaceVariableName, testWorkspaceVariableValue)));
 
         EnvInjectJobProperty jobProperty = new EnvInjectJobProperty();
@@ -45,7 +44,7 @@ public class GlobalPropertiesTest extends HudsonTestCase {
         project.addProperty(jobProperty);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        jenkins.assertBuildStatusSuccess(build);
 
         org.jenkinsci.lib.envinject.EnvInjectAction action = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         Map<String, String> envVars = action.getEnvMap();
@@ -58,27 +57,30 @@ public class GlobalPropertiesTest extends HudsonTestCase {
         assertEquals(workspaceProcessed, testWorkspaceProcessed);
     }
 
-    //Specific use case: We set a global workspace at job level
+    /**
+     * Specific use case: We set a global workspace at job level
+     */
+    @Test
     public void testGlobalPropertiesSetWORKSPACE() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject();
 
         final String testGlobalVariableName = "WORKSPACE";
         final String testGlobalVariableValue = "WORKSPACE_VALUE";
         final String testJobVariableName = "TEST_JOB_WORKSPACE";
         final String testJobVariableExprValue = "${WORKSPACE}";
 
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Hudson.getInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testGlobalVariableName, testGlobalVariableValue)));
 
         StringBuffer propertiesContent = new StringBuffer();
         propertiesContent.append(testJobVariableName).append("=").append(testJobVariableExprValue);
-        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(
-                null, propertiesContent.toString(), null, null, null, true);
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, true, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(info);
         project.getBuildWrappersList().add(envInjectBuildWrapper);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        Assert.assertEquals(Result.SUCCESS, build.getResult());
+        jenkins.assertBuildStatusSuccess(build);
 
         org.jenkinsci.lib.envinject.EnvInjectAction action = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         Map<String, String> envVars = action.getEnvMap();

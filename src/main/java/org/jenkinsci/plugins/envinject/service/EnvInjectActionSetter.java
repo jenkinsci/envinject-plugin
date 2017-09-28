@@ -3,7 +3,8 @@ package org.jenkinsci.plugins.envinject.service;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.remoting.Callable;
+import hudson.model.Run;
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
@@ -11,6 +12,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 
 /**
@@ -18,28 +22,52 @@ import java.util.Map;
  */
 public class EnvInjectActionSetter implements Serializable {
 
+    @CheckForNull
     private FilePath rootPath;
 
-    public EnvInjectActionSetter(FilePath rootPath) {
+    public EnvInjectActionSetter(@CheckForNull FilePath rootPath) {
         this.rootPath = rootPath;
     }
 
-    public void addEnvVarsToEnvInjectBuildAction(AbstractBuild<?, ?> build, Map<String, String> envMap) throws EnvInjectException, IOException, InterruptedException {
+    /**
+     * @deprecated Use {@link #addEnvVarsToRun(hudson.model.Run, java.util.Map)}
+     */
+    @Deprecated
+    public void addEnvVarsToEnvInjectBuildAction(@Nonnull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
+            throws EnvInjectException, IOException, InterruptedException {
+        addEnvVarsToRun(build, envMap);
+    }
+    
+    /**
+     * Adds EnvironmentVariables to the run.
+     * {@link EnvInjectPluginAction} will be created on-demand.
+     * @param run Run
+     * @param envMap Environment variables to be added or overridden
+     * @throws EnvInjectException Injection failure
+     * @throws IOException Remote operation failure
+     * @throws InterruptedException Remote call is interrupted
+     * @since 2.1
+     */
+    public void addEnvVarsToRun(@Nonnull Run<?, ?> run, @CheckForNull Map<String, String> envMap) 
+            throws EnvInjectException, IOException, InterruptedException {
 
-        EnvInjectPluginAction envInjectAction = build.getAction(EnvInjectPluginAction.class);
+        EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);
         if (envInjectAction != null) {
-            envInjectAction.overrideAll(build.getSensitiveBuildVariables(), envMap);
+            envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
         } else {
             if (rootPath != null) {
-                envInjectAction = new EnvInjectPluginAction(build, rootPath.act(new Callable<Map<String, String>, EnvInjectException>() {
+                envInjectAction = new EnvInjectPluginAction(rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
+                    private static final long serialVersionUID = 1L;
+                      
+                    @Override
                     public Map<String, String> call() throws EnvInjectException {
                         HashMap<String, String> result = new HashMap<String, String>();
                         result.putAll(EnvVars.masterEnvVars);
                         return result;
                     }
                 }));
-                envInjectAction.overrideAll(build.getSensitiveBuildVariables(), envMap);
-                build.addAction(envInjectAction);
+                envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
+                run.addAction(envInjectAction);
             }
         }
     }

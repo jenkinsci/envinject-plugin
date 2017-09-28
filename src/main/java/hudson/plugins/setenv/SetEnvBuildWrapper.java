@@ -10,8 +10,10 @@ import hudson.tasks.BuildWrapperDescriptor;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.migration.EnvInjectMigrationBuildWrapper;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 
 import java.io.IOException;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -22,7 +24,7 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
     private transient String localVarText;
 
     @Override
-    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(BuildableItemWithBuildWrappers originalItem) {
+    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@Nonnull BuildableItemWithBuildWrappers originalItem) {
         String varText = localVarText;
         EnvInjectBuildWrapper existing = originalItem.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
         if (existing != null && existing.getInfo() != null) {
@@ -31,9 +33,8 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
                 varText = varText + "\n" + existingContent;
             }
         }
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, varText, null, null, null, false);
-        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
-        envInjectBuildWrapper.setInfo(jobPropertyInfo);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, varText, null, null, false, null);
+        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(jobPropertyInfo);
         return envInjectBuildWrapper;
     }
 
