@@ -23,6 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import org.jenkinsci.plugins.envinject.util.NonOverridingEnvironment;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
@@ -138,7 +140,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
         }
     }
 
-    private Environment setUpEnvironmentJobPropertyObject(@Nonnull Run<?, ?> build, 
+    private Environment setUpEnvironmentJobPropertyObject(final @Nonnull Run<?, ?> build,
             @Nonnull Launcher launcher, @Nonnull BuildListener listener, @Nonnull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
 
@@ -203,13 +205,12 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             //Add an action to share injected environment variables
             new EnvInjectActionSetter(rootPath).addEnvVarsToRun(build, mergedVariables);
 
-
             return new Environment() {
                 @Override
                 public void buildEnvVars(Map<String, String> env) {
                     envInjectEnvVarsService.resolveVars(mergedVariables, mergedVariables); //resolve variables each other
                     //however, here preCheckout of EnvBuildWrapper is not yet performed
-                    env.putAll(mergedVariables);
+                    NonOverridingEnvironment.append(build, env, mergedVariables);
                 }
             };
         } else {
@@ -239,12 +240,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             new EnvInjectActionSetter(rootPath).addEnvVarsToRun(build, resultVariables);
         }
 
-        return new Environment() {
-            @Override
-            public void buildEnvVars(Map<String, String> env) {
-                env.putAll(resultVariables);
-            }
-        };
+        return new NonOverridingEnvironment(build, resultVariables);
     }
 
     @CheckForNull
