@@ -106,6 +106,13 @@
             <artifactId>ant</artifactId>
             <version>1.4</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!--Upper bounds conflict-->
+                    <groupId>org.jenkins-ci</groupId>
+                    <artifactId>annotation-indexer</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
