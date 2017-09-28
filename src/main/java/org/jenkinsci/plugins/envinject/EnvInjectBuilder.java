@@ -1,15 +1,18 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.EnvironmentContributor;
 import hudson.model.Result;
 import hudson.scm.SCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.LogTaskListener;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.annotation.Nonnull;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 
@@ -80,7 +84,12 @@ public class EnvInjectBuilder extends Builder implements Serializable {
                 // Prop file variables will be merged with other ones
                 final Map<String, String> propertiesEnvVars = envInjectEnvVarsService.getEnvVarsFileProperty(ws, logger, info.getPropertiesFilePath(), info.getPropertiesContentMap(previousEnvVars), variables);
                 resultVariables  = envInjectEnvVarsService.getMergedVariables(variables, propertiesEnvVars);
-            } 
+            }
+
+            // Whatever we inject, EnvironmentContributors should be able to override that (JENKINS-26583)
+            EnvVars contributedEnvVars = new EnvVars();
+            RunHelper.consultOtherEnvironmentContributors(build, contributedEnvVars, listener);
+            resultVariables.putAll(contributedEnvVars);
                 
             build.addAction(new EnvInjectBuilderContributionAction(resultVariables));
 
