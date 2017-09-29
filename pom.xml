@@ -101,7 +101,7 @@
         </dependency>
 
         <dependency>
-            <!-- Otherwise Ivy plugin startup fails in IDEA -->
+            <!-- TODO: Otherwise Ivy plugin startup fails in IDEA -->
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ant</artifactId>
             <version>1.4</version>
