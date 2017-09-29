@@ -7,15 +7,21 @@ import hudson.model.EnvironmentContributingAction;
 
 import java.io.IOException;
 import java.util.Collections;
+
+import hudson.model.ParametersAction;
+import hudson.model.Run;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
+
 import jenkins.model.RunAction2;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 import org.kohsuke.accmod.Restricted;
@@ -27,6 +33,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class EnvInjectPluginAction extends EnvInjectAction implements EnvironmentContributingAction {
 
     private static final Logger LOGGER = Logger.getLogger(EnvInjectPluginAction.class.getName());
+
+    /**
+     * Cache of resolved parameters, which is stored within this action.
+     * This cache assumes that the parameters never change after the creation of the action.
+     * It is technically possible via API, but there is no realistic use-case for that.
+     * Famous last words(c)
+     */
+    @GuardedBy("this")
+    private transient EnvVars resolvedParameterEnvVars = null;
 
     /**
      * Constructor.
@@ -86,9 +101,27 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                 }));
     }
 
+    @CheckForNull
+    private synchronized EnvVars getParameterEnvVars() {
+        final Run<?, ?> run = getOwner();
+        if (resolvedParameterEnvVars == null && run instanceof AbstractBuild<?, ?>) {
+            AbstractBuild<?, ?> build = (AbstractBuild<?, ?>)run;
+            EnvVars resolvedParameters = new EnvVars();
+
+            List<ParametersAction> actions = build.getActions(ParametersAction.class);
+            for (ParametersAction params : actions) {
+                params.buildEnvVars(build, resolvedParameters);
+            }
+            resolvedParameterEnvVars = resolvedParameters;
+        }
+        return resolvedParameterEnvVars;
+    }
+
     // The method is synchronized, because it modifies the internal cache
     @Override
     public synchronized void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @Nonnull EnvVars env) {
+        assert build == getOwner() : "Trying to resolve environment for build, which is not an owner of this action";
+
         final Map<String, String> currentEnvMap = getEnvMap();
         if (currentEnvMap == null) {
             return; // Nothing to inject
@@ -107,12 +140,28 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                         new Object[] {build, varName, storedValue});
                 env.put(varName, storedValue);
             } else if (!envValue.equals(storedValue)) {
-                LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is defined externally, overriding the stored value {2} by {3}",
-                        new Object[] {build, varName, storedValue, envValue});
-                if (overrides == null) {
-                    overrides = new HashMap<>();
+                // If the value is defined by the Parameters, we actually override them
+                // See org.jenkinsci.plugins.envinject.EnvInjectJobPropertyTest#shouldOverrideBuildParametersIfEnabled()
+                final EnvVars parameterEnvVars = getParameterEnvVars();
+                boolean usedExternalValue = true;
+                if (parameterEnvVars != null) {
+                    String parameterValue = parameterEnvVars.get(varName);
+                    if (envValue.equals(parameterValue)) { // defined by parameter and not already overridden
+                        LOGGER.log(Level.CONFIG, "Build {0}: Overriding value of {1} defined by the parameter value. New value is {2}, was {3}",
+                                new Object[] {build, varName, storedValue, envValue});
+                        env.put(varName, storedValue);
+                        usedExternalValue = false;
+                    }
                 }
-                overrides.put(varName, envValue);
+
+                if (usedExternalValue) { // The value was overridden, let's update the cache
+                    LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is defined externally, overriding the stored value {2} by {3}",
+                            new Object[]{build, varName, storedValue, envValue});
+                    if (overrides == null) {
+                        overrides = new HashMap<>();
+                    }
+                    overrides.put(varName, envValue);
+                }
             }
         }
 
