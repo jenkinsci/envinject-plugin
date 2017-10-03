@@ -134,10 +134,10 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
         for (Map.Entry<String, String> storedVar : currentEnvMap.entrySet()) {
             final String varName = storedVar.getKey();
             final String storedValue = storedVar.getValue();
-            final String envValue = env.get(storedVar.getKey());
+            final String envValue = env.get(varName);
             if (envValue == null) {
-                LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is missing, overriding it by the stored value {2}",
-                        new Object[] {build, varName, storedValue});
+                LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is missing, overriding it by value stored in the action",
+                        new Object[] {build, varName});
                 env.put(varName, storedValue);
             } else if (!envValue.equals(storedValue)) {
                 // If the value is defined by the Parameters, we actually override them
@@ -147,16 +147,16 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                 if (parameterEnvVars != null) {
                     String parameterValue = parameterEnvVars.get(varName);
                     if (envValue.equals(parameterValue)) { // defined by parameter and not already overridden
-                        LOGGER.log(Level.CONFIG, "Build {0}: Overriding value of {1} defined by the parameter value. New value is {2}, was {3}",
-                                new Object[] {build, varName, storedValue, envValue});
+                        LOGGER.log(Level.CONFIG, "Build {0}: Overriding value of {1} defined by the parameter value",
+                                new Object[] {build, varName});
                         env.put(varName, storedValue);
                         usedExternalValue = false;
                     }
                 }
 
                 if (usedExternalValue) { // The value was overridden, let's update the cache
-                    LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is defined externally, overriding the stored value {2} by {3}",
-                            new Object[]{build, varName, storedValue, envValue});
+                    LOGGER.log(Level.CONFIG, "Build {0}: Variable {1} is defined externally, overriding value stored in the action",
+                            new Object[] {build, varName});
                     if (overrides == null) {
                         overrides = new HashMap<>();
                     }
