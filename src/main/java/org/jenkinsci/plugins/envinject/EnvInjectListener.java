@@ -10,6 +10,7 @@ import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.model.EnvInjectJobPropertyContributor;
@@ -49,7 +50,6 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
                 } else {
                     return setUpEnvironmentWithoutJobPropertyObject(build, launcher, listener);
                 }
-
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
@@ -88,8 +88,7 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             throw new EnvInjectException(ie);
         }
     }
-
-
+    
     private boolean isEnvInjectJobPropertyActive(@Nonnull Run<?, ?> run) {
         EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(run);
         return envInjectJobProperty != null;

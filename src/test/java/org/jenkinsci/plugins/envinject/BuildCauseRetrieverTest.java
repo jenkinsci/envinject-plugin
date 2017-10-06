@@ -5,6 +5,7 @@ import hudson.model.CauseAction;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
+
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import org.junit.ClassRule;
