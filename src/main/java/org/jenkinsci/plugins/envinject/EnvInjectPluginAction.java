@@ -147,10 +147,20 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
                 if (parameterEnvVars != null) {
                     String parameterValue = parameterEnvVars.get(varName);
                     if (envValue.equals(parameterValue)) { // defined by parameter and not already overridden
-                        LOGGER.log(Level.CONFIG, "Build {0}: Overriding value of {1} defined by the parameter value",
-                                new Object[] {build, varName});
-                        env.put(varName, storedValue);
-                        usedExternalValue = false;
+                        final EnvInjectJobProperty prop = RunHelper.getEnvInjectJobProperty(build);
+                        if (prop != null && prop.isOverrideBuildParameters()) {
+                            LOGGER.log(Level.CONFIG, "Build {0}: Overriding value of {1} defined by the parameter value",
+                                    new Object[] {build, varName});
+                            env.put(varName, storedValue);
+                            usedExternalValue = false;
+                        } else {
+                            LOGGER.log(Level.CONFIG, "Build {0}: Build variable {1} will not be overridden, overriding value stored in the action",
+                                    new Object[] {build, varName});
+                            if (overrides == null) {
+                                overrides = new HashMap<>();
+                            }
+                            overrides.put(varName, envValue);
+                        }
                     }
                 }
 

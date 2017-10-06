@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.EnvVars;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -104,6 +105,13 @@ public class EnvInjectJobPropertyTest {
         jenkinsRule.assertBuildStatusSuccess(build);
         assertEquals("The variable has been overridden in the environment", "ValueFromParameter", envCapture.getEnvVars().get("PARAM"));
         assertEquals("The variable has been overridden in the API", "ValueFromParameter", build.getEnvironment(TaskListener.NULL).get("PARAM"));
+
+        // Ensure that Parameters action contains the correct value
+        EnvInjectPluginAction a = build.getAction(EnvInjectPluginAction.class);
+        assertNotNull("EnvInjectPluginAction has not been added to the build", a);
+        EnvVars vars = new EnvVars();
+        a.buildEnvVars(build, vars);
+        assertEquals("The variable has been overridden in the stored action", "ValueFromParameter", vars.get("PARAM"));
     }
     
     @Test
@@ -118,6 +126,15 @@ public class EnvInjectJobPropertyTest {
         FreeStyleBuild build = scheduled.get();
         jenkinsRule.assertBuildStatusSuccess(build);
         assertEquals("The build parameter value has not been overridden", "Overridden", build.getEnvironment(TaskListener.NULL).get("PARAM"));
+
+        // Ensure that Parameters action contains the correct value
+        EnvInjectPluginAction a = build.getAction(EnvInjectPluginAction.class);
+        assertNotNull("EnvInjectPluginAction has not been added to the build", a);
+        EnvVars vars = new EnvVars();
+        a.buildEnvVars(build, vars);
+        assertEquals("The build parameter value has not been overridden in EnvInjectPluginAction",
+                "Overridden", vars.get("PARAM"));
+
     }
 
     @Test
