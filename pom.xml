@@ -78,9 +78,10 @@
               Incompatible changes:
                 1.93 - Fix of JENKINS-31573 changed the property file parsing approach. 
                      Now it follows the Java property file standard.
-                2.0: - Security fixes (SECURITY-256) 
+                2.0: - Security fixes (SECURITY-256)
+                2.1.4 - JENKINS-47364 and JENKINS-47370, they still need to be investigated
             -->
-            <compatibleSinceVersion>2.0</compatibleSinceVersion>
+            <compatibleSinceVersion>2.1.4</compatibleSinceVersion>
           </configuration>
         </plugin>
       </plugins>
