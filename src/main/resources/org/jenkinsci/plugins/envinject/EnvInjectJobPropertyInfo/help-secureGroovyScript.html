@@ -49,4 +49,24 @@
             return null;
           }
         </code></pre>
+
+    <h3>Stopping the build</h3>
+    <p>
+        It is possible to stop the build if the groovy script determines that execution should not proceed.
+        An example scenario would be a job that checks some upstream precondition in this step
+        and sets up the environment if the condition is met, but stops the build if not.
+    </p>
+    <p>
+        Throwing any RuntimeException (eg InterruptedException) will cause the build to abort and get marked as Failure.
+        Throwing EnvInjectStopBuildException allows the result to be specified, and hides the stacktrace.
+    </p>
+
+    <h3>Example</h3>
+    <pre>
+        <code>
+            if (somePrecondition) {
+                throw new org.jenkinsci.plugins.envinject.EnvInjectStopBuildException("It's not time to run this job", hudson.model.Result.UNSTABLE)
+            }
+        </code>
+    </pre>
 </div>

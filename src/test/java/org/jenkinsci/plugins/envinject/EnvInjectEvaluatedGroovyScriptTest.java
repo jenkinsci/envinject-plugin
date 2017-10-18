@@ -21,6 +21,7 @@ import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.Url;
 
 import javax.xml.transform.Source;
@@ -241,4 +242,33 @@ public class EnvInjectEvaluatedGroovyScriptTest {
     private void approveScript(SecureGroovyScript script) {
         
     }
+
+
+    @Test
+    public void testStopFromGroovyScript() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
+        hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
+
+        StringBuilder groovyScriptContent = new StringBuilder();
+        groovyScriptContent.append(
+                "throw new org.jenkinsci.plugins.envinject.EnvInjectStopBuildException(\"It's not time to run this job\", hudson.model.Result.UNSTABLE)"
+        );
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
+        envInjectJobProperty.setOn(true);
+        project.addProperty(envInjectJobProperty);
+
+        project.getBuildersList().add(new SleepBuilder(4));
+        @SuppressWarnings("deprecation")
+        FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause()).get();
+        jenkins.waitForCompletion(build);
+
+        jenkins.assertLogContains("Stopping build with result UNSTABLE", build);
+        jenkins.assertBuildStatus(Result.UNSTABLE, build);
+
+        //Not checking if steps ran, the jenkins fixture seems to ignore the interrupt() and the build runs,
+        //while in real life it does not.
+//        jenkins.assertLogNotContains("Sleeping", build);
+    }
+
 }
