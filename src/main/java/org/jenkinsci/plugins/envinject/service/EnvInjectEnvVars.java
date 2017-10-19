@@ -16,6 +16,7 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectStopBuildException;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 
@@ -228,6 +229,8 @@ public class EnvInjectEnvVars implements Serializable {
         final Object groovyResult;
         try {
             groovyResult = script.evaluate(jenkins.getPluginManager().uberClassLoader, binding);
+        } catch (EnvInjectStopBuildException eStop) {
+            throw eStop; //do not wrap
         } catch (Exception e) {
             throw new EnvInjectException("Failed to evaluate the script", e);
         }

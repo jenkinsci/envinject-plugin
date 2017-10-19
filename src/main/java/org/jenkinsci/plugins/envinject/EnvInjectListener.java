@@ -53,6 +53,10 @@ public class EnvInjectListener extends RunListener<Run> implements Serializable 
             } catch (Run.RunnerAbortedException rre) {
                 logger.info("Fail the build.");
                 throw new Run.RunnerAbortedException();
+            } catch (EnvInjectStopBuildException stopException) {
+                logger.info("Stopping build with result " + stopException.getResult() + ": " + stopException.getLocalizedMessage());
+                build.getExecutor().interrupt(stopException.getResult());
+                return null;
             } catch (EnvInjectException e) {
                 e.printStackTrace(listener.error("SEVERE ERROR occurs"));
                 throw new Run.RunnerAbortedException();
