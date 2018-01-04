@@ -114,6 +114,10 @@
                     <groupId>org.jenkins-ci</groupId>
                     <artifactId>annotation-indexer</artifactId>
                 </exclusion>
+                <exclusion> <!-- TODO pending update to structs -->
+                    <groupId>org.jenkins-ci</groupId>
+                    <artifactId>symbol-annotation</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
