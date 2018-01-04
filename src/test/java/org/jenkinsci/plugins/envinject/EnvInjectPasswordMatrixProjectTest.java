@@ -38,6 +38,6 @@ public class EnvInjectPasswordMatrixProjectTest {
         org.jenkinsci.lib.envinject.EnvInjectAction action = matrixBuild.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         Map<String, String> envVars = action.getEnvMap();
         //The value must be encrypted in the envVars
-        assertEquals(Secret.fromString(PWD_VALUE).getEncryptedValue(), envVars.get(PWD_KEY));
+        assertEquals(Secret.fromString(PWD_VALUE), Secret.decrypt(envVars.get(PWD_KEY)));
     }
 }
