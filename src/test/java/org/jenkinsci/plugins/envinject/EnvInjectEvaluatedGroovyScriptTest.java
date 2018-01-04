@@ -2,41 +2,30 @@ package org.jenkinsci.plugins.envinject;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import hudson.cli.CLICommand;
-import hudson.cli.CLICommandInvoker;
-import hudson.cli.UpdateJobCommand;
 import hudson.model.*;
 
 import hudson.model.queue.QueueTaskFuture;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
-import org.hamcrest.CoreMatchers;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.Url;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import static org.hamcrest.Matchers.containsString;
 
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import org.jenkinsci.plugins.envinject.util.TestUtils;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -78,13 +67,14 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);
 
+        project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("CASE", "")));
         List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
         ParametersAction parametersAction = new ParametersAction(parameterValueList);
 
         @SuppressWarnings("deprecation")
         FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserCause(), parametersAction).get();
-        assertEquals(Result.SUCCESS, build.getResult());
+        jenkins.assertBuildStatusSuccess(build);
 
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         assertNotNull(envInjectAction);

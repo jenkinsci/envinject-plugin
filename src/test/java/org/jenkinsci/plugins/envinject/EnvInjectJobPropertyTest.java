@@ -5,6 +5,8 @@ import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
@@ -57,7 +59,8 @@ public class EnvInjectJobPropertyTest {
     @Test
     public void shouldKeepBuildVariablesByDefault() throws Exception {   
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();     
-        // We assign a value to another parameter just to enable the engine
+        project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("PARAM", "")));
+    // We assign a value to another parameter just to enable the engine
         EnvInjectJobProperty<FreeStyleProject> prop = forPropertiesContent(project, "PARAM2=Overridden");
         
         QueueTaskFuture<FreeStyleBuild> scheduled = project.scheduleBuild2(0, new Cause.UserIdCause(),
