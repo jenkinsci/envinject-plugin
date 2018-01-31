@@ -105,8 +105,7 @@ public class BuildCauseRetrieverTest {
     public void shouldWriteInfoAboutMultipleBuildCauses() throws Exception {
         Cause cause1 = new CustomTestCause();
         Cause cause2 = new SCMTrigger.SCMTriggerCause("TEST");
-        CauseAction causeAction = new CauseAction(cause1);
-        causeAction.getCauses().add(cause2);
+        CauseAction causeAction = new CauseAction(cause1, cause2);
 
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0,
                 new Cause.UserCause(), causeAction).get();

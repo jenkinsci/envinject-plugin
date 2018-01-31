@@ -11,9 +11,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.hamcrest.Matchers;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
-import org.junit.Assert;
 import org.junit.Rule;
 
 import java.util.ArrayList;
@@ -61,6 +59,7 @@ public class EnvInjectPasswordTest {
     @Test
     public void testEnvInjectJobParameterPassword() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
+        project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition(PWD_KEY, "")));
 
         List<ParameterValue> parameterValues = new ArrayList<ParameterValue>();
         parameterValues.add(new PasswordParameterValue(PWD_KEY, PWD_VALUE));
@@ -121,7 +120,7 @@ public class EnvInjectPasswordTest {
         Map<String, String> envVars = action.getEnvMap();
 
         // The value must be encrypted in the envVars
-        assertEquals(Secret.fromString(PWD_VALUE).getEncryptedValue(), envVars.get(PWD_KEY));
+        assertEquals(Secret.fromString(PWD_VALUE), Secret.decrypt(envVars.get(PWD_KEY)));
     }    
     
     /**
