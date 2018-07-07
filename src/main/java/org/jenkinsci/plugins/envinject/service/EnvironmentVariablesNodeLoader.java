@@ -62,11 +62,7 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
 
             //Get env vars for the current node
             Map<String, String> nodeEnvVars = nodePath.act(
-                    new MasterToSlaveCallable<Map<String, String>, IOException>() {
-                        public Map<String, String> call() throws IOException {
-                            return EnvVars.masterEnvVars;
-                        }
-                    }
+                    new EnvVarMasterToSlaveCallable()
             );
 
             for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
@@ -98,4 +94,9 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
         }
     }
 
+    private static class EnvVarMasterToSlaveCallable extends MasterToSlaveCallable<Map<String, String>, IOException> {
+        public Map<String, String> call() throws IOException {
+            return EnvVars.masterEnvVars;
+        }
+    }
 }

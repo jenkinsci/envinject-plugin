@@ -56,19 +56,21 @@ public class EnvInjectActionSetter implements Serializable {
             envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
         } else {
             if (rootPath != null) {
-                envInjectAction = new EnvInjectPluginAction(rootPath.act(new MasterToSlaveCallable<Map<String, String>, EnvInjectException>() {
-                    private static final long serialVersionUID = 1L;
-                      
-                    @Override
-                    public Map<String, String> call() throws EnvInjectException {
-                        HashMap<String, String> result = new HashMap<String, String>();
-                        result.putAll(EnvVars.masterEnvVars);
-                        return result;
-                    }
-                }));
+                envInjectAction = new EnvInjectPluginAction(rootPath.act(new MapEnvInjectExceptionMasterToSlaveCallable()));
                 envInjectAction.overrideAll(RunHelper.getSensitiveBuildVariables(run), envMap);
                 run.addAction(envInjectAction);
             }
+        }
+    }
+
+    private static class MapEnvInjectExceptionMasterToSlaveCallable extends MasterToSlaveCallable<Map<String, String>, EnvInjectException> {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Map<String, String> call() throws EnvInjectException {
+            HashMap<String, String> result = new HashMap<String, String>();
+            result.putAll(EnvVars.masterEnvVars);
+            return result;
         }
     }
 }
