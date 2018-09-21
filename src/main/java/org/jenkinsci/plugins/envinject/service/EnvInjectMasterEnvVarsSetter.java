@@ -45,6 +45,8 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
                 enVars.remove("MAVEN_OPTS");
             }
             
+            // TODO: this is not thread safe, but making it so requires some thought.
+            // See https://issues.jenkins-ci.org/browse/JENKINS-53724
             EnvVars.masterEnvVars.clear();
             EnvVars.masterEnvVars.putAll(enVars); 
         } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException exception) {
