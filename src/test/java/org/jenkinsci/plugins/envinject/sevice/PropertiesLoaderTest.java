@@ -125,7 +125,7 @@ public class PropertiesLoaderTest {
 
     private void checkWithNewlineInValues(boolean fromFile) throws Exception {
         // Create properties file containing backslash-escaped newlines
-        String content = "KEY1=line1\\nline2\nKEY2= line3 \\n\\\n line4 \nKEY3=line5\\\n\\\nline6\nKEY4=line7\\\nline8\\n\\nline9";
+        String content = "KEY1=line1\\nline2\nKEY2= line3 \\n\\\nline4 \nKEY3=line5\\\n\\\nline6\nKEY4=line7\\\nline8\\n\\nline9";
         Map<String, String> gatherVars = gatherEnvVars(fromFile, content, new HashMap<String, String>());
         assertNotNull(gatherVars);
         assertEquals(4, gatherVars.size());
@@ -148,7 +148,7 @@ public class PropertiesLoaderTest {
     }
 
     private void checkWithVarsToResolve(boolean fromFile) throws Exception {
-        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=https\\://github.com\nKEY3=${VAR3_TO_RESOLVE}\\\\otherContent";
+        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=https://github.com\nKEY3=${VAR3_TO_RESOLVE}\\\\otherContent";
         Map<String, String> currentEnvVars = new HashMap<String, String>();
         currentEnvVars.put("VAR1_TO_RESOLVE", "NEW_VALUE1 ");
         currentEnvVars.put("VAR3_TO_RESOLVE", "C:\\Bench");
@@ -159,6 +159,26 @@ public class PropertiesLoaderTest {
         assertEquals("NEW_VALUE1", gatherVars.get("KEY1"));
         assertEquals("https://github.com", gatherVars.get("KEY2"));
         assertEquals("C:\\Bench\\otherContent", gatherVars.get("KEY3"));
+    }
+
+    //JENKINS-39403
+    @Test
+    public void fileWithBackSlashes() throws Exception {
+        checkWithBackSlashes(true);
+    }
+
+    @Test
+    public void contentWithBackSlashes() throws Exception {
+        checkWithBackSlashes(false);
+    }
+
+    private void checkWithBackSlashes(boolean fromFile) throws Exception {
+        String content = "KEY1=Test\\Path\\Variable";
+        Map<String, String> gatherVars = gatherEnvVars(fromFile, content, new HashMap<String, String>());
+        assertNotNull(gatherVars);
+        assertEquals(1, gatherVars.size());
+
+        assertEquals("Test\\Path\\Variable", gatherVars.get("KEY1"));
     }
 
     private Map<String, String> gatherEnvVars(boolean fromFile, String content2Load, Map<String, String> currentEnvVars) throws Exception {
