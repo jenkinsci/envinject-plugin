@@ -39,11 +39,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(
-                new MasterToSlaveCallable<Map<String, String>, IOException>() {
-                    public Map<String, String> call() throws IOException {
-                        return EnvVars.masterEnvVars;
-                    }
-                });
+                new GetMasterEnvVars());
 
 
         // -- Retrieve Environment variables from master
@@ -193,4 +189,9 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
     }
 
+    private static class GetMasterEnvVars extends MasterToSlaveCallable<Map<String, String>, IOException> {
+        public Map<String, String> call() throws IOException {
+            return EnvVars.masterEnvVars;
+        }
+    }
 }
