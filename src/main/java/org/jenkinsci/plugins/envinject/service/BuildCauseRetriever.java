@@ -36,6 +36,10 @@ public class BuildCauseRetriever {
     public static final String ENV_ROOT_CAUSE = "ROOT_BUILD_CAUSE";
 
     /**
+     *
+     * @param build Build
+     * @return ...
+     *
      * @deprecated Use {@link EnvVarsResolver#getCauseEnvVars(hudson.model.Run)}
      */
     @Nonnull

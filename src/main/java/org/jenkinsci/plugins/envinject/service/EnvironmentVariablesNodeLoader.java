@@ -31,6 +31,14 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
     }
 
     /**
+     * @param build Build
+     * @param buildNode BuildNode
+     * @param logger Logger
+     *
+     * @return ...
+     *
+     * @throws EnvInjectException ...
+     *
      * @deprecated Use {@link #gatherEnvVarsForNode(hudson.model.Run, hudson.model.Node, org.jenkinsci.lib.envinject.EnvInjectLogger)}
      */
     @Nonnull

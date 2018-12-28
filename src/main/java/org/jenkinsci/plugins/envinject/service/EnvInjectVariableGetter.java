@@ -36,6 +36,12 @@ public class EnvInjectVariableGetter {
     }
 
     /**
+     *
+     * @param forceOnMaster force on master
+     * @return ...
+     * @throws IOException ...
+     * @throws InterruptedException ...
+     *
      * @deprecated Use {@link #getJenkinsSystemEnvVars(boolean)}
      */
     @Nonnull
@@ -44,7 +50,15 @@ public class EnvInjectVariableGetter {
         return getJenkinsSystemEnvVars(forceOnMaster);
     }
     
-    //TODO: Move to Another utility class in EnvInject API 
+    //TODO: Move to Another utility class in EnvInject API
+
+    /**
+     *
+     * @param forceOnMaster force on master
+     * @return ...
+     * @throws IOException ...
+     * @throws InterruptedException ...
+     */
     @Nonnull
     public static Map<String, String> getJenkinsSystemEnvVars(boolean forceOnMaster) throws IOException, InterruptedException {
         Map<String, String> result = new TreeMap<String, String>();
@@ -86,6 +100,12 @@ public class EnvInjectVariableGetter {
 
 
     /**
+     * @param logger Logger
+     * @param build Build
+     *
+     * @return ...
+     *
+     * @throws EnvInjectException ...
      * @deprecated Use {@link RunHelper#getBuildVariables(hudson.model.Run, hudson.EnvVars)}
      */
     public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
@@ -93,6 +113,10 @@ public class EnvInjectVariableGetter {
     }
 
     /**
+     * @param build Build
+     *
+     * @return ...
+     *
      * @deprecated Use {@link RunHelper#getEnvInjectJobProperty(hudson.model.Run)}
      */
     @CheckForNull
@@ -102,6 +126,15 @@ public class EnvInjectVariableGetter {
     }
 
     /**
+     * @param build Build
+     * @param logger Logger
+     *
+     * @return ...
+     *
+     * @throws IOException ...
+     * @throws InterruptedException ...
+     * @throws EnvInjectException ...
+     *
      * @deprecated Use {@link RunHelper#getEnvVarsPreviousSteps(hudson.model.Run, org.jenkinsci.lib.envinject.EnvInjectLogger)}
      */
     @Nonnull

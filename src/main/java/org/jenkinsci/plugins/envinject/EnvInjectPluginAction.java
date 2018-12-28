@@ -45,6 +45,10 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     /**
      * Constructor.
+     *
+     * @param build Build
+     * @param envMap Environment variables to be injected
+     *
      * @deprecated This is a {@link RunAction2} instance, not need to pass build explicitly.
      *             Use {@link #EnvInjectPluginAction(java.util.Map)}
      */

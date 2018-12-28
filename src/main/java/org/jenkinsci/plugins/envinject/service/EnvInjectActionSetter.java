@@ -30,6 +30,13 @@ public class EnvInjectActionSetter implements Serializable {
     }
 
     /**
+     *
+     * @param build Build
+     * @param envMap Environment variables to be injected
+     * @throws EnvInjectException ...
+     * @throws IOException ...
+     * @throws InterruptedException ...
+     *
      * @deprecated Use {@link #addEnvVarsToRun(hudson.model.Run, java.util.Map)}
      */
     @Deprecated

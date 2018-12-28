@@ -54,6 +54,9 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     /**
+     *
+     * @param info Info
+     *
      * @deprecated Use constructor with the parameter
      */
     @Deprecated

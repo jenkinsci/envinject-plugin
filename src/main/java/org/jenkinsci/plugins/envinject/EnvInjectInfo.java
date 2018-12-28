@@ -74,6 +74,9 @@ public class EnvInjectInfo implements Serializable {
 
     /**
      * Fix CR/LF and always make it Unix style.
+     *
+     * @param s string with line endings to fix
+     *
      * @return String with fixed line endings. May return {@code null} only for {@code null} input
      */
     @Nullable

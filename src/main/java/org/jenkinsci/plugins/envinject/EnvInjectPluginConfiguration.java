@@ -68,8 +68,12 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public EnvInjectPluginConfiguration() {
         load();
     }
-    
+
     /**
+     *
+     * @param hideInjectedVars Hides the Injected Env Vars action in all builds.
+     * @param enablePermissions Enables a specific permission for viewing Injected Env Vars
+     *
      * @deprecated Use {@link #EnvInjectPluginConfiguration(boolean, boolean, boolean)}
      * @since 2.0 Loading of files from master is disabled by default
      */
