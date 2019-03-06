@@ -1,0 +1,6 @@
+---
+security:
+  envInjectPluginConfiguration:
+    hideInjectedVars: true
+    enablePermissions: true
+    enableLoadingFromMaster: true

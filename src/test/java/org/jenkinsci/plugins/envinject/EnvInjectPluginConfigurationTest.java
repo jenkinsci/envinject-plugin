@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import io.jenkins.plugins.casc.ConfigurationAsCode;
 
 /**
  * Tests for {@link EnvInjectPluginConfiguration}.
@@ -45,5 +46,15 @@ public class EnvInjectPluginConfigurationTest {
                 config.isHideInjectedVars(), reloaded.isHideInjectedVars());
         assertEquals("Value of enableLoadingFromMaster differs after the reload",
                 config.isEnableLoadingFromMaster(), reloaded.isEnableLoadingFromMaster());
+    }
+
+    @Test
+    public void testConfigAsCode() throws Exception {
+        ConfigurationAsCode.get().configure(EnvInjectPluginConfigurationTest.class.getResource("configuration-as-code.yml").toString());
+
+        final EnvInjectPluginConfiguration config = EnvInjectPluginConfiguration.getInstance();
+        assertTrue(config.isHideInjectedVars());
+        assertTrue(config.isEnablePermissions());
+        assertTrue(config.isEnableLoadingFromMaster());
     }
 }
