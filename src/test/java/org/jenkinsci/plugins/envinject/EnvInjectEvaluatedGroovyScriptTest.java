@@ -2,9 +2,11 @@ package org.jenkinsci.plugins.envinject;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import hudson.EnvVars;
 import hudson.model.*;
 
 import hudson.model.queue.QueueTaskFuture;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
@@ -226,6 +228,30 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         build = jenkins.assertBuildStatus(Result.FAILURE, future);
         //Check that it failed for the correct reason
         jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", build);
+    }
+
+
+    @Test
+    @Issue("JENKINS-49154")
+    public void testLargeBuildNumberEnvVarValueDoesntCrashThePlugin() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject("job1");
+        EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
+        EnvVars envVars = prop.getEnvVars();
+        envVars.put("JOB_NAME", "job1");
+        envVars.put("BUILD_NUMBER", "2147483648");
+        jenkins.jenkins.getGlobalNodeProperties().add(prop);
+
+
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null,
+                null, null, null, false,
+                new SecureGroovyScript("def script = [:]", false, null));
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
+        envInjectJobProperty.setOn(true);
+        project.addProperty(envInjectJobProperty);
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertEquals(Result.SUCCESS, build.getResult());
+
     }
     
     private void approveScript(SecureGroovyScript script) {
