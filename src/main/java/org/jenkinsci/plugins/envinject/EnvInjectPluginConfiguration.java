@@ -64,8 +64,6 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      */
     private boolean enableLoadingFromMaster;
 
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.0")
     @DataBoundConstructor
     public EnvInjectPluginConfiguration() {
         load();
