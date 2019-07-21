@@ -1,4 +1,8 @@
-# EnvInject Plugin for Jenkins CI
+# EnvInject Plugin for Jenkins
+
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/envinject.svg)](https://plugins.jenkins.io/envinject)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/envinject-plugin.svg?label=release)](https://github.com/jenkinsci/envinject-plugin/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/envinject.svg?color=blue)](https://plugins.jenkins.io/envinject)
 
 This plugin makes it possible to setup a custom environment for your jobs.
 
@@ -11,6 +15,8 @@ Features:
 * Securely injects password values for a run
 * Exports environment variables at the end of the build in order to display the set of environment variables used for each build
 
-More info: [the plugin's Wiki page][1]
+More info: [the plugin's Wiki page](https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin)
 
-[1]: https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin
+## Changelog
+
+See [GitHub Releases](https://github.com/jenkinsci/envinject-plugin/releases)
