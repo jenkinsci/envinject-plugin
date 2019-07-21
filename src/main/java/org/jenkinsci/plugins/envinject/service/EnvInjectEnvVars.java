@@ -214,7 +214,7 @@ public class EnvInjectEnvVars implements Serializable {
             String b = envVars.get("BUILD_NUMBER");
             //TODO: Use Job instead
             if (b != null && job instanceof AbstractProject) {
-                Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
+                Run r = ((AbstractProject) job).getBuild(b);
                 binding.setProperty("currentBuild", r);
             }
         }

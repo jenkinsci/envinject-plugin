@@ -21,6 +21,7 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -75,10 +76,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         return maskPasswordParameters;
     }
     
+    @DataBoundSetter
     public void setInjectGlobalPasswords(boolean injectGlobalPasswords) {
         this.injectGlobalPasswords = injectGlobalPasswords;
     }
 
+    @DataBoundSetter
     public void setMaskPasswordParameters(boolean maskPasswordParameters) {
         this.maskPasswordParameters = maskPasswordParameters;
     }
@@ -107,6 +110,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         return Collections.unmodifiableList(Arrays.asList(passwordEntries));
     }
 
+    @DataBoundSetter
     public void setPasswordEntries(@CheckForNull EnvInjectPasswordEntry[] passwordEntries) {
         this.passwordEntries = passwordEntries;
     }
