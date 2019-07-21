@@ -1,0 +1,3 @@
+
+_extends: .github
+tag-template: envinject-$NEXT_MINOR_VERSION
