@@ -35,6 +35,7 @@ import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -47,6 +48,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @since 1.92
  */
 @Extension
+@Symbol("envinject")
 public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     
     private static final EnvInjectPluginConfiguration DEFAULT = 
