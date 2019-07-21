@@ -19,4 +19,5 @@ More info: [the plugin's Wiki page](https://wiki.jenkins-ci.org/display/JENKINS/
 
 ## Changelog
 
-See [GitHub Releases](https://github.com/jenkinsci/envinject-plugin/releases)
+See [GitHub Releases](https://github.com/jenkinsci/envinject-plugin/releases) for recent releases.
+Changelogs for older releases are available on the [plugin's Wiki page](https://wiki.jenkins.io/display/JENKINS/EnvInject+Plugin#EnvInjectPlugin-Changelog).
