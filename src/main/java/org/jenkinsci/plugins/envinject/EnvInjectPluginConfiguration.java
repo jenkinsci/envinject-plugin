@@ -48,7 +48,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @since 1.92
  */
 @Extension
-@Symbol("envinject")
+@Symbol("envInject")
 public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     
     private static final EnvInjectPluginConfiguration DEFAULT = 
