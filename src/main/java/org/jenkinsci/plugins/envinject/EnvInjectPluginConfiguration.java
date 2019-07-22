@@ -35,9 +35,11 @@ import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -46,6 +48,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @since 1.92
  */
 @Extension
+@Symbol("envInject")
 public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     
     private static final EnvInjectPluginConfiguration DEFAULT = 
@@ -63,8 +66,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      */
     private boolean enableLoadingFromMaster;
 
-    @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.0")
+    @DataBoundConstructor
     public EnvInjectPluginConfiguration() {
         load();
     }
@@ -96,9 +98,15 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
         return hideInjectedVars;
     }
 
+    @DataBoundSetter
+    public void setHideInjectedVars(boolean hideInjectedVars) { this.hideInjectedVars = hideInjectedVars; }
+
     public boolean isEnablePermissions() {
         return enablePermissions;
     }
+
+    @DataBoundSetter
+    public void setEnablePermissions(boolean enabledPermissions) { this.enablePermissions = enabledPermissions; }
 
     /**
      * Check if the instance supports loading of scripts and property files from the master.
@@ -110,7 +118,10 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public boolean isEnableLoadingFromMaster() {
         return enableLoadingFromMaster;
     }
-    
+
+    @DataBoundSetter
+    public void setEnableLoadingFromMaster(boolean enableLoadingFromMaster) { this.enableLoadingFromMaster = enableLoadingFromMaster; }
+
     /**
      * Gets the default configuration of {@link EnvInjectPlugin}
      * @return Default configuration

@@ -1,0 +1,7 @@
+---
+security:
+  envinject:
+    hideInjectedVars: true
+    enablePermissions: true
+    # Bad idea, see the security advisories
+    enableLoadingFromMaster: true

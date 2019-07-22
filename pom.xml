@@ -138,6 +138,12 @@
             <version>2.4.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.jenkins</groupId>
+            <artifactId>configuration-as-code</artifactId>
+            <version>1.23</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
