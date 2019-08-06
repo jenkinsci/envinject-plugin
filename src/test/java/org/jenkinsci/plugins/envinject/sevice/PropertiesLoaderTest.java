@@ -148,7 +148,7 @@ public class PropertiesLoaderTest {
     }
 
     private void checkWithVarsToResolve(boolean fromFile) throws Exception {
-        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=https://github.com\nKEY3=${VAR3_TO_RESOLVE}\\\\otherContent";
+        String content = "KEY1 =${VAR1_TO_RESOLVE}\nKEY2=https\\://github.com\nKEY3=${VAR3_TO_RESOLVE}\\\\otherContent";
         Map<String, String> currentEnvVars = new HashMap<String, String>();
         currentEnvVars.put("VAR1_TO_RESOLVE", "NEW_VALUE1 ");
         currentEnvVars.put("VAR3_TO_RESOLVE", "C:\\Bench");
