@@ -25,7 +25,6 @@ package org.jenkinsci.plugins.envinject;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
-import hudson.RestrictedSince;
 import hudson.XmlFile;
 import java.io.File;
 import javax.annotation.CheckForNull;
@@ -36,8 +35,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;

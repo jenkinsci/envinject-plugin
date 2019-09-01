@@ -14,7 +14,6 @@ import hudson.model.PasswordParameterValue;
 import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.util.StreamTaskListener;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;

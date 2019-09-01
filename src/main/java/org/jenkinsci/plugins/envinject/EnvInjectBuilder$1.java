@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject;
 
 import hudson.RestrictedSince;
 import hudson.model.AbstractBuild;
-import hudson.model.Run;
 import org.jenkinsci.lib.envinject.EnvInjectAction;
 
 import java.util.Map;

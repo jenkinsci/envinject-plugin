@@ -11,8 +11,6 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
