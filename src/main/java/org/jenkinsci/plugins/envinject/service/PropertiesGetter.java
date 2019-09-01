@@ -17,9 +17,12 @@ public class PropertiesGetter implements Serializable {
             return null;
         }
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : propertiesContent.entrySet()) {
-            sb.append(entry.getKey() + "=" + entry.getValue() + "\n");
+            sb.append(entry.getKey());
+            sb.append("=");
+            sb.append(entry.getValue());
+            sb.append("\n");
         }
         if (sb.length() > 0) {
             sb.delete(sb.length() - 1, sb.length());
