@@ -21,7 +21,7 @@ public class EnvInjectJobPropertyInfoTest {
         final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, "System.exit(0)", false);
         // According to the decisions, it is true by default.
         // So the migrated scripts will require a bulk approval instead of sandboxing.
-        Assert.assertTrue("Groovy sandbox must be disabled by default", !info.getSecureGroovyScript().isSandbox());
+        Assert.assertFalse("Groovy sandbox must be disabled by default", info.getSecureGroovyScript().isSandbox());
     }
     
     @Test
