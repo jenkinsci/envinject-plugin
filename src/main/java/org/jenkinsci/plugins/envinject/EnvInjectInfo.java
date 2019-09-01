@@ -35,9 +35,8 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @CheckForNull
-    @SuppressWarnings({"unused", "deprecation"})
+    @SuppressWarnings("unused")
     public String getPropertiesContent() {
-
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             PropertiesGetter propertiesGetter = new PropertiesGetter();
             return propertiesGetter.getPropertiesContentFromMapObject(propertiesContentMap);
@@ -47,9 +46,7 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @CheckForNull
-    @SuppressWarnings("deprecation")
     public Map<String, String> getPropertiesContentMap(@Nonnull Map<String, String> currentEnvVars) {
-
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
         }
