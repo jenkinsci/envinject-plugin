@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 public class SortedProperties extends LinkedHashMap<Object, Object> {
 
 
-    class LineReader {
+    static class LineReader {
         public LineReader(@Nonnull InputStream inStream) {
             this.inStream = inStream;
             this.inByteBuf = new byte[8192];

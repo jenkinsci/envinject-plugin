@@ -196,7 +196,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     /**
      * Class took from the mask-passwords plugin
      */
-    class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
+    static class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
 
         @Nonnull
         private final OutputStream logger;
