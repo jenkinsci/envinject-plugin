@@ -110,7 +110,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
 
     /**
      * Check if the instance supports loading of scripts and property files from the master.
-     * It does not prevent lcal loading of files.
+     * It does not prevent local loading of files.
      * @return {@code true} if it is enabled
      * @see EnvInjectJobPropertyInfo#loadFilesFromMaster
      * @since 2.0
