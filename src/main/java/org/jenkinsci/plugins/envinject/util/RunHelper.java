@@ -117,7 +117,6 @@ public class RunHelper {
     
     // Moved from EnvInjectVariableGetter
     
-    @SuppressWarnings("unchecked")
     public static Map<String, String> getBuildVariables(@Nonnull Run<?, ?> run, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
         EnvVars result = new EnvVars();
 
@@ -161,7 +160,6 @@ public class RunHelper {
     }
 
     @CheckForNull
-    @SuppressWarnings("unchecked")
     public static EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull Run<?, ?> build) {
         if (build == null) {
             throw new IllegalArgumentException("A build object must be set.");

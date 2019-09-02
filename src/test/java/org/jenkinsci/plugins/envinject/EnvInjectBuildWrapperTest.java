@@ -101,7 +101,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextPropsContentSelfReferenceWithInitalValueFromPropsFile() throws Exception {
+    public void injectTextPropsContentSelfReferenceWithInitialValueFromPropsFile() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));

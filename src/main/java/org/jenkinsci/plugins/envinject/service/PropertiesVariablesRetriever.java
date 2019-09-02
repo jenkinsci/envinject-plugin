@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject.service;
 
-import hudson.FilePath;
 import hudson.Util;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;

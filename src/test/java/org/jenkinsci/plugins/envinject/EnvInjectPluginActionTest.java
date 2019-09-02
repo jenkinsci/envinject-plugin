@@ -16,7 +16,6 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import static org.junit.Assert.*;
 
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;

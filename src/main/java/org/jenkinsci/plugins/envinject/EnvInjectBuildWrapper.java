@@ -21,14 +21,12 @@ import hudson.tasks.BuildWrapperDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
-import net.sf.json.JSONObject;
 
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author Gregory Boissinot

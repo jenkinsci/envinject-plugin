@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject.service;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.RestrictedSince;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.slaves.EnvironmentVariablesNodeProperty;

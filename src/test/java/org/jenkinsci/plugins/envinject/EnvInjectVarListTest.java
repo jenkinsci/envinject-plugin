@@ -6,12 +6,10 @@ import hudson.model.Run;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * Tests for {@link EnvInjectVarList}.

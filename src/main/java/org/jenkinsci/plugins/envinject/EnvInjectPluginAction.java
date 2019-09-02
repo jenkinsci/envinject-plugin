@@ -5,7 +5,6 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributingAction;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import hudson.model.ParametersAction;
@@ -24,8 +23,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 import jenkins.model.RunAction2;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot

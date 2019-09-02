@@ -11,8 +11,6 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author Gregory Boissinot
@@ -117,7 +115,6 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     @Deprecated
     private transient String groovyScriptContent;
 
-    @SuppressWarnings("deprecation")
     private Object readResolve() {
         if (secureGroovyScript == null && !StringUtils.isBlank(groovyScriptContent)) {
             secureGroovyScript = new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create());

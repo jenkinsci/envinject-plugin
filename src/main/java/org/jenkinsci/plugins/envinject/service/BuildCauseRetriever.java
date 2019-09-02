@@ -69,7 +69,7 @@ public class BuildCauseRetriever {
     /**
      * Inserts root cause names to the specified target container.
      * @param causeNamesTarget Target set. May receive null items
-     * @param cause Cause to be added. For {@code Cause.UstreamCause} there will be in-depth search
+     * @param cause Cause to be added. For {@code Cause.UpstreamCause} there will be in-depth search
      * @param depth Current search depth. {@link #MAX_UPSTREAM_DEPTH} is a limit
      */
     private static void insertRootCauseNames(@Nonnull Set<String> causeNamesTarget, @CheckForNull Cause cause, int depth) {
@@ -83,7 +83,7 @@ public class BuildCauseRetriever {
                     insertRootCauseNames(causeNamesTarget, upstreamCause, depth + 1);
             }
         } else {
-            //TODO: Accordig to the current design this list may receive null for unknown trigger. Bug?
+            // TODO: According to the current design this list may receive null for unknown trigger. Bug?
             // Should actually return UNKNOWN
             causeNamesTarget.add(getTriggerName(cause));
         }

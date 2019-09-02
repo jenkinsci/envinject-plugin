@@ -186,7 +186,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         job.addProperty(property);
 
         TestUtils.saveConfigurationAs(jenkins, job, "alice");
-        //Since alice is an admin the script should be approved automagically
+        //Since alice is an admin the script should be approved automatically
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(job);
 
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);

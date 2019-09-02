@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.envinject;
 import hudson.EnvVars;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

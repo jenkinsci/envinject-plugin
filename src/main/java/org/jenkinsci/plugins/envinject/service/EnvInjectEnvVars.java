@@ -10,25 +10,20 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Item;
 import hudson.model.Run;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.util.VariableResolver;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.annotation.CheckForNull;
