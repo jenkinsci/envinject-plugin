@@ -68,8 +68,12 @@ public class PropertiesLoader implements Serializable {
     @Nonnull
     private Map<String, String> getVars(@Nonnull String content, @Nonnull Map<String, String> currentEnvVars) 
             throws EnvInjectException {
+
+        // Replace single backslashes with double ones so they won't be removed by Property.load()
+        String escapedContent = content;
+        escapedContent = escapedContent.replaceAll("(?<=[^\\\\])\\\\(?![n|:|*|?|\"|<|>|\\||\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
         Map<String, String> result = new LinkedHashMap<String, String>();
-        StringReader stringReader = new StringReader(content);
+        StringReader stringReader = new StringReader(escapedContent);
         Properties properties = new Properties();
 
         try {
