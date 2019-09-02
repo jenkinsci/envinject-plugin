@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
@@ -9,9 +10,7 @@
                 checked="${it.unsetSystemVariables}" default="${true}"/>
     </f:entry>
 
-    <f:entry field="propertiesFilePath"
-             title="${%Properties File Path}"
-             help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesFilePath">
+    <f:entry field="propertiesFilePath" title="${%Properties File Path}">
         <f:textbox
                 name="propertiesFilePath"
                 value="${it.propertiesFilePath}"/>

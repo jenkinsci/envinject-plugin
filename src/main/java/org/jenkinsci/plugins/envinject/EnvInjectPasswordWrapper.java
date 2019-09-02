@@ -14,13 +14,13 @@ import hudson.model.PasswordParameterValue;
 import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import hudson.util.StreamTaskListener;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -38,6 +38,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
+        @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
             if (envInjectPasswordEntry == null) {
                 throw new NullPointerException("Received null EnvInject password entry");
@@ -47,6 +48,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     };
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
+        @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
             if (envInjectPasswordEntry == null) {
                 throw new NullPointerException("Received null EnvInject password entry");
@@ -57,6 +59,8 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private boolean injectGlobalPasswords;
     private boolean maskPasswordParameters;
+    
+    @CheckForNull
     private EnvInjectPasswordEntry[] passwordEntries;
 
     @DataBoundConstructor
@@ -71,10 +75,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         return maskPasswordParameters;
     }
     
+    @DataBoundSetter
     public void setInjectGlobalPasswords(boolean injectGlobalPasswords) {
         this.injectGlobalPasswords = injectGlobalPasswords;
     }
 
+    @DataBoundSetter
     public void setMaskPasswordParameters(boolean maskPasswordParameters) {
         this.maskPasswordParameters = maskPasswordParameters;
     }
@@ -103,6 +109,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         return Collections.unmodifiableList(Arrays.asList(passwordEntries));
     }
 
+    @DataBoundSetter
     public void setPasswordEntries(@CheckForNull EnvInjectPasswordEntry[] passwordEntries) {
         this.passwordEntries = passwordEntries;
     }
@@ -125,8 +132,9 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      * Returns a listing of passwords: globals (if active) and locals (job passwords)
      *
      * @return Listing of {@link EnvInjectPasswordEntry}
-     * @throws EnvInjectException
+     * @throws EnvInjectException Operation error
      */
+    @Nonnull
     private List<EnvInjectPasswordEntry> getEnvInjectPasswordEntries() throws EnvInjectException {
 
         List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
@@ -188,12 +196,14 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     /**
      * Class took from the mask-passwords plugin
      */
-    class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
+    static class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
 
+        @Nonnull
         private final OutputStream logger;
+        @CheckForNull
         private final Pattern passwordsAsPattern;
 
-        EnvInjectPasswordsOutputStream(OutputStream logger, Collection<String> passwords) {
+        EnvInjectPasswordsOutputStream(@Nonnull OutputStream logger, @CheckForNull Collection<String> passwords) {
 
             this.logger = logger;
 

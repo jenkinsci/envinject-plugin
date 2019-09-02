@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 
 /**
  * @author Gregory Boissinot
@@ -20,7 +21,8 @@ import java.util.TreeMap;
 @ExportedBean(defaultVisibility = 99)
 public class EnvInjectVarList implements Serializable {
 
-    private Map<String, String> envVars = new TreeMap<String, String>();
+    @Nonnull
+    private final Map<String, String> envVars = new TreeMap<String, String>();
     
     /**
      * Empty variables list, which should be returned if the variables are hidden
@@ -46,7 +48,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
     @SuppressWarnings("unused")
-    public void doExport(StaplerRequest request, StaplerResponse response) throws IOException {
+    public void doExport(@Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
 
         String path = request.getPathInfo();
         if (path != null) {
@@ -58,7 +60,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
-    private void doExportWithPath(String path, StaplerRequest request, StaplerResponse response) throws IOException {
+    private void doExportWithPath(@Nonnull String path, @Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
 
         if (path.endsWith("text")) {
             writeTextResponse(response);
@@ -78,7 +80,7 @@ public class EnvInjectVarList implements Serializable {
         doExportHeaders(request, response);
     }
 
-    private void doExportHeaders(StaplerRequest request, StaplerResponse response) throws IOException {
+    private void doExportHeaders(@Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
 
         String acceptHeader = request.getHeader("Accept");
 
@@ -101,7 +103,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
-    private void writeTextResponse(StaplerResponse response) throws IOException {
+    private void writeTextResponse(@Nonnull StaplerResponse response) throws IOException {
         response.setContentType("plain/text");
         StringWriter stringWriter = new StringWriter();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
@@ -110,27 +112,35 @@ public class EnvInjectVarList implements Serializable {
         response.getOutputStream().write(stringWriter.toString().getBytes());
     }
 
-    private void writeXmlResponse(StaplerResponse response) throws IOException {
+    private void writeXmlResponse(@Nonnull StaplerResponse response) throws IOException {
         response.setContentType("application/xml");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("<envVars>".getBytes());
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", entry.getKey(), entry.getValue()).getBytes());
+            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", escapeXml(entry.getKey()), escapeXml(entry.getValue())).getBytes());
         }
         outputStream.write("</envVars>".getBytes());
     }
 
-    private void writeJsonResponse(StaplerResponse response) throws IOException {
+    private void writeJsonResponse(@Nonnull StaplerResponse response) throws IOException {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", entry.getKey(), entry.getValue()));
+            sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", escapeJson(entry.getKey()), escapeJson(entry.getValue())));
         }
         sb.delete(0, 1);
         outputStream.write(sb.toString().getBytes());
         outputStream.write("]}}".getBytes());
+    }
+
+    private String escapeXml(String xml) {
+        return xml.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");
+    }
+
+    private String escapeJson(String json) {
+        return json.replace("\\", "\\\\").replace("\"", "\\\"");
     }
     
     //TODO: Throw errors in responses?

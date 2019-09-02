@@ -19,10 +19,9 @@ public class EnvInjectEnvVarsContributorTest {
     public void envVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "REPO=trivial-maven", null, null, null, false);
-        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "REPO=trivial-maven", null, null, false, null);
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
-        envInjectJobProperty.setInfo(jobPropertyInfo);
         project.addProperty(envInjectJobProperty);
 
         TaskListener listener = jenkins.createTaskListener();
@@ -34,10 +33,9 @@ public class EnvInjectEnvVarsContributorTest {
     public void notAvailableEnvVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("notAvailableEnvVarsJob");
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "VAR1=${WORKSPACE}\nVAR2=${JOB_NAME}", null, null, null, false);
-        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "VAR1=${WORKSPACE}\nVAR2=${JOB_NAME}", null, null, false, null);
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
-        envInjectJobProperty.setInfo(jobPropertyInfo);
         project.addProperty(envInjectJobProperty);
 
         TaskListener listener = jenkins.createTaskListener();

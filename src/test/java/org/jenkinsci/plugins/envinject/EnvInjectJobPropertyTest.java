@@ -1,14 +1,19 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.EnvVars;
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import java.io.IOException;
 import javax.annotation.Nonnull;
+
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -41,8 +46,8 @@ public class EnvInjectJobPropertyTest {
     public void shouldNotInjectVariablesIfPropertyIsDisabled() throws Exception {   
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         
-        EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>();
-        prop.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
+        EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
+                new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, false, null));
         // prop.setOn(false); // It is default
         project.addProperty(prop);
         
@@ -54,7 +59,8 @@ public class EnvInjectJobPropertyTest {
     @Test
     public void shouldKeepBuildVariablesByDefault() throws Exception {   
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();     
-        // We assign a value to another parameter just to enable the engine
+        project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("PARAM", "")));
+    // We assign a value to another parameter just to enable the engine
         EnvInjectJobProperty<FreeStyleProject> prop = forPropertiesContent(project, "PARAM2=Overridden");
         
         QueueTaskFuture<FreeStyleBuild> scheduled = project.scheduleBuild2(0, new Cause.UserIdCause(),
@@ -102,6 +108,13 @@ public class EnvInjectJobPropertyTest {
         jenkinsRule.assertBuildStatusSuccess(build);
         assertEquals("The variable has been overridden in the environment", "ValueFromParameter", envCapture.getEnvVars().get("PARAM"));
         assertEquals("The variable has been overridden in the API", "ValueFromParameter", build.getEnvironment(TaskListener.NULL).get("PARAM"));
+
+        // Ensure that Parameters action contains the correct value
+        EnvInjectPluginAction a = build.getAction(EnvInjectPluginAction.class);
+        assertNotNull("EnvInjectPluginAction has not been added to the build", a);
+        EnvVars vars = new EnvVars();
+        a.buildEnvVars(build, vars);
+        assertEquals("The variable has been overridden in the stored action", "ValueFromParameter", vars.get("PARAM"));
     }
     
     @Test
@@ -116,13 +129,63 @@ public class EnvInjectJobPropertyTest {
         FreeStyleBuild build = scheduled.get();
         jenkinsRule.assertBuildStatusSuccess(build);
         assertEquals("The build parameter value has not been overridden", "Overridden", build.getEnvironment(TaskListener.NULL).get("PARAM"));
+
+        // Ensure that Parameters action contains the correct value
+        EnvInjectPluginAction a = build.getAction(EnvInjectPluginAction.class);
+        assertNotNull("EnvInjectPluginAction has not been added to the build", a);
+        EnvVars vars = new EnvVars();
+        a.buildEnvVars(build, vars);
+        assertEquals("The build parameter value has not been overridden in EnvInjectPluginAction",
+                "Overridden", vars.get("PARAM"));
+
+    }
+
+    @Test
+    public void configRoundTrip() throws Exception {
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        final String propertiesFilePath = "filepath.properties";
+        final String propertiesContent = "PROPERTIES=CONTENT";
+        final String scriptFilePath = "script/file.path";
+        final String scriptContent = "echo SCRIPT=CONTENT";
+        final String groovyScriptContent = "return [script:\"content\"]";
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(
+                propertiesFilePath,
+                propertiesContent,
+                scriptFilePath,
+                scriptContent,
+                true,
+                new SecureGroovyScript(groovyScriptContent, false, null));
+        EnvInjectJobProperty property = new EnvInjectJobProperty<FreeStyleProject>(info);
+        property.setOn(true);
+        property.setKeepBuildVariables(false);
+        property.setKeepJenkinsSystemVariables(false);
+        property.setOverrideBuildParameters(true);
+        project.addProperty(property);
+
+        project = jenkinsRule.configRoundtrip(project);
+        project = jenkinsRule.jenkins.getItemByFullName(project.getFullName(), FreeStyleProject.class);
+
+        property = project.getProperty(EnvInjectJobProperty.class);
+        assertNotNull("there should be a property", property);
+        info = property.getInfo();
+        assertNotNull("There should be an info object", info);
+        assertTrue("Property should be on", property.isOn());
+        assertFalse("KeepBuildVariables", property.isKeepBuildVariables());
+        assertFalse("KeepJenkinsSystemVariables", property.isKeepJenkinsSystemVariables());
+        assertTrue("OverrideBuildParameters", property.isOverrideBuildParameters());
+        assertEquals(propertiesFilePath, info.getPropertiesFilePath());
+        assertEquals(propertiesContent, info.getPropertiesContent());
+        assertEquals(scriptFilePath, info.getScriptFilePath());
+        assertEquals(scriptContent, info.getScriptContent());
+        assertEquals(groovyScriptContent, info.getSecureGroovyScript().getScript());
+        assertTrue("loadFilesFromMaster should be true", info.isLoadFilesFromMaster());
     }
     
     @Nonnull
     public EnvInjectJobProperty<FreeStyleProject>
             forPropertiesContent(@Nonnull FreeStyleProject job, @Nonnull String content) throws IOException {
-        final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>();
-        prop.setInfo(new EnvInjectJobPropertyInfo(null, content, null, null, null, false));
+        final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
+                new EnvInjectJobPropertyInfo(null, content, null, null, false, null));
         prop.setOn(true); // Property becomes enabled by default
         job.addProperty(prop);
         return prop;

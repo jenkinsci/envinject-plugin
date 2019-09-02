@@ -5,18 +5,20 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.15</version>
+        <version>3.47</version>
+        <relativePath />
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>1.92.2-SNAPSHOT</version>
+    <version>2.2.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/EnvInject+Plugin</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/EnvInject+Plugin</url>
 
     <licenses>
         <license>
             <name>MIT license</name>
+            <url>https://opensource.org/licenses/MIT</url>
             <comments>All source code is under the MIT license.</comments>
         </license>
     </licenses>
@@ -36,7 +38,7 @@
             <id>oleg_nenashev</id>
             <name>Oleg Nenashev</name>
             <email>o.v.nenashev@gmail.com</email>
-            <timezone>+3</timezone>
+            <timezone>+1</timezone>
             <roles>
                 <role>Maintainer</role>
             </roles>
@@ -53,18 +55,19 @@
     </developers>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <envinject.lib.version>1.24</envinject.lib.version>
         <ivy.plugin.version>1.21</ivy.plugin.version>
-        <mockito.version>1.10.19</mockito.version>
-        <powermock.version>1.6.5</powermock.version>
-        <jenkins.version>1.609.3</jenkins.version>
-        <jenkins-test-harness.version>1.609.3</jenkins-test-harness.version>
-        <java.level>6</java.level>
-        <java.level.test>${java.level}</java.level.test>
-        <findbugs.failOnError>false</findbugs.failOnError>
+        <jenkins.version>2.138.4</jenkins.version>
+        <java.level>8</java.level>
+        <!-- Remove once JENKINS-45055 is fixed -->
+        <spotbugs.failOnError>false</spotbugs.failOnError>
+        <!-- 
+          Incompatible changes:
+            1.93 - Fix of JENKINS-31573 changed the property file parsing approach. 
+                 Now it follows the Java property file standard.
+            2.0: - Security fixes (SECURITY-256)
+            2.1.4 - JENKINS-47364 and JENKINS-47370, they still need to be investigated
+        -->
+        <hpi.compatibleSinceVersion>2.1.4</hpi.compatibleSinceVersion>
     </properties>
 
     <scm>
@@ -73,24 +76,11 @@
         <tag>HEAD</tag>
     </scm>
 
-    <build>
-
-        <plugins>
-            <plugin>
-                <groupId>org.jenkins-ci.tools</groupId>
-                <artifactId>maven-hpi-plugin</artifactId>
-                <version>1.98</version>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
-
         <dependency>
-            <groupId>org.jenkins-ci.lib</groupId>
-            <artifactId>envinject-lib</artifactId>
-            <version>${envinject.lib.version}</version>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>envinject-api</artifactId>
+            <version>1.6</version>
         </dependency>
 
         <dependency>
@@ -101,17 +91,30 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${mockito.version}</version>
+            <!-- TODO: Otherwise Ivy plugin startup fails in IDEA -->
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.4</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!--Upper bounds conflict-->
+                    <groupId>org.jenkins-ci</groupId>
+                    <artifactId>annotation-indexer</artifactId>
+                </exclusion>
+                <exclusion> <!-- TODO pending update to structs -->
+                    <groupId>org.jenkins-ci</groupId>
+                    <artifactId>symbol-annotation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
-            <groupId>org.jenkins-ci</groupId>
-            <artifactId>test-annotations</artifactId>
-            <version>1.2</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
@@ -130,19 +133,42 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <version>1.22</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>matrix-auth</artifactId>
+            <version>2.4.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins</groupId>
+            <artifactId>configuration-as-code</artifactId>
+            <version>1.23</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 

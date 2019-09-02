@@ -27,10 +27,9 @@ public class EnvInjectEnvVarsEmptyTest {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         StringBuffer propertiesContent = new StringBuffer("EMPTYVAR1=\n");
         propertiesContent.append("VAR2=VAL2");
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, null, false);
-        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty();
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, false, null);
+        EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
-        envInjectJobProperty.setInfo(jobPropertyInfo);
         project.addProperty(envInjectJobProperty);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();

@@ -3,12 +3,13 @@ package org.jenkinsci.plugins.envinject;
 import hudson.Extension;
 import hudson.model.*;
 import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.envinject.service.EnvironmentVariablesNodeLoader;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
  * Overriding job parameters with environment variables populated by EnvInject plugin
@@ -19,13 +20,12 @@ import java.util.Map;
 public class EnvInjectBuildVariableContributor extends BuildVariableContributor {
 
     @Override
-    public void buildVariablesFor(AbstractBuild build, Map<String, String> variables) {
+    public void buildVariablesFor(@Nonnull AbstractBuild build, @Nonnull Map<String, String> variablesOut) {
         ParametersAction parameters = build.getAction(ParametersAction.class);
         //Only for a parameterized job
         if (parameters != null) {
 
-            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            EnvInjectJobProperty envInjectJobProperty = variableGetter.getEnvInjectJobProperty(build);
+            EnvInjectJobProperty envInjectJobProperty = RunHelper.getEnvInjectJobProperty(build);
             if (envInjectJobProperty == null) {
                 // Don't override anything if envinject isn't enabled on this job
                 return;
@@ -34,10 +34,9 @@ public class EnvInjectBuildVariableContributor extends BuildVariableContributor 
             if (!envInjectJobProperty.isOverrideBuildParameters()) return;
 
             //Gather global variables for the current node
-            EnvironmentVariablesNodeLoader environmentVariablesNodeLoader = new EnvironmentVariablesNodeLoader();
             Map<String, String> nodeEnvVars = new HashMap<String, String>();
             try {
-                nodeEnvVars = environmentVariablesNodeLoader.gatherEnvironmentVariablesNode(build, build.getBuiltOn(), new EnvInjectLogger(TaskListener.NULL));
+                nodeEnvVars = EnvironmentVariablesNodeLoader.gatherEnvVarsForNode(build, build.getBuiltOn(), new EnvInjectLogger(TaskListener.NULL));
             } catch (EnvInjectException e) {
                 e.printStackTrace();
             }
@@ -66,7 +65,7 @@ public class EnvInjectBuildVariableContributor extends BuildVariableContributor 
                     // key in parameter, in job (not in global and already injected)
                     // --> override
                     if (injectedEnvVars.containsKey(key) && !nodeEnvVars.containsKey(key)) {
-                        variables.put(key, injectedEnvVars.get(key));
+                        variablesOut.put(key, injectedEnvVars.get(key));
                     }
                 }
             }

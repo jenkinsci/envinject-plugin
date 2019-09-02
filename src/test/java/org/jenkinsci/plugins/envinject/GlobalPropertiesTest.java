@@ -9,6 +9,7 @@ import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.tasks.Shell;
 import hudson.util.DescribableList;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -81,7 +82,7 @@ public class GlobalPropertiesTest {
 
         StringBuffer propertiesContent = new StringBuffer();
         propertiesContent.append(testJobVariableName).append("=").append(testJobVariableExprValue);
-        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, null, true);
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, true, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
         envInjectBuildWrapper.setInfo(info);
         project.getBuildWrappersList().add(envInjectBuildWrapper);

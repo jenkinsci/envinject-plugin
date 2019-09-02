@@ -6,9 +6,7 @@ import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.User;
-import hudson.security.ACL;
 import hudson.security.AccessControlled;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
@@ -17,12 +15,13 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Before;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * Tests for {@link EnvInjectPluginAction}.
@@ -42,8 +41,8 @@ public class EnvInjectPluginActionTest {
 
         EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
         p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, null, false));
-        
+        wrapper.setInfo(new EnvInjectJobPropertyInfo(null, "FOO=BAR", null, null, false, null));
+
         capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
     }
@@ -71,7 +70,7 @@ public class EnvInjectPluginActionTest {
     @Test
     public void hideActionGlobally() throws Exception {
         final EnvInjectPlugin plugin = EnvInjectPlugin.getInstance();
-        EnvInjectPluginConfiguration.configure(true, false);
+        EnvInjectPluginConfiguration.configure(true, false, false);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         
         // Run build and retrieve results
@@ -95,16 +94,14 @@ public class EnvInjectPluginActionTest {
     public void hideActionViaPermissions() throws Exception {
         // Enable permissions
         final EnvInjectPlugin plugin = EnvInjectPlugin.getInstance();
-        EnvInjectPluginConfiguration.configure(false, true);
+        EnvInjectPluginConfiguration.configure(false, true, false);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         
         // Create a test user
         User user = User.get("testUser", true, null);
-             
-        final GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
-        strategy.add(Jenkins.READ, user.getId());
-        strategy.add(Item.READ, user.getId());
-        strategy.add(Item.DISCOVER, user.getId());
+
+        MockAuthorizationStrategy strategy = new MockAuthorizationStrategy().
+            grant(Jenkins.READ, Item.READ, Item.DISCOVER).everywhere().to(user.getId());
         j.jenkins.setAuthorizationStrategy(strategy);
         
         // Run build and retrieve results
@@ -114,8 +111,8 @@ public class EnvInjectPluginActionTest {
         assertFalse("User should have no permission to see injected vars", 
                 canViewInjectedVars(user, build));
             
-        // Grant permissions and check the results 
-        strategy.add(EnvInjectPlugin.VIEW_INJECTED_VARS, user.getId());
+        // Grant permissions and check the results
+        strategy.grant(EnvInjectPlugin.VIEW_INJECTED_VARS).everywhere().to(user.getId());
         assertTrue("User should have the View Injected Vars permission", 
                 hasPermission(user, build, EnvInjectPlugin.VIEW_INJECTED_VARS));
         assertTrue("User should have a permission to see injected vars", 
