@@ -7,7 +7,6 @@ import hudson.model.Node;
 import hudson.model.Run;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
-import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 
@@ -59,11 +58,8 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
         Map<String, String> configNodeEnvVars = new HashMap<String, String>();
 
         try {
-
             //Get env vars for the current node
-            Map<String, String> nodeEnvVars = nodePath.act(
-                    new EnvVarMasterToSlaveCallable()
-            );
+            Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
             for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
                 if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
@@ -91,12 +87,6 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
             throw new EnvInjectException(ioe);
         } catch (InterruptedException ie) {
             throw new EnvInjectException(ie);
-        }
-    }
-
-    private static class EnvVarMasterToSlaveCallable extends MasterToSlaveCallable<Map<String, String>, IOException> {
-        public Map<String, String> call() throws IOException {
-            return EnvVars.masterEnvVars;
         }
     }
 }

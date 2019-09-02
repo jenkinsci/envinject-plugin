@@ -11,10 +11,10 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
-import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsRetriever;
 import org.jenkinsci.plugins.envinject.service.EnvInjectMasterEnvVarsSetter;
 
 import java.io.IOException;
@@ -33,14 +33,11 @@ import jenkins.model.Jenkins;
 @Extension
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
 
-
     private EnvVars getNewMasterEnvironmentVariables(@Nonnull Computer c, 
             @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         //Get env vars for the current node
-        Map<String, String> nodeEnvVars = nodePath.act(
-                new GetMasterEnvVars());
-
+        Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
         // -- Retrieve Environment variables from master
         EnvInjectLogger logger = new EnvInjectLogger(listener);
@@ -95,12 +92,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         } 
         
         //Get env vars for the current node
-        Map<String, String> nodeEnvVars = nodePath.act(
-                new MasterToSlaveCallable<Map<String, String>, IOException>() {
-                    public Map<String, String> call() throws IOException {
-                        return EnvVars.masterEnvVars;
-                    }
-                });
+        Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
         // -- Process slave properties
         boolean unsetSystemVariables = false;
@@ -187,11 +179,5 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         }
         return false;
 
-    }
-
-    private static class GetMasterEnvVars extends MasterToSlaveCallable<Map<String, String>, IOException> {
-        public Map<String, String> call() throws IOException {
-            return EnvVars.masterEnvVars;
-        }
     }
 }
