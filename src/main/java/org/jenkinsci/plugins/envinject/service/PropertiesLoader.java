@@ -71,17 +71,15 @@ public class PropertiesLoader implements Serializable {
 
         // Replace single backslashes with double ones so they won't be removed by Property.load()
         String escapedContent = content;
-        escapedContent = escapedContent.replaceAll("(?<=[^\\\\])\\\\(?![n|:|*|?|\"|<|>|\\||\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
-        Map<String, String> result = new LinkedHashMap<String, String>();
-        StringReader stringReader = new StringReader(escapedContent);
+        escapedContent = escapedContent.replaceAll("(?<![\\\\])\\\\(?![n:*?\"<>\\\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
+        Map<String, String> result = new LinkedHashMap<>();
+        
         Properties properties = new Properties();
 
-        try {
+        try (StringReader stringReader = new StringReader(escapedContent)) {
             properties.load(stringReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
-        } finally {
-            stringReader.close();
         }
 
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
