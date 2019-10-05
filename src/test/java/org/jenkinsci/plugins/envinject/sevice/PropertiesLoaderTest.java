@@ -173,13 +173,14 @@ public class PropertiesLoaderTest {
     }
 
     private void checkWithBackSlashes(boolean fromFile) throws Exception {
-        String content = "KEY1=Test\\Path\\Variable\nKEY2=C:\\Windows\\Temp";
+        String content = "KEY1=Test\\Path\\Variable\nKEY2=C:\\Windows\\Temp\nKEY3=\\\\Test\\Path\\Variable";
         Map<String, String> gatherVars = gatherEnvVars(fromFile, content, new HashMap<String, String>());
         assertNotNull(gatherVars);
-        assertEquals(2, gatherVars.size());
+        assertEquals(3, gatherVars.size());
 
         assertEquals("Test\\Path\\Variable", gatherVars.get("KEY1"));
         assertEquals("C:\\Windows\\Temp", gatherVars.get("KEY2"));
+        assertEquals("\\\\Test\\Path\\Variable", gatherVars.get("KEY3"));
     }
 
     private Map<String, String> gatherEnvVars(boolean fromFile, String content2Load, Map<String, String> currentEnvVars) throws Exception {
