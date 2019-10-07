@@ -42,9 +42,6 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
-            if (envInjectPasswordEntry == null) {
-                throw new NullPointerException("Received null EnvInject password entry");
-            }
             return envInjectPasswordEntry.getName();
         }
     };
@@ -52,9 +49,6 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
         public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
-            if (envInjectPasswordEntry == null) {
-                throw new NullPointerException("Received null EnvInject password entry");
-            }
             return envInjectPasswordEntry.getValue().getPlainText();
         }
     };
