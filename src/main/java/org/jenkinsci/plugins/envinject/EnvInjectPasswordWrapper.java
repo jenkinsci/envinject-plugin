@@ -41,14 +41,14 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
-        public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
+        public String apply(@Nonnull EnvInjectPasswordEntry envInjectPasswordEntry) {
             return envInjectPasswordEntry.getName();
         }
     };
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
-        public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
+        public String apply(@Nonnull EnvInjectPasswordEntry envInjectPasswordEntry) {
             return envInjectPasswordEntry.getValue().getPlainText();
         }
     };
