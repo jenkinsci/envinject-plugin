@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.envinject.sevice;
 
 import hudson.model.AbstractBuild;
 import hudson.model.CauseAction;
-import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 import org.jenkinsci.plugins.envinject.service.BuildCauseRetriever;
 import org.junit.Before;
 import org.junit.Test;

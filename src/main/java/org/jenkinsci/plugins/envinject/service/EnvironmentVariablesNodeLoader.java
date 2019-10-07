@@ -60,7 +60,7 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
             //Get env vars for the current node
             Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
-            for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
+            for (NodeProperty<?> nodeProperty : Jenkins.get().getGlobalNodeProperties()) {
                 if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                     EnvironmentVariablesNodeProperty variablesNodeProperty = (EnvironmentVariablesNodeProperty) nodeProperty;
                     EnvVars envVars = variablesNodeProperty.getEnvVars();

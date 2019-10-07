@@ -10,6 +10,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@SuppressWarnings("rawtypes")
 public class EnvInjectEnvVarsContributorTest {
 
     @Rule

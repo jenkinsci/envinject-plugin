@@ -46,11 +46,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "FILE_VAR=fvalue"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", "TEXT_VAR=tvalue", null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -65,11 +64,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "BASE_PATH=/tmp"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", "PATH_FOO=$BASE_PATH/foo \n PATH_BAR=$BASE_PATH/bar", null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -85,11 +83,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "INIT_PATH=/tmp/foo"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", "NEW_PATH=/tmp/bar:$OLD_PATH \n OLD_PATH=$INIT_PATH", null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -105,11 +102,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", "MY_PATH=/tmp/bar:$MY_PATH", null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -123,11 +119,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", "MY_PATH=/tmp/bar", null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -148,11 +143,10 @@ public class EnvInjectBuildWrapperTest {
         assertNotNull(oldPath);
 
         p.setScm(new SingleFileSCM("vars.properties", "PATH=ABC:$PATH"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 "vars.properties", null, null, null, false, null
         ));
+        p.getBuildWrappersList().add(wrapper);
         p.scheduleBuild2(0).get();
 
         String newPathFromPropsFile = capture.getEnvVars().get("PATH");
@@ -173,11 +167,10 @@ public class EnvInjectBuildWrapperTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.groovy", "return ['FILE_VAR': 'fvalue']"));
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
-        p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 null, null, null, null, "return ['GROOVY_VAR': 'gvalue']", false
         ));
+        p.getBuildWrappersList().add(wrapper);
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
@@ -190,9 +183,8 @@ public class EnvInjectBuildWrapperTest {
     public void exceptionMessageMustBeLogged() throws Exception {
     	FreeStyleProject p = j.createFreeStyleProject();
     	
-    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': FOOVAR]", false));
     	p.getBuildWrappersList().add(wrapper);
-    	wrapper.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': FOOVAR]", false));
     	
     	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
     	p.getBuildersList().add(capture);
@@ -212,9 +204,8 @@ public class EnvInjectBuildWrapperTest {
 
     	EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
     	
-    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': WORKSPACE]", false));
     	project.getBuildWrappersList().add(wrapper);
-    	wrapper.setInfo(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': WORKSPACE]", false));
 
     	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
     	project.getBuildersList().add(capture);
@@ -235,8 +226,7 @@ public class EnvInjectBuildWrapperTest {
 
         EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
 
-        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
-        envInjectBuildWrapper.setInfo(withPropContent(customEnvVarName + "=" + customEnvVarValue));
+        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(withPropContent(customEnvVarName + "=" + customEnvVarValue));
         project.getBuildWrappersList().add(envInjectBuildWrapper);
 
         FreeStyleBuild build = j.buildAndAssertSuccess(project);

@@ -61,7 +61,7 @@ public class EnvInjectPlugin extends Plugin {
      * @throws IllegalStateException the plugin has not been loaded yet
      */
     public static @Nonnull EnvInjectPlugin getInstance() {
-        EnvInjectPlugin plugin = Jenkins.getActiveInstance().getPlugin(EnvInjectPlugin.class);
+        EnvInjectPlugin plugin = Jenkins.get().getPlugin(EnvInjectPlugin.class);
         if (plugin == null) { // Fail horribly
             // TODO: throw a graceful error
             throw new IllegalStateException("Cannot get the plugin's instance. Jenkins or the plugin have not been initialized yet");

@@ -37,7 +37,6 @@ public class BuildCauseRetrieverTest {
     @ClassRule
     public static JenkinsRule jenkins = new JenkinsRule();
 
-    @SuppressWarnings("deprecation")
     @Test
     public void shouldWriteInfoAboutManualBuildCause() throws Exception {
         Cause cause = Cause.UserCause.class.newInstance();

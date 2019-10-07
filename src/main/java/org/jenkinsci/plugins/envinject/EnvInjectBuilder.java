@@ -36,7 +36,6 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     }
 
     @Nonnull 
-    @SuppressWarnings("unused")
     public EnvInjectInfo getInfo() {
         return info;
     }
@@ -67,7 +66,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
             //Add SCM variables if not set
             SCM scm = build.getProject().getScm();
             if (scm != null) {
-                scm.buildEnvVars(build, variables);
+                scm.buildEnvironment(build, variables);
             }
 
             //Always keep build variables (such as parameter variables).

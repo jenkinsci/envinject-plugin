@@ -35,7 +35,6 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @CheckForNull
-    @SuppressWarnings("unused")
     public String getPropertiesContent() {
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             PropertiesGetter propertiesGetter = new PropertiesGetter();

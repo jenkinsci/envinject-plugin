@@ -27,7 +27,7 @@ public class EnvInjectJobPropertyInfoTest {
     @Test
     @Issue("SECURITY-256")
     public void shouldNotCreateSecureGroovyScriptForNullScriptWithOldAPI() throws Exception {
-        final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, null, false);
+        final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, false, null);
         Assert.assertNull("Groovy script must be null", info.getSecureGroovyScript());
     }
     

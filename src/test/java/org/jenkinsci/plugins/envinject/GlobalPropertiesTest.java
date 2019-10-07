@@ -6,7 +6,6 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -34,7 +33,7 @@ public class GlobalPropertiesTest {
         final String workspaceName = "WORKSPACE";
 
         //A global node property TEST_WORKSPACE
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.get().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testWorkspaceVariableName, testWorkspaceVariableValue)));
 
         EnvInjectJobProperty jobProperty = new EnvInjectJobProperty();
@@ -69,14 +68,13 @@ public class GlobalPropertiesTest {
         final String testJobVariableName = "TEST_JOB_WORKSPACE";
         final String testJobVariableExprValue = "${WORKSPACE}";
 
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.get().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testGlobalVariableName, testGlobalVariableValue)));
 
         StringBuffer propertiesContent = new StringBuffer();
         propertiesContent.append(testJobVariableName).append("=").append(testJobVariableExprValue);
         EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, true, null);
-        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper();
-        envInjectBuildWrapper.setInfo(info);
+        EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(info);
         project.getBuildWrappersList().add(envInjectBuildWrapper);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();

@@ -19,7 +19,6 @@ import javax.annotation.Nonnull;
  */
 public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
-    @SuppressWarnings("unused")
     private transient String filePath;
 
     @Override
@@ -36,7 +35,6 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
         @Override
         public String getDisplayName() {

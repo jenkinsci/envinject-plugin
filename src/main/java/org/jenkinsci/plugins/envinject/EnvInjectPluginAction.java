@@ -107,7 +107,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
             List<ParametersAction> actions = build.getActions(ParametersAction.class);
             for (ParametersAction params : actions) {
-                params.buildEnvVars(build, resolvedParameters);
+                params.buildEnvironment(build, resolvedParameters);
             }
             resolvedParameterEnvVars = resolvedParameters;
         }

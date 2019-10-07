@@ -14,6 +14,7 @@ import java.util.Map;
 public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void buildEnvironmentFor(Job job, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         EnvInjectJobProperty jobProperty = (EnvInjectJobProperty) job.getProperty(EnvInjectJobProperty.class);
         if (jobProperty != null && jobProperty.isOn()) {
