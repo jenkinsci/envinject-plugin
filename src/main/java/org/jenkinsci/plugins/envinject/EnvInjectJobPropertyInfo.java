@@ -10,6 +10,8 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.annotation.CheckForNull;
 
 /**
@@ -23,7 +25,8 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     @CheckForNull
     private final String scriptContent;
     @CheckForNull
-    private transient SecureGroovyScript secureGroovyScript;
+    @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "EnvInjectEvaluatedGroovyScriptTest#testWorkaroundSecurity86 relies on the serialization of this object")
+    private SecureGroovyScript secureGroovyScript;
     
     /**
      * If enabled, Jenkins will try taking scripts and property files from the master instead of the agent.
