@@ -23,6 +23,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -111,7 +113,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     @DataBoundSetter
     public void setPasswordEntries(@CheckForNull EnvInjectPasswordEntry[] passwordEntries) {
-        this.passwordEntries = passwordEntries;
+        this.passwordEntries = passwordEntries != null ? passwordEntries.clone() : null;
     }
 
     @Override
@@ -234,11 +236,11 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
         @Override
         protected void eol(byte[] bytes, int len) throws IOException {
-            String line = new String(bytes, 0, len);
+            String line = new String(bytes, 0, len, "UTF-8");
             if (passwordsAsPattern != null) {
                 line = passwordsAsPattern.matcher(line).replaceAll(EnvInjectPlugin.DEFAULT_MASK);
             }
-            logger.write(line.getBytes());
+            logger.write(line.getBytes("UTF-8"));
         }
 
         @Override
@@ -291,7 +293,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         }
 
         @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildWrapper newInstance(@Nonnull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
 
             EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
             passwordWrapper.setInjectGlobalPasswords(formData.getBoolean("injectGlobalPasswords"));

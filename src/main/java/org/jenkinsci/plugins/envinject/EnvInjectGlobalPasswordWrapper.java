@@ -39,7 +39,7 @@ public class EnvInjectGlobalPasswordWrapper extends BuildWrapper {
 
         @Override
         public String getDisplayName() {
-            return null;
+            return "EnvInjectGlobalPasswordWrapper";
         }
     }
 

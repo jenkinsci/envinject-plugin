@@ -40,7 +40,7 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
         @Override
         public String getDisplayName() {
-            return null;
+            return "EnvFileBuildWrapper";
         }
 
         @Override

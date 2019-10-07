@@ -17,12 +17,13 @@ import javax.annotation.CheckForNull;
  */
 public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describable<EnvInjectJobPropertyInfo> {
 
+    private static final long serialVersionUID = 1L;
     @CheckForNull
     private final String scriptFilePath;
     @CheckForNull
     private final String scriptContent;
     @CheckForNull
-    private SecureGroovyScript secureGroovyScript;
+    private transient SecureGroovyScript secureGroovyScript;
     
     /**
      * If enabled, Jenkins will try taking scripts and property files from the master instead of the agent.
