@@ -92,10 +92,9 @@ public class EnvInjectActionTest {
     @Test
     public void doNotOverrideWithBuildWrapper() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
-        final EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper();
+        final EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
+                null, "IRRELEVANT_VAR=true", null, null, false, null));
         p.getBuildWrappersList().add(wrapper);
-        wrapper.setInfo(new EnvInjectJobPropertyInfo(
-                null, "IRRELEVANT_VAR=true", null, null, null, false));
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
 

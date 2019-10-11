@@ -108,7 +108,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
 
     @Override
     public Descriptor<EnvInjectJobPropertyInfo> getDescriptor() {
-        return Jenkins.getActiveInstance().getDescriptorByType(DescriptorImpl.class);
+        return Jenkins.get().getDescriptorByType(DescriptorImpl.class);
     }
 
     @CheckForNull

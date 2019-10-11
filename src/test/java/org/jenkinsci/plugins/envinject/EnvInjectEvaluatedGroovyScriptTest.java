@@ -112,8 +112,6 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
         List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
-        ParametersAction parametersAction = new ParametersAction(parameterValueList);
-
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
         
@@ -254,7 +252,4 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
     }
     
-    private void approveScript(SecureGroovyScript script) {
-        
-    }
 }

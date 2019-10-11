@@ -50,7 +50,7 @@ public class EnvInjectVariableGetter {
         Map<String, String> result = new TreeMap<String, String>();
 
         final Computer computer;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         if (forceOnMaster) {
             
             computer = jenkins.toComputer();

@@ -19,7 +19,6 @@ import javax.annotation.Nonnull;
  */
 public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
-    @SuppressWarnings("unused")
     private transient String localVarText;
 
     @Override
@@ -45,7 +44,6 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
 
 
     @Extension
-    @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
         @Override
         public String getDisplayName() {

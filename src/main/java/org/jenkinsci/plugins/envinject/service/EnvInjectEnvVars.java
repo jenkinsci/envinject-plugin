@@ -58,7 +58,7 @@ public class EnvInjectEnvVars implements Serializable {
                 if (!EnvInjectPluginConfiguration.getOrFail().isEnableLoadingFromMaster()) {
                     throw EnvInjectExceptionFormatter.forProhibitedLoadFromMaster(propertiesFilePath);
                 }
-                resultMap.putAll(Jenkins.getActiveInstance().getRootPath().act(
+                resultMap.putAll(Jenkins.get().getRootPath().act(
                         new PropertiesVariablesRetriever(
                                 propertiesFilePath, propertiesContent, infraEnvVarsMaster, logger)));
             } else {
@@ -189,7 +189,7 @@ public class EnvInjectEnvVars implements Serializable {
             @CheckForNull SecureGroovyScript script,
             @Nonnull Map<String, String> envVars) throws EnvInjectException, AbortException {
 
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.get();
         
         if (script == null) {
             return new HashMap<String, String>();

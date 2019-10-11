@@ -60,7 +60,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Nonnull
-    @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
     }
@@ -92,7 +91,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
             //Add SCM variables if not set
             SCM scm = build.getProject().getScm();
             if (scm != null) {
-                scm.buildEnvVars(build, injectedEnvVars);
+                scm.buildEnvironment(build, injectedEnvVars);
             }
 
             Map<String, String> groovyMapEnvVars = envInjectEnvVarsService.executeGroovyScript(logger, info.getSecureGroovyScript(), injectedEnvVars);
@@ -142,7 +141,6 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
         @Override

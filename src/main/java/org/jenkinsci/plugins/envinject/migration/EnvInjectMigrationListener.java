@@ -36,12 +36,11 @@ public class EnvInjectMigrationListener extends ItemListener {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "rawtypes"})
     public void onLoaded() {
-        List<TopLevelItem> items = Jenkins.getActiveInstance().getItems();
+        List<TopLevelItem> items = Jenkins.get().getItems();
         for (TopLevelItem item : items) {
             try {
-
                 if (item instanceof Job) {
                     Job job = (Job) item;
                     Map<JobPropertyDescriptor, JobProperty> propertyMap = job.getProperties();

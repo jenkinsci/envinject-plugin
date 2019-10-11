@@ -130,7 +130,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
 
     @Override
     protected XmlFile getConfigFile() {
-        return new XmlFile(Jenkins.XSTREAM, new File(Jenkins.getActiveInstance().getRootDir(), 
+        return new XmlFile(Jenkins.XSTREAM, new File(Jenkins.get().getRootDir(), 
                 "envinject-plugin-configuration.xml"));
     }
 

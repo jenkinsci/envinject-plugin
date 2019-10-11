@@ -36,18 +36,15 @@ public class EnvInjectVarList implements Serializable {
         }
     }
 
-    @SuppressWarnings("unused")
     @Exported
     public Map<String, String> getEnvMap() {
         return envVars;
     }
 
-    @SuppressWarnings("unused")
     public Api getApi() {
         return new Api(this);
     }
 
-    @SuppressWarnings("unused")
     public void doExport(@Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
 
         String path = request.getPathInfo();

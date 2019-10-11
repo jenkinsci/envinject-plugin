@@ -53,11 +53,10 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
     }
     
     public Descriptor<EnvInjectJobPropertyContributor> getDescriptor() {
-        return Jenkins.getActiveInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
-    @SuppressWarnings("unused")
     public static DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> all() {
-        return Jenkins.getActiveInstance().getDescriptorList(EnvInjectJobPropertyContributor.class);
+        return Jenkins.get().getDescriptorList(EnvInjectJobPropertyContributor.class);
     }
 }

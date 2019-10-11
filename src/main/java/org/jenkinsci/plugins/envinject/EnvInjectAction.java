@@ -48,7 +48,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         envMap.putAll(all);
     }
 
-    @SuppressWarnings({"unused", "unchecked"})
+    @SuppressWarnings("unchecked")
     public Map<String, String> getEnvMap() {
         return UnmodifiableMap.decorate(envMap);
     }

@@ -46,12 +46,10 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
         private EnvInjectGlobalPasswordEntry[] envInjectGlobalPasswordEntries = new EnvInjectGlobalPasswordEntry[0];
         public static final String ENVINJECT_CONFIG = "envInject";
 
-        @SuppressWarnings("unused")
         public EnvInjectNodePropertyDescriptor() {
             load();
         }
 
-        @SuppressWarnings("unused")
         public EnvInjectNodePropertyDescriptor(Class<? extends NodeProperty<?>> clazz) {
             super(clazz);
             load();
@@ -67,7 +65,6 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
             return "/plugin/envinject/help-node.html";
         }
 
-        @SuppressWarnings("unused")
         public EnvInjectGlobalPasswordEntry[] getEnvInjectGlobalPasswordEntries() {
             return Arrays.copyOf(envInjectGlobalPasswordEntries, envInjectGlobalPasswordEntries.length);
         }

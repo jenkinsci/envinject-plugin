@@ -29,7 +29,6 @@ public class EnvInjectGlobalPasswordWrapper extends BuildWrapper {
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
         @Override

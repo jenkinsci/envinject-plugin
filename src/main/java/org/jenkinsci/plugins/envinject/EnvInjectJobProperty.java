@@ -52,33 +52,27 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
     }
 
     @CheckForNull
-    @SuppressWarnings("unused")
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
     }
 
-    @SuppressWarnings("unused")
     public boolean isOn() {
         return on;
     }
 
-    @SuppressWarnings("unused")
     public boolean isKeepJenkinsSystemVariables() {
         return keepJenkinsSystemVariables;
     }
 
-    @SuppressWarnings("unused")
     public boolean isKeepBuildVariables() {
         return keepBuildVariables;
     }
 
-    @SuppressWarnings("unused")
     public boolean isOverrideBuildParameters() {
         return overrideBuildParameters;
     }
 
     @Nonnull
-    @SuppressWarnings("unused")
     public synchronized EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
             try {

@@ -42,8 +42,8 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
         boolean unsetSystemVariables = false;
-        Map<String, String> globalPropertiesEnvVars = new HashMap<String, String>();
-        for (NodeProperty<?> nodeProperty : Jenkins.getActiveInstance().getGlobalNodeProperties()) {
+        Map<String, String> globalPropertiesEnvVars = new HashMap<>();
+        for (NodeProperty<?> nodeProperty : Jenkins.get().getGlobalNodeProperties()) {
 
             if (nodeProperty instanceof EnvironmentVariablesNodeProperty) {
                 globalPropertiesEnvVars.putAll(((EnvironmentVariablesNodeProperty) nodeProperty).getEnvVars());
@@ -79,7 +79,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
     private EnvVars getNewSlaveEnvironmentVariables(@Nonnull Computer c, 
             @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
-        Map<String, String> currentEnvVars = new HashMap<String, String>();
+        Map<String, String> currentEnvVars = new HashMap<>();
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
@@ -164,12 +164,12 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             return false;
         }
 
-        Node slave = Jenkins.getActiveInstance().getNode(c.getName());
+        Node slave = Jenkins.get().getNode(c.getName());
         return slave != null;
     }
 
     private boolean isGlobalEnvInjectActivatedOnMaster() {
-        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.getActiveInstance().getGlobalNodeProperties();
+        DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.get().getGlobalNodeProperties();
         for (NodeProperty<?> nodeProperty : globalNodeProperties) {
             if (nodeProperty instanceof EnvInjectNodeProperty) {
                 return true;
