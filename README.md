@@ -115,22 +115,21 @@ if (!binding.variables.containsKey('GERRIT_REFSPEC')) {
 
 ## Additional features provided by other plugins
 
-[Shared Objects](https://wiki.jenkins.io/display/JENKINS/SharedObjects+Plugin) plugin contributes to Envinject plugin that enables you to populate shared objects as environment variables.
+[Shared Objects Plugin](https://plugins.jenkins.io/shared-objects) contributes to EnvInject plugin that enables you to populate shared objects as environment variables.
 
 ## Extensibility with other plugins
 
 EnvInject captures build environment variables populated by plugins providing environment variables through Jenkins extension points 
 (such as BuildWrappers, EnvironmentContributions and so on).  
 Environment variables injected by the EnvInject plugin are available in Jenkins triggers
-(for example in all [XTrigger
-plugin](https://wiki.jenkins.io/display/JENKINS/XTrigger+Plugin) typologies, injected environment variable can be used).  
-Injected environment variables with the EnvInject plugin are captured by the [BuildContext capture plugin](https://wiki.jenkins.io/display/JENKINS/BuildContextCapture+Plugin).
+(for example in all [XTrigger plugin](https://plugins.jenkins.io/xtrigger) typologies, injected environment variable can be used).  
+Injected environment variables with the EnvInject plugin are captured by the [BuildContext capture plugin](https://plugins.jenkins.io/buildcontext-capture).
 
 ## Comparison with other plugins
 
 This plugin is an alternative to [Setenv
 Plugin](https://wiki.jenkins.io/display/JENKINS/Setenv+Plugin) and
-[Envfile Plugin](https://wiki.jenkins.io/display/JENKINS/Envfile+Plugin) plugins  
+[Envfile Plugin](https://plugins.jenkins.io/envfile) plugins which are currently deprecated.
 
 * Note 1: The EnvInject plugin automatically migrates the Jobs configuration from these plugins.
 The setenv and/or the envfile plugins can be deleted from your plugin list.  
@@ -142,16 +141,14 @@ The setenv and/or the envfile plugins can be deleted from your plugin list.
 
 Even though it is possible to set up the EnvInject Job Property and
 build step in Pipeline, the plugin does not provide full compatibility
-with [Pipeline
-Plugin](https://wiki.jenkins.io/display/JENKINS/Pipeline+Plugin).
+with [Jenkins Pipeline](https://jenkins.io/doc/book/pipeline/).
 
 Supported use-cases:
 
 -   Injection of EnvVars defined in the "Properties Content" field of
     the Job Property
     -   These EnvVars are being injected to the script environment and will be inaccessible via the "env" Pipeline global variable
-    -   Please note there is also a known compatibility issue with [Durable Task
-        Plugin](https://wiki.jenkins.io/display/JENKINS/Durable+Task+Plugin) 1.13
+    -   Please note there is also a known compatibility issue with [Durable Task Plugin](https://plugins.jenkins.io/durable-task) 1.13
 
 All other use-cases of the plugin may work incorrectly in Jenkins Pipeline.
 Please
@@ -169,21 +166,21 @@ However, EnvInject provides all MaskPassword's features.
 
 ### Tool Environment Plugin compatibility
 
-EnvInject can't use exported environment variables provided by the [Tool Environment](https://wiki.jenkins.io/display/JENKINS/Tool+Environment+Plugin) plugin.  
-Instead, we suggest to use the [SharedObjects Plugin](https://wiki.jenkins.io/display/JENKINS/SharedObjects+Plugin).
+EnvInject can't use exported environment variables provided by the [Tool Environment](https://plugins.jenkins.io/toolenv) plugin.  
+Instead, we suggest to use the [SharedObjects Plugin](https://plugins.jenkins.io/shared-objects).
 It covers Tool Env plugin features and provides a good integration with EnvInject.
 
 ### Other limitations
 
 -   As into regular shell scripts, you are not able to use the "." character for environment variable names
 -   Only previous environment variables are available for polling.
-    Some plugins provide polling mechanisms (such as SCM plugins, XTrigger plugins, ...) and you want to use injected environment variables in form fields of these plugins.
-    Unfortunately, injected environment variables are processed only at build time therefore after the build is scheduled.
-    Therefore, we can't access environment variables configured within the job.
-    However, previous injected environment variables (from the previous build) are retrievable
-    (implemented for example in the XTtrigger plugins). 
-    For the other plugins, authors are free to add the envinject-lib library
-    dependency in their plugins in order to provide the ability to use environment variables given the EnvInject plugin.
+
+Some plugins provide polling mechanisms (such as SCM plugins, XTrigger plugins, ...) and you want to use injected environment variables in form fields of these plugins.
+Unfortunately, injected environment variables are processed only at build time therefore after the build is scheduled.
+Therefore, we can't access environment variables configured within the job.
+However, previous injected environment variables (from the previous build) are retrievable
+(implemented for example in the XTtrigger plugins).
+For the other plugins, authors are free to add the [EnvInject API](https://plugins.jenkins.io/envinject-api) dependency in their plugins in order to provide the ability to use environment variables given the EnvInject plugin.
 
 ## Changelog
 
