@@ -13,7 +13,7 @@
     <version>2.2.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
-    <url>https://wiki.jenkins.io/display/JENKINS/EnvInject+Plugin</url>
+    <url>https://github.com/jenkinsci/envinject-plugin</url>
 
     <licenses>
         <license>
