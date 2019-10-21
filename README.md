@@ -1,7 +1,7 @@
 # EnvInject Plugin for Jenkins
 
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/envinject.svg)](https://plugins.jenkins.io/envinject)
-[![GitHub release](https://img.shields.io/github/release/jenkinsci/envinject-plugin.svg?label=release)](https://github.com/jenkinsci/envinject-plugin/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/envinject-plugin.svg?label=changelog)](https://github.com/jenkinsci/envinject-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/envinject.svg?color=blue)](https://plugins.jenkins.io/envinject)
 
 This plugin makes it possible to setup a custom environment for your jobs.
@@ -17,10 +17,9 @@ Features:
 
 ## Use cases
 
--   To remove inherited environment variables (PATH, ANT\_HOME, ...) at
+-   To remove inherited environment variables (`PATH`, `ANT_HOME`, ...) at
     node level (master/agent), available by default for a job run.
--   To inject variables in the first step of the job (before the SCM
-    checkout)
+-   To inject variables in the first step of the job (before the SCM checkout)
 -   To inject variables based on user parameter values
 -   To execute an initialization script before a SCM checkout.
 -   To execute an initialization script after a SCM checkout
@@ -29,8 +28,7 @@ Features:
 -   To know environment variables used for a build
 -   To inject build cause as environment variable for a build
 -   To inject environment variables from the evaluation of a Groovy
-    script (powered by [Script Security
-    Plugin](https://wiki.jenkins.io/display/JENKINS/Script+Security+Plugin))
+    script (powered by [Script Security Plugin](https://wiki.jenkins.io/display/JENKINS/Script+Security+Plugin))
 -   To export environment variables as a metadata in your binary
     repository
 
@@ -128,7 +126,6 @@ Environment variables injected by the EnvInject plugin are available in Jenkins 
 plugin](https://wiki.jenkins.io/display/JENKINS/XTrigger+Plugin) typologies, injected environment variable can be used).  
 Injected environment variables with the EnvInject plugin are captured by the [BuildContext capture plugin](https://wiki.jenkins.io/display/JENKINS/BuildContextCapture+Plugin).
 
-
 ## Comparison with other plugins
 
 This plugin is an alternative to [Setenv
@@ -163,12 +160,11 @@ There is no short-term plan to fix the compatibility issues though any pull requ
 
 ### Mask Passwords Plugin compatibility
 
-Mask Passwords plugin is able to mask password elements. 
+Mask Passwords plugin is able to mask password elements.
 However, technically, this plugin provides its own class.
 And we don't want to have a hard dependency from the EnvInject plugin to any other plugin.
 
-Therefore, EnvInject can't retrieve information from
-the MaskPassword plugin.
+Therefore, EnvInject can't retrieve information from the MaskPassword plugin.
 However, EnvInject provides all MaskPassword's features.
 
 ### Tool Environment Plugin compatibility
@@ -192,4 +188,4 @@ It covers Tool Env plugin features and provides a good integration with EnvInjec
 ## Changelog
 
 See [GitHub Releases](https://github.com/jenkinsci/envinject-plugin/releases) for recent releases.
-Changelogs for older releases are available on the [plugin's Wiki page](https://wiki.jenkins.io/display/JENKINS/EnvInject+Plugin#EnvInjectPlugin-Changelog).
+Changelogs for EnvInject 2.1.6 and older releases are available on the [Old Changelog](./docs/CHANGELOG_OLD.md) page.
