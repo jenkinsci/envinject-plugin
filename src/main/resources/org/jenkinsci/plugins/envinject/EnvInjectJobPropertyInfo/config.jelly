@@ -11,7 +11,8 @@
     </f:entry>
 
     <f:entry field="scriptFilePath"
-             title="${%Script File Path}">
+             title="${%Script File Path}"
+             autocomplete="off">
         <f:textbox/>
     </f:entry>
 
