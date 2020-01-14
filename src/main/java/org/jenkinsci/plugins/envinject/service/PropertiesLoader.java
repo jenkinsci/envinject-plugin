@@ -71,7 +71,7 @@ public class PropertiesLoader implements Serializable {
 
         // Replace single backslashes with double ones so they won't be removed by Property.load()
         String escapedContent = content;
-        escapedContent = escapedContent.replaceAll("(?<![\\\\])\\\\(?![n:*?\"<>\\\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
+        escapedContent = escapedContent.replaceAll("(?<![\\\\])\\\\(?![:*?\"<>\\\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
         //Escape windows network shares initial double backslash i.e \\Network\Share
         escapedContent = escapedContent.replaceAll("(?m)^([^=]+=)(\\\\\\\\)(?![:*?\"<>\\\\/])", "$1\\\\\\\\\\\\\\\\");
 
