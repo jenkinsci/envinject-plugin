@@ -16,17 +16,17 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Oleg Nenashev
  */
 public class EnvInjectVarListTest {
-    
-    @Rule 
+
+    @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Test 
+    @Test
     @Issue("JENKINS-44263")
     public void envVarsShouldBeCachedProperlyAfterReload() throws Exception {
         final FreeStyleProject p = j.jenkins.createProject(FreeStyleProject.class, "project");
         p.getBuildersList().add(new EnvInjectBuilder(null, "TEXT_VAR=tvalue"));
         final FreeStyleBuild build = j.buildAndAssertSuccess(p);
-        
+
         // Check vars before the reload
         {
             EnvInjectVarList varList = getVarListOrFail(build);
@@ -34,26 +34,28 @@ public class EnvInjectVarListTest {
             Assert.assertNotNull("EnvInject vars list is null for the run before reload", envMap);
             Assert.assertTrue("TEXT_VAR is not present in the list", envMap.containsKey("TEXT_VAR"));
         }
-        
+
         // Reload and check vars
         // build.reload() does not assign parents for RunAction2, hence we apply a workaround
         p.doReload();
         final Run<?, ?> reloadedBuild = p.getBuildByNumber(build.getNumber());
         {
             EnvInjectVarList varList = getVarListOrFail(reloadedBuild);
+            Assert.assertNotNull("EnvInject varList is null for the run after the reload", varList);
+
             Map<String, String> envMap = varList.getEnvMap();
-            Assert.assertNotNull("EnvInject vars list is null for the run after the reload", envMap);
+            Assert.assertNotNull("EnvInject envMap from varList is null for the run after the reload", envMap);
             Assert.assertTrue("TEXT_VAR is not present in the list", envMap.containsKey("TEXT_VAR"));
             Assert.assertEquals("TEXT_VAR has wrong value", "tvalue", envMap.get("TEXT_VAR"));
         }
     }
-    
+
     @Nonnull
     private EnvInjectVarList getVarListOrFail(@Nonnull Run<?, ?> run) throws AssertionError {
         EnvInjectPluginAction action = run.getAction(EnvInjectPluginAction.class);
         Assert.assertNotNull("EnvInject action is not set for the run " + run, action);
         EnvInjectVarList list = (EnvInjectVarList)action.getTarget();
-        Assert.assertNotNull("Unexpected state. EnvInject Var List is nul for the run " + run, list);
+        Assert.assertNotNull("Unexpected state. EnvInject Var List is null for the run " + run, list);
         return list;
     }
 }
