@@ -115,7 +115,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     @Deprecated
     private transient String groovyScriptContent;
 
-    private Object readResolve() {
+    protected Object readResolve() {
         if (secureGroovyScript == null && !StringUtils.isBlank(groovyScriptContent)) {
             secureGroovyScript = new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create());
             groovyScriptContent = null;
