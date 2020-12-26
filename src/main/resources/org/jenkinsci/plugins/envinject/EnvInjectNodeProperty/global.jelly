@@ -6,7 +6,7 @@
         <f:entry title="${%Global Passwords}" description="${%Global passwords list}">
 
             <f:repeatable var="inst" items="${descriptor.envInjectGlobalPasswordEntries}">
-                <table width="100%">
+                <div width="100%">
 
                     <f:entry title="${%Name}"
                              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
@@ -24,7 +24,7 @@
                         </div>
                     </f:entry>
 
-                </table>
+                </div>
             </f:repeatable>
 
         </f:entry>

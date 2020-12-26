@@ -15,7 +15,7 @@
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/jobPasswords">
 
         <f:repeatable var="passwordEntry" items="${instance.passwordEntries}">
-            <table width="100%">
+            <div width="100%">
 
                 <f:entry title="${%Name}"
                          help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
@@ -33,7 +33,7 @@
                     </div>
                 </f:entry>
 
-            </table>
+            </div>
         </f:repeatable>
 
     </f:entry>

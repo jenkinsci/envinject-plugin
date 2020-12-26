@@ -26,10 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
     <st:documentation>
+        Adapted from https://github.com/jenkinsci/jenkins/blob/master/core/src/main/resources/lib/form/hetero-list.jelly
+
         Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
         arbitrary items from the given list of descriptors, and configure them independently.
 
-        The submission can be data-bound into List&lt;T> where T is the common base type for the describable instances.
+        The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
+
+        For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
 
         <st:attribute name="name" use="required">
             form name that receives an array for all the items in the heterogeneous list.
@@ -57,26 +61,26 @@ THE SOFTWARE.
 
     <d:taglib uri="local">
         <d:tag name="body">
-            <table style="width:100%">
-                <j:set var="help" value="${descriptor.helpFile}"/>
+            <div style="width:100%">
+                <j:set var="help" value="${descriptor.helpFile}" />
                 <j:if test="${hasHeader}">
-                    <tr>
-                        <td colspan="3">
+                    <div style="tr">
+                        <f:entry>
                             <div class="dd-handle">
                                 <b>${descriptor.displayName}</b>
                             </div>
-                        </td>
+                        </f:entry>
                         <j:if test="${help!=null}">
-                            <td>
+                            <f:entry>
                                 <a href="#" class="help-button" helpURL="${rootURL}${help}">
                                     <img src="${imagesURL}/16x16/help.gif" alt="[help]" height="16" width="16"/>
                                 </a>
-                            </td>
+                            </f:entry>
                         </j:if>
-                    </tr>
+                    </div>
                     <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
                     <j:if test="${help!=null}">
-                        <f:helpArea/>
+                        <f:helpArea />
                     </j:if>
                 </j:if>
 
@@ -88,7 +92,7 @@ THE SOFTWARE.
                         <!--<f:repeatableDeleteButton value="${attrs.deleteCaption}" />-->
                     </div>
                 </f:block>
-            </table>
+            </div>
             <input type="hidden" name="kind" value="${descriptor.class.name}"/>
         </d:tag>
     </d:taglib>
@@ -97,28 +101,27 @@ THE SOFTWARE.
     <div class="hetero-list-container${hasHeader?' with-drag-drop':''}">
         <!-- display existing items -->
         <j:forEach var="i" items="${attrs.items}">
-            <j:set var="descriptor" value="${i.descriptor}"/>
-            <j:set var="instance" value="${i}"/>
+            <j:set var="descriptor" value="${i.descriptor}" />
+            <j:set var="instance" value="${i}" />
             <div name="${attrs.name}" class="repeated-chunk">
                 <local:body deleteCaption="${attrs.deleteCaption}">
-                    <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+                    <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
                 </local:body>
             </div>
         </j:forEach>
 
-        <div class="repeatable-insertion-point"/>
-
+        <div class="repeatable-insertion-point" />
 
         <div class="prototypes to-be-removed">
             <!-- render one prototype for each type -->
-            <j:set var="instance" value="${null}"/>
+            <j:set var="instance" value="${null}" />
             <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
                 <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}"
                      descriptorId="${descriptor.id}">
                     <local:body deleteCaption="${attrs.deleteCaption}">
                         <l:renderOnDemand tag="tr" clazz="config-page" capture="descriptor,it">
                             <l:ajax>
-                                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true"/>
+                                <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
                             </l:ajax>
                         </l:renderOnDemand>
                     </local:body>

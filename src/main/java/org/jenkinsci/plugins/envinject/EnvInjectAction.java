@@ -121,7 +121,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
     }
 
     @SuppressWarnings("unused")
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
 
         if (resultVariables != null) {
             envMap = resultVariables;
