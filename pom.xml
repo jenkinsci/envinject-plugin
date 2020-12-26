@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>2.4.0</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
     <url>https://github.com/jenkinsci/envinject-plugin</url>
@@ -55,7 +55,7 @@
     </developers>
 
     <properties>
-        <revision>2.3.1</revision>
+        <revision>2.4.1</revision>
         <changelist>-SNAPSHOT</changelist>
         <ivy.plugin.version>1.21</ivy.plugin.version>
         <jenkins.version>2.264</jenkins.version>
@@ -75,7 +75,7 @@
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/envinject-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
-        <tag>envinject-2.4.0</tag>
+        <tag>${scmTag}</tag>
     </scm>
 
     <dependencies>
