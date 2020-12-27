@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.envinject.util;
 import hudson.EnvVars;
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Environment;
 import hudson.model.EnvironmentContributor;
 import hudson.model.Executor;
@@ -27,6 +28,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectEnvVarsContributor;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
@@ -114,6 +116,40 @@ public class RunHelper {
             }
         }
     }
+
+    /**
+     * Consults with all Environment Contributors and sends their results
+     * to the destination {@link EnvVars} entity.
+     * {@link EnvInjectEnvVarsContributor} will be ignored.
+     *
+     * @param run Run
+     * @param envVars Target environment variables.
+     *                The argument may contain some environment variables before the call,
+     *                but it may be also empty.
+     * @param listener Listener and logger
+     * @throws InterruptedException Operation has been interrupted
+     * @throws IOException Operation error.
+     *                Unhandled exceptions in {@link EnvironmentContributor} will be wrapped by this exception as well.
+     */
+    public static void consultOtherEnvironmentContributors(@Nonnull Run<?, ?> run, @Nonnull EnvVars envVars,
+                                               @Nonnull BuildListener listener)
+        throws InterruptedException, IOException {
+        for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView()) {
+            if (ec instanceof EnvInjectEnvVarsContributor) {
+                // We skip EnvInject plugin, it should be invoked elsewhere
+                continue;
+            }
+
+            try {
+                ec.buildEnvironmentFor(run, envVars, listener);
+            } catch (IOException | InterruptedException ex) {
+                // We just propagate the exception
+                throw ex;
+            } catch (Exception ex) {
+                throw new IOException("Unexpected exception in the EnvironmentContributor", ex);
+            }
+        }
+    }
     
     // Moved from EnvInjectVariableGetter
     
@@ -124,8 +160,9 @@ public class RunHelper {
         result.putAll(run.getCharacteristicEnvVars());
 
         try {
+            // TODO: rework to consultEnvironmentContributors(), why result is within the cycle?
             EnvVars envVars = new EnvVars();
-            for (EnvironmentContributor ec : EnvironmentContributor.all()) {
+            for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView()) {
                 ec.buildEnvironmentFor(run, envVars, new LogTaskListener(LOGGER, Level.ALL));
                 result.putAll(envVars);
             }
@@ -182,6 +219,25 @@ public class RunHelper {
         return null;
     }
 
+    // Oleg: I just described the current behavior. It does not mean I understand why all of that
+    // is required for "get..PreviousSteps"
+    /**
+     * Gets Environment variables contributed by previous steps.
+     *
+     * The method consults with {@link Environment}s for {@link AbstractBuild}s,
+     * currently injected variables from {@link EnvInjectPluginAction}.
+     * If the {@link EnvInjectPluginAction} is missing (new build), it goes through
+     * system env vars, build characteristic variables and {@link EnvironmentContributor}s
+     * to construct the list.
+     * For {@link MatrixRun}s it also adds their env vars.
+     *
+     * @param build Current run
+     * @param logger Events logger
+     * @return Map of resolved environment variables
+     * @throws IOException Filesystem operation error
+     * @throws InterruptedException Interrupted (operation may do remoting calls)
+     * @throws EnvInjectException Failed to inject variables
+     */
     @Nonnull
     public static Map<String, String> getEnvVarsPreviousSteps(
             @Nonnull Run<?, ?> build, @Nonnull EnvInjectLogger logger) 
