@@ -10,6 +10,8 @@ import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author Gregory Boissinot
  * @deprecated replaced by {@link EnvInjectBuilder}
@@ -18,6 +20,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @RestrictedSince("2.1")
 @Deprecated
+@SuppressFBWarnings(value = "UUF_UNUSED_FIELD", justification = "Deprecated backwards compatibility bit")
 public class EnvInjectBuilder$1 extends EnvInjectAction {
 
     private transient String val$resultVariables;

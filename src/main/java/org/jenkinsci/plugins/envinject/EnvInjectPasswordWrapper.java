@@ -39,20 +39,14 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_NAME = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
-        public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
-            if (envInjectPasswordEntry == null) {
-                throw new NullPointerException("Received null EnvInject password entry");
-            }
+        public String apply(@Nonnull EnvInjectPasswordEntry envInjectPasswordEntry) {
             return envInjectPasswordEntry.getName();
         }
     };
 
     private static final Function<EnvInjectPasswordEntry, String> PASSWORD_ENTRY_TO_VALUE = new Function<EnvInjectPasswordEntry, String> ()  {
         @Override
-        public String apply(EnvInjectPasswordEntry envInjectPasswordEntry) {
-            if (envInjectPasswordEntry == null) {
-                throw new NullPointerException("Received null EnvInject password entry");
-            }
+        public String apply(@Nonnull EnvInjectPasswordEntry envInjectPasswordEntry) {
             return envInjectPasswordEntry.getValue().getPlainText();
         }
     };
@@ -111,7 +105,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
     @DataBoundSetter
     public void setPasswordEntries(@CheckForNull EnvInjectPasswordEntry[] passwordEntries) {
-        this.passwordEntries = passwordEntries;
+        this.passwordEntries = passwordEntries != null ? passwordEntries.clone() : null;
     }
 
     @Override
@@ -234,11 +228,11 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
         @Override
         protected void eol(byte[] bytes, int len) throws IOException {
-            String line = new String(bytes, 0, len);
+            String line = new String(bytes, 0, len, "UTF-8");
             if (passwordsAsPattern != null) {
                 line = passwordsAsPattern.matcher(line).replaceAll(EnvInjectPlugin.DEFAULT_MASK);
             }
-            logger.write(line.getBytes());
+            logger.write(line.getBytes("UTF-8"));
         }
 
         @Override
@@ -290,7 +284,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         }
 
         @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildWrapper newInstance(@Nonnull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
 
             EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
             passwordWrapper.setInjectGlobalPasswords(formData.getBoolean("injectGlobalPasswords"));

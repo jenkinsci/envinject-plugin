@@ -61,7 +61,8 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     @Override
     public String getIconFileName() {
-        if (!EnvInjectPlugin.canViewInjectedVars(getOwner())) {
+        Run<?,?> owner = getOwner();
+        if (owner == null || !EnvInjectPlugin.canViewInjectedVars(owner)) {
             return null;
         }
         return super.getIconFileName();
@@ -69,7 +70,8 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     @Override
     public String getUrlName() {
-        if (!EnvInjectPlugin.canViewInjectedVars(getOwner())) {
+        Run<?,?> owner = getOwner();
+        if (owner == null || !EnvInjectPlugin.canViewInjectedVars(owner)) {
             return null;
         }
         return super.getUrlName();
@@ -77,7 +79,8 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
  
     @Override
     public Object getTarget() {
-        if (!EnvInjectPlugin.canViewInjectedVars(getOwner())) {
+        Run<?,?> owner = getOwner();
+        if (owner == null || !EnvInjectPlugin.canViewInjectedVars(owner)) {
             return EnvInjectVarList.HIDDEN;
         }
         return getEnvInjectVarList();

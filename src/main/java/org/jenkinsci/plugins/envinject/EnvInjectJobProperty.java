@@ -16,6 +16,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -149,7 +151,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     @DataBoundSetter
     public synchronized void setContributors(EnvInjectJobPropertyContributor[] jobPropertyContributors) {
-        this.contributors = jobPropertyContributors;
+        this.contributors = jobPropertyContributors.clone();
     }
 
     @Extension
@@ -217,6 +219,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
 
     @Deprecated
     @CheckForNull
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Deprecated function")
     public EnvInjectPasswordEntry[] getPasswordEntries() {
         return passwordEntries;
     }

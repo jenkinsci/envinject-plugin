@@ -10,6 +10,8 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.annotation.CheckForNull;
 
 /**
@@ -17,11 +19,13 @@ import javax.annotation.CheckForNull;
  */
 public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describable<EnvInjectJobPropertyInfo> {
 
+    private static final long serialVersionUID = 1L;
     @CheckForNull
     private final String scriptFilePath;
     @CheckForNull
     private final String scriptContent;
     @CheckForNull
+    @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "EnvInjectEvaluatedGroovyScriptTest#testWorkaroundSecurity86 relies on the serialization of this object")
     private SecureGroovyScript secureGroovyScript;
     
     /**
