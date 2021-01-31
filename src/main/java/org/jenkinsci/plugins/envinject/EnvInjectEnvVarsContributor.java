@@ -24,7 +24,12 @@ public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
             if (jobPropertyInfo != null) {
                 Map<String, String> result = jobPropertyInfo.getPropertiesContentMap(env);
                 if (result != null) {
+                    int expectedEnvSize = env.size() + result.size();
                     env.putAll(result);
+                    if (env.size() != expectedEnvSize) {
+                        listener.error("Not all environment variables could be successfully injected. " +
+                                "Check for similarly-named environment variables.");
+                    }
                 }
             }
         }
