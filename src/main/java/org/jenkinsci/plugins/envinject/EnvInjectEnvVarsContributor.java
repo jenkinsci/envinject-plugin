@@ -6,15 +6,12 @@ import hudson.model.*;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * @since 1.92
  */
 @Extension
 public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
-
-    private final static Logger LOGGER = Logger.getLogger(EnvInjectEnvVarsContributor.class.getName());
 
     @Override
     @SuppressWarnings("rawtypes")
@@ -30,7 +27,7 @@ public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
                     int expectedEnvSize = env.size() + result.size();
                     env.putAll(result);
                     if (env.size() != expectedEnvSize) {
-                        LOGGER.warning("Not all environment variables could be successfully injected. " +
+                        listener.error("Not all environment variables could be successfully injected. " +
                                 "Check for similarly-named environment variables.");
                     }
                 }
