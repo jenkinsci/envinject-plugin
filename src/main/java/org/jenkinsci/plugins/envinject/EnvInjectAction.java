@@ -58,7 +58,7 @@ public class EnvInjectAction implements Action, StaplerProxy {
         if (!EnvInjectPlugin.canViewInjectedVars(build)) {
             return null;
         }
-        return "document-properties.gif";
+        return "document-properties.png";
     }
 
     @Override
