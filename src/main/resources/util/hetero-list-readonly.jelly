@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
+         xmlns:f="/lib/form" xmlns:local="local">
     <st:documentation>
         Adapted from https://github.com/jenkinsci/jenkins/blob/master/core/src/main/resources/lib/form/hetero-list.jelly
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
                         <j:if test="${help!=null}">
                             <f:entry>
                                 <a href="#" class="help-button" helpURL="${rootURL}${help}">
-                                    <img src="${imagesURL}/16x16/help.gif" alt="[help]" height="16" width="16"/>
+                                    <l:icon class="icon-help icon-sm" alt="[help]" />
                                 </a>
                             </f:entry>
                         </j:if>
