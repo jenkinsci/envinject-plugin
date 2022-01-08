@@ -58,7 +58,7 @@
         <revision>2.4.1</revision>
         <changelist>-SNAPSHOT</changelist>
         <ivy.plugin.version>1.21</ivy.plugin.version>
-        <jenkins.version>2.266</jenkins.version>
+        <jenkins.version>2.303.3</jenkins.version>
         <java.level>8</java.level>
         <!-- Remove once JENKINS-45055 is fixed -->
         <spotbugs.failOnError>false</spotbugs.failOnError>
@@ -78,6 +78,18 @@
         <tag>${scmTag}</tag>
     </scm>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.303.x</artifactId>
+                <version>1090.v0a_33df40457a_</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -96,7 +108,6 @@
             <!-- TODO: Otherwise Ivy plugin startup fails in IDEA -->
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ant</artifactId>
-            <version>1.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -120,13 +131,11 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-project</artifactId>
-            <version>1.7</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
-            <version>1.22</version>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -137,13 +146,11 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-auth</artifactId>
-            <version>2.4.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.jenkins</groupId>
             <artifactId>configuration-as-code</artifactId>
-            <version>1.23</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
