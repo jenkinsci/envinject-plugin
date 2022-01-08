@@ -96,7 +96,7 @@
             <!-- TODO: Otherwise Ivy plugin startup fails in IDEA -->
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ant</artifactId>
-            <version>1.4</version>
+            <version>1.13</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
