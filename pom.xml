@@ -30,8 +30,8 @@
             <email>gregory.boissinot@gmail.com</email>
             <timezone>+1</timezone>
             <roles>
-                <role>Project Owner</role>
-                <role>Project Lead Developer</role>
+                <role>Plugin creator</role>
+                <role>Maintainer (retired)</role>
             </roles>
         </developer>
         <developer>
@@ -40,7 +40,7 @@
             <email>o.v.nenashev@gmail.com</email>
             <timezone>+1</timezone>
             <roles>
-                <role>Maintainer</role>
+                <role>Maintainer (retired)</role>
             </roles>
         </developer>
         <developer>
