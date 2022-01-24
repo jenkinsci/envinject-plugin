@@ -126,7 +126,8 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
         // Other extension points may contribute other variable values
         // before contributing actions is invoked. See AbstractBuild#getEnvironment()
-        // We take the externally updated variables as a source of truth and just override the missing ones
+        // We take the externally updated variables as a source of truth and just override the missing ones.
+        // Otherwise it causes JENKINS-26583
         Map<String, String> overrides = null;
         for (Map.Entry<String, String> storedVar : currentEnvMap.entrySet()) {
             final String varName = storedVar.getKey();

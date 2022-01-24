@@ -8,9 +8,17 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
+ * Contributes environment values to the environment.
+ *
+ * This extension has the low ordinal, and hence
+ * it will be processed first in {@link EnvironmentContributor#all()} reversed iterators.
+ * {@link jenkins.model.CoreEnvironmentContributor} has {@code -100}.
+ * Reverse ones are used in {@link Job#getEnvironment(Node, TaskListener)}...
+ * It means that other contributors will be always able to override values contributed by EnvInject
+ *
  * @since 1.92
  */
-@Extension
+@Extension(ordinal = -99)
 public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
 
     @Override
