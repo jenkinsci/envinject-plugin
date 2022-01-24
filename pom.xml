@@ -60,8 +60,6 @@
         <ivy.plugin.version>2.1</ivy.plugin.version>
         <jenkins.version>2.303.3</jenkins.version>
         <java.level>8</java.level>
-        <!-- Remove once JENKINS-45055 is fixed -->
-        <spotbugs.failOnError>false</spotbugs.failOnError>
         <!-- 
           Incompatible changes:
             1.93 - Fix of JENKINS-31573 changed the property file parsing approach. 

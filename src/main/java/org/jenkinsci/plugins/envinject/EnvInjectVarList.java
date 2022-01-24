@@ -106,30 +106,30 @@ public class EnvInjectVarList implements Serializable {
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             stringWriter.write(String.format("%s%s%s%n", entry.getKey(), "=", entry.getValue()));
         }
-        response.getOutputStream().write(stringWriter.toString().getBytes());
+        response.getOutputStream().write(stringWriter.toString().getBytes("UTF-8"));
     }
 
     private void writeXmlResponse(@Nonnull StaplerResponse response) throws IOException {
         response.setContentType("application/xml");
         ServletOutputStream outputStream = response.getOutputStream();
-        outputStream.write("<envVars>".getBytes());
+        outputStream.write("<envVars>".getBytes("UTF-8"));
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", escapeXml(entry.getKey()), escapeXml(entry.getValue())).getBytes());
+            outputStream.write(String.format("<envVar name=\"%s\" value=\"%s\"/>", escapeXml(entry.getKey()), escapeXml(entry.getValue())).getBytes("UTF-8"));
         }
-        outputStream.write("</envVars>".getBytes());
+        outputStream.write("</envVars>".getBytes("UTF-8"));
     }
 
     private void writeJsonResponse(@Nonnull StaplerResponse response) throws IOException {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
-        outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());
+        outputStream.write("{\"envVars\": { \"envVar\":[".getBytes("UTF-8"));
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             sb.append(String.format(", {\"name\":\"%s\", \"value\":\"%s\"}", escapeJson(entry.getKey()), escapeJson(entry.getValue())));
         }
         sb.delete(0, 1);
-        outputStream.write(sb.toString().getBytes());
-        outputStream.write("]}}".getBytes());
+        outputStream.write(sb.toString().getBytes("UTF-8"));
+        outputStream.write("]}}".getBytes("UTF-8"));
     }
 
     private String escapeXml(String xml) {
