@@ -10,9 +10,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * @author Gregory Boissinot
@@ -45,7 +45,7 @@ public class EnvInjectInfo implements Serializable {
     }
 
     @CheckForNull
-    public Map<String, String> getPropertiesContentMap(@Nonnull Map<String, String> currentEnvVars) {
+    public Map<String, String> getPropertiesContentMap(@NonNull Map<String, String> currentEnvVars) {
         if (propertiesContentMap != null && propertiesContentMap.size() != 0) {
             return propertiesContentMap;
         }

@@ -17,8 +17,8 @@ import static com.google.common.base.Joiner.on;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import java.util.Locale;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import org.jenkinsci.plugins.envinjectapi.util.EnvVarsResolver;
 
@@ -38,14 +38,14 @@ public class BuildCauseRetriever {
     /**
      * @deprecated Use {@link EnvVarsResolver#getCauseEnvVars(hudson.model.Run)}
      */
-    @Nonnull
+    @NonNull
     @Deprecated
-    public Map<String, String> getTriggeredCause(@Nonnull AbstractBuild<?, ?> build) {
+    public Map<String, String> getTriggeredCause(@NonNull AbstractBuild<?, ?> build) {
         return EnvVarsResolver.getCauseEnvVars(build);
     }
     
-    @Nonnull
-    public Map<String, String> getTriggeredCause(@Nonnull Run<?, ?> run) {
+    @NonNull
+    public Map<String, String> getTriggeredCause(@NonNull Run<?, ?> run) {
         CauseAction causeAction = run.getAction(CauseAction.class);
         Map<String, String> env = new HashMap<String, String>();
         List<String> directCauseNames = new ArrayList<String>();
@@ -72,7 +72,7 @@ public class BuildCauseRetriever {
      * @param cause Cause to be added. For {@code Cause.UpstreamCause} there will be in-depth search
      * @param depth Current search depth. {@link #MAX_UPSTREAM_DEPTH} is a limit
      */
-    private static void insertRootCauseNames(@Nonnull Set<String> causeNamesTarget, @CheckForNull Cause cause, int depth) {
+    private static void insertRootCauseNames(@NonNull Set<String> causeNamesTarget, @CheckForNull Cause cause, int depth) {
         if (cause instanceof Cause.UpstreamCause) {
             if (depth == MAX_UPSTREAM_DEPTH) {
                 causeNamesTarget.add("DEEPLYNESTEDCAUSES");

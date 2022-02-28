@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -30,7 +30,7 @@ public class EnvInjectMigrationListener extends ItemListener {
 
     private static final Logger LOGGER = Logger.getLogger(EnvInjectMigrationListener.class.getName());
 
-    private boolean containAPluginToMigrate(@Nonnull Class<? extends BuildWrapper> wrapperClass) {
+    private boolean containAPluginToMigrate(@NonNull Class<? extends BuildWrapper> wrapperClass) {
         return EnvFileBuildWrapper.class.isAssignableFrom(wrapperClass)
                 || SetEnvBuildWrapper.class.isAssignableFrom(wrapperClass);
     }
@@ -98,8 +98,8 @@ public class EnvInjectMigrationListener extends ItemListener {
     }
 
     private void addOrModifyEnvInjectBuildWrapper(
-            @Nonnull DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappers, 
-            @Nonnull BuildWrapper wrapper) throws EnvInjectException {
+            @NonNull DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappers, 
+            @NonNull BuildWrapper wrapper) throws EnvInjectException {
 
         //Iterate through all wrappers and remove the envInjectWrapper if exists: only one is authorized and the new wins
         Iterator<BuildWrapper> buildWrapperIterator = wrappers.iterator();

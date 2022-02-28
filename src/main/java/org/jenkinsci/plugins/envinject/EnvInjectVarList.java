@@ -13,7 +13,7 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
 @ExportedBean(defaultVisibility = 99)
 public class EnvInjectVarList implements Serializable {
 
-    @Nonnull
+    @NonNull
     private final Map<String, String> envVars = new TreeMap<String, String>();
     
     /**
@@ -45,7 +45,7 @@ public class EnvInjectVarList implements Serializable {
         return new Api(this);
     }
 
-    public void doExport(@Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
+    public void doExport(@NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
 
         String path = request.getPathInfo();
         if (path != null) {
@@ -57,7 +57,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
-    private void doExportWithPath(@Nonnull String path, @Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
+    private void doExportWithPath(@NonNull String path, @NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
 
         if (path.endsWith("text")) {
             writeTextResponse(response);
@@ -77,7 +77,7 @@ public class EnvInjectVarList implements Serializable {
         doExportHeaders(request, response);
     }
 
-    private void doExportHeaders(@Nonnull StaplerRequest request, @Nonnull StaplerResponse response) throws IOException {
+    private void doExportHeaders(@NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
 
         String acceptHeader = request.getHeader("Accept");
 
@@ -100,7 +100,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
-    private void writeTextResponse(@Nonnull StaplerResponse response) throws IOException {
+    private void writeTextResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("plain/text");
         StringWriter stringWriter = new StringWriter();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
@@ -109,7 +109,7 @@ public class EnvInjectVarList implements Serializable {
         response.getOutputStream().write(stringWriter.toString().getBytes());
     }
 
-    private void writeXmlResponse(@Nonnull StaplerResponse response) throws IOException {
+    private void writeXmlResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("application/xml");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("<envVars>".getBytes());
@@ -119,7 +119,7 @@ public class EnvInjectVarList implements Serializable {
         outputStream.write("</envVars>".getBytes());
     }
 
-    private void writeJsonResponse(@Nonnull StaplerResponse response) throws IOException {
+    private void writeJsonResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());

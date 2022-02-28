@@ -5,8 +5,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.EnvironmentContributingAction;
 
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -23,7 +23,7 @@ public class EnvInjectBuilderContributionAction implements EnvironmentContributi
     }
 
     @Override
-    public void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @CheckForNull EnvVars envVars) {
+    public void buildEnvVars(@NonNull AbstractBuild<?, ?> build, @CheckForNull EnvVars envVars) {
 
         if (envVars == null) {
             return;

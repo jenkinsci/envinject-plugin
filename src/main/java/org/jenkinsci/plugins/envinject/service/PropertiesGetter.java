@@ -2,8 +2,8 @@ package org.jenkinsci.plugins.envinject.service;
 
 import java.io.Serializable;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * @author Gregory Boissinot

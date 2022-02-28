@@ -4,8 +4,8 @@ import hudson.util.Secret;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -15,7 +15,7 @@ public class EnvInjectPasswordEntry implements Serializable {
     @CheckForNull 
     private String name;
 
-    @Nonnull
+    @NonNull
     private final Secret value;
 
     @DataBoundConstructor
@@ -30,7 +30,7 @@ public class EnvInjectPasswordEntry implements Serializable {
         return name;
     }
 
-    @Nonnull 
+    @NonNull 
     public Secret getValue() {
         return value;
     }

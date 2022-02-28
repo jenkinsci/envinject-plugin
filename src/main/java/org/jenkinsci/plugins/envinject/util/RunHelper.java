@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -50,7 +50,7 @@ public class RunHelper {
      * @param run Run
      * @return List of sensitive variables
      */
-    public static Set<String> getSensitiveBuildVariables(@Nonnull Run<?,? > run) {
+    public static Set<String> getSensitiveBuildVariables(@NonNull Run<?,? > run) {
         if (run instanceof AbstractBuild) {
             return ((AbstractBuild)run).getSensitiveBuildVariables();
         }
@@ -75,7 +75,7 @@ public class RunHelper {
      * @param run Run
      * @param result Target collection, where the variables will be added
      */
-    public static void getBuildVariables(@Nonnull Run<?, ?> run, EnvVars result) {
+    public static void getBuildVariables(@NonNull Run<?, ?> run, EnvVars result) {
         if (run instanceof AbstractBuild) {
             Map buildVariables = ((AbstractBuild)run).getBuildVariables();
             result.putAll(buildVariables);
@@ -100,7 +100,7 @@ public class RunHelper {
      * @throws IOException Operation failure
      * @throws InterruptedException Operation has been interrupted
      */
-    public static void getJDKVariables(@Nonnull Run<?, ?> run, TaskListener logger, EnvVars result) 
+    public static void getJDKVariables(@NonNull Run<?, ?> run, TaskListener logger, EnvVars result) 
             throws IOException, InterruptedException {
         if (run instanceof AbstractBuild) {
             AbstractBuild b = (AbstractBuild) run;
@@ -117,7 +117,7 @@ public class RunHelper {
     
     // Moved from EnvInjectVariableGetter
     
-    public static Map<String, String> getBuildVariables(@Nonnull Run<?, ?> run, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    public static Map<String, String> getBuildVariables(@NonNull Run<?, ?> run, @NonNull EnvInjectLogger logger) throws EnvInjectException {
         EnvVars result = new EnvVars();
 
         //Add build process variables
@@ -160,7 +160,7 @@ public class RunHelper {
     }
 
     @CheckForNull
-    public static EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull Run<?, ?> build) {
+    public static EnvInjectJobProperty getEnvInjectJobProperty(@NonNull Run<?, ?> build) {
         if (build == null) {
             throw new IllegalArgumentException("A build object must be set.");
         }
@@ -182,9 +182,9 @@ public class RunHelper {
         return null;
     }
 
-    @Nonnull
+    @NonNull
     public static Map<String, String> getEnvVarsPreviousSteps(
-            @Nonnull Run<?, ?> build, @Nonnull EnvInjectLogger logger) 
+            @NonNull Run<?, ?> build, @NonNull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
         Map<String, String> result = new HashMap<String, String>();
 
@@ -214,8 +214,8 @@ public class RunHelper {
         return result;
     }
 
-    @Nonnull
-    private static Map<String, String> getCurrentInjectedEnvVars(@Nonnull EnvInjectPluginAction envInjectPluginAction) {
+    @NonNull
+    private static Map<String, String> getCurrentInjectedEnvVars(@NonNull EnvInjectPluginAction envInjectPluginAction) {
         Map<String, String> envVars = envInjectPluginAction.getEnvMap();
         return (envVars) == null ? new HashMap<String, String>() : envVars;
     }

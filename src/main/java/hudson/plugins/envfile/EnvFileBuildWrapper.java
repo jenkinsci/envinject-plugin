@@ -12,7 +12,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.migration.EnvInjectMigrationBuildWrapper;
 
 import java.io.IOException;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -22,7 +22,7 @@ public class EnvFileBuildWrapper extends EnvInjectMigrationBuildWrapper {
     private transient String filePath;
 
     @Override
-    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@Nonnull BuildableItemWithBuildWrappers originalItem) {
+    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@NonNull BuildableItemWithBuildWrappers originalItem) {
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(filePath, null, null, null, false, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(jobPropertyInfo);
         return envInjectBuildWrapper;

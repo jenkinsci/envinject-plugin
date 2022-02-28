@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -31,8 +31,8 @@ import jenkins.model.Jenkins;
 @Extension
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
 
-    private EnvVars getNewMasterEnvironmentVariables(@Nonnull Computer c, 
-            @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+    private EnvVars getNewMasterEnvironmentVariables(@NonNull Computer c, 
+            @NonNull FilePath nodePath, @NonNull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
@@ -76,8 +76,8 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         return envVars2Set;
     }
 
-    private EnvVars getNewSlaveEnvironmentVariables(@Nonnull Computer c, 
-            @Nonnull FilePath nodePath, @Nonnull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
+    private EnvVars getNewSlaveEnvironmentVariables(@NonNull Computer c, 
+            @NonNull FilePath nodePath, @NonNull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         Map<String, String> currentEnvVars = new HashMap<>();
 

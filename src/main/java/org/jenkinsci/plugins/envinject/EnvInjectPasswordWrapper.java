@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -101,7 +101,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      * @return List of password entries.
      * @since TODO
      */
-    @Nonnull
+    @NonNull
     public List<EnvInjectPasswordEntry> getPasswordEntryList() {
         if (passwordEntries == null) {
             return Collections.emptyList();
@@ -134,7 +134,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      * @return Listing of {@link EnvInjectPasswordEntry}
      * @throws EnvInjectException Operation error
      */
-    @Nonnull
+    @NonNull
     private List<EnvInjectPasswordEntry> getEnvInjectPasswordEntries() throws EnvInjectException {
 
         List<EnvInjectPasswordEntry> passwordList = new ArrayList<EnvInjectPasswordEntry>();
@@ -198,12 +198,12 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
      */
     static class EnvInjectPasswordsOutputStream extends LineTransformationOutputStream {
 
-        @Nonnull
+        @NonNull
         private final OutputStream logger;
         @CheckForNull
         private final Pattern passwordsAsPattern;
 
-        EnvInjectPasswordsOutputStream(@Nonnull OutputStream logger, @CheckForNull Collection<String> passwords) {
+        EnvInjectPasswordsOutputStream(@NonNull OutputStream logger, @CheckForNull Collection<String> passwords) {
 
             this.logger = logger;
 

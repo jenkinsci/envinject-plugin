@@ -19,9 +19,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.GuardedBy;
 
 /**
  * @author Gregory Boissinot
@@ -72,7 +72,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return overrideBuildParameters;
     }
 
-    @Nonnull
+    @NonNull
     public synchronized EnvInjectJobPropertyContributor[] getContributors() {
         if (contributorsComputed == null) {
             try {
@@ -86,7 +86,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         return contributors != null ? Arrays.copyOf(contributors, contributors.length) : new EnvInjectJobPropertyContributor[0];
     }
 
-    @Nonnull
+    @NonNull
     private synchronized EnvInjectJobPropertyContributor[] computeEnvInjectContributors() throws org.jenkinsci.lib.envinject.EnvInjectException {
 
         DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor>
@@ -179,7 +179,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
             return null;
         }
 
-        @Nonnull 
+        @NonNull 
         public DescriptorExtensionList<EnvInjectJobPropertyContributor, EnvInjectJobPropertyContributorDescriptor> getEnvInjectContributors() {
             return EnvInjectJobPropertyContributor.all();
         }

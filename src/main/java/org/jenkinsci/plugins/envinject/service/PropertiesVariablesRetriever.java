@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -24,17 +24,17 @@ public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<
     @CheckForNull
     private Map<String, String> propertiesContent;
 
-    @Nonnull
+    @NonNull
     private Map<String, String> currentEnvVars;
 
-    @Nonnull
+    @NonNull
     private EnvInjectLogger logger;
 
     public PropertiesVariablesRetriever(
             @CheckForNull String propertiesFilePath, 
             @CheckForNull Map<String, String> propertiesContent, 
-            @Nonnull Map<String, String> currentEnvVars, 
-            @Nonnull EnvInjectLogger logger) {
+            @NonNull Map<String, String> currentEnvVars, 
+            @NonNull EnvInjectLogger logger) {
         this.propertiesFilePath = propertiesFilePath;
         this.propertiesContent = propertiesContent;
         this.currentEnvVars = currentEnvVars;
@@ -94,7 +94,7 @@ public class PropertiesVariablesRetriever extends MasterToSlaveFileCallable<Map<
     }
 
     @CheckForNull
-    private File getFile(@CheckForNull File base, @Nonnull String scriptFilePath) {
+    private File getFile(@CheckForNull File base, @NonNull String scriptFilePath) {
 
         File file = new File(scriptFilePath);
         if (file.exists()) {

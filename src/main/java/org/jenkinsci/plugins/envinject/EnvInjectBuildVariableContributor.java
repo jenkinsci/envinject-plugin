@@ -7,7 +7,7 @@ import org.jenkinsci.plugins.envinject.service.EnvironmentVariablesNodeLoader;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 
@@ -20,7 +20,7 @@ import org.jenkinsci.plugins.envinject.util.RunHelper;
 public class EnvInjectBuildVariableContributor extends BuildVariableContributor {
 
     @Override
-    public void buildVariablesFor(@Nonnull AbstractBuild build, @Nonnull Map<String, String> variablesOut) {
+    public void buildVariablesFor(@NonNull AbstractBuild build, @NonNull Map<String, String> variablesOut) {
         ParametersAction parameters = build.getAction(ParametersAction.class);
         //Only for a parameterized job
         if (parameters != null) {

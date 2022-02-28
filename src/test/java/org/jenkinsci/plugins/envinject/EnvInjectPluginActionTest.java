@@ -8,7 +8,7 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -136,7 +136,7 @@ public class EnvInjectPluginActionTest {
         }
     }
     
-    private boolean canViewInjectedVars(@Nonnull User user, @Nonnull Run<?,?> run) 
+    private boolean canViewInjectedVars(@NonNull User user, @NonNull Run<?,?> run) 
             throws UsernameNotFoundException {
         SecurityContext initialContext = null;
         Authentication auth = user.impersonate();

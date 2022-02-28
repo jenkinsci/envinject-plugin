@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.envinject.migration;
 
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.tasks.BuildWrapper;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 
 /**
@@ -16,5 +16,5 @@ public abstract class EnvInjectMigrationBuildWrapper extends BuildWrapper {
      * @return an EnvInjectBuildWrapper object
      * @param originalItem Original item
      */
-    protected abstract EnvInjectBuildWrapper getEnvInjectBuildWrapper(@Nonnull BuildableItemWithBuildWrappers originalItem);
+    protected abstract EnvInjectBuildWrapper getEnvInjectBuildWrapper(@NonNull BuildableItemWithBuildWrappers originalItem);
 }

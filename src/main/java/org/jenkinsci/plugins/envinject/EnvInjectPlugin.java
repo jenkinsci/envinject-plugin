@@ -29,7 +29,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -60,7 +60,7 @@ public class EnvInjectPlugin extends Plugin {
      * @return {@link EnvInjectPlugin}
      * @throws IllegalStateException the plugin has not been loaded yet
      */
-    public static @Nonnull EnvInjectPlugin getInstance() {
+    public static @NonNull EnvInjectPlugin getInstance() {
         EnvInjectPlugin plugin = Jenkins.get().getPlugin(EnvInjectPlugin.class);
         if (plugin == null) { // Fail horribly
             // TODO: throw a graceful error
@@ -69,11 +69,11 @@ public class EnvInjectPlugin extends Plugin {
         return plugin;
     }
     
-    /*package*/ void onConfigChange(@Nonnull EnvInjectPluginConfiguration config) {
+    /*package*/ void onConfigChange(@NonNull EnvInjectPluginConfiguration config) {
        VIEW_INJECTED_VARS.setEnabled(config.isEnablePermissions()); 
     }
 
-    @Nonnull
+    @NonNull
     public EnvInjectPluginConfiguration getConfiguration() {
         final EnvInjectPluginConfiguration config = EnvInjectPluginConfiguration.getInstance();
         return config != null ? config : EnvInjectPluginConfiguration.getDefault();
@@ -85,7 +85,7 @@ public class EnvInjectPlugin extends Plugin {
      * @return true if the injected variables can be displayed.
      */
     @Restricted(NoExternalUse.class)
-    public static boolean canViewInjectedVars(@Nonnull Run<?,?> run) {
+    public static boolean canViewInjectedVars(@NonNull Run<?,?> run) {
         // We allow security engines to block the output
         if (VIEW_INJECTED_VARS.getEnabled() &&  !run.hasPermission(VIEW_INJECTED_VARS)) {
             return false;

@@ -4,7 +4,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,8 +50,8 @@ public class EnvInjectVarListTest {
         }
     }
 
-    @Nonnull
-    private EnvInjectVarList getVarListOrFail(@Nonnull Run<?, ?> run) throws AssertionError {
+    @NonNull
+    private EnvInjectVarList getVarListOrFail(@NonNull Run<?, ?> run) throws AssertionError {
         EnvInjectPluginAction action = run.getAction(EnvInjectPluginAction.class);
         Assert.assertNotNull("EnvInject action is not set for the run " + run, action);
         EnvInjectVarList list = (EnvInjectVarList)action.getTarget();

@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -22,7 +22,7 @@ public class EnvInjectContributorManagement {
     }
 
     //TODO: Create a method, which returns collection
-    @Nonnull
+    @NonNull
     public EnvInjectJobPropertyContributor[] getNewContributorsInstance() 
             throws org.jenkinsci.lib.envinject.EnvInjectException {
 

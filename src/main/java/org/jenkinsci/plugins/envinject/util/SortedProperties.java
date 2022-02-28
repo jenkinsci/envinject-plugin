@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.LinkedHashMap;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -17,14 +17,14 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
 
 
     static class LineReader {
-        public LineReader(@Nonnull InputStream inStream) {
+        public LineReader(@NonNull InputStream inStream) {
             this.inStream = inStream;
             this.inByteBuf = new byte[8192];
             this.reader = null;
             this.inCharBuf = null;
         }
 
-        public LineReader(@Nonnull Reader reader) {
+        public LineReader(@NonNull Reader reader) {
             this.inStream = null;
             this.inByteBuf = null;
             this.reader = reader;
@@ -161,7 +161,7 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
     }
 
 
-    private void load0(@Nonnull LineReader lr) throws IOException {
+    private void load0(@NonNull LineReader lr) throws IOException {
         char[] convtBuf = new char[1024];
         int limit;
         int keyLen;
@@ -214,7 +214,7 @@ public class SortedProperties extends LinkedHashMap<Object, Object> {
 
     }
 
-    @Nonnull
+    @NonNull
     private String loadConvert(char[] in, int off, int len, char[] convtBuf) {
         if (convtBuf.length < len) {
             int newLen = len * 2;

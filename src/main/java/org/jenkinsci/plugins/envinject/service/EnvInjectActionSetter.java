@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 
@@ -33,7 +33,7 @@ public class EnvInjectActionSetter implements Serializable {
      * @deprecated Use {@link #addEnvVarsToRun(hudson.model.Run, java.util.Map)}
      */
     @Deprecated
-    public void addEnvVarsToEnvInjectBuildAction(@Nonnull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
+    public void addEnvVarsToEnvInjectBuildAction(@NonNull AbstractBuild<?, ?> build, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {
         addEnvVarsToRun(build, envMap);
     }
@@ -48,7 +48,7 @@ public class EnvInjectActionSetter implements Serializable {
      * @throws InterruptedException Remote call is interrupted
      * @since 2.1
      */
-    public void addEnvVarsToRun(@Nonnull Run<?, ?> run, @CheckForNull Map<String, String> envMap) 
+    public void addEnvVarsToRun(@NonNull Run<?, ?> run, @CheckForNull Map<String, String> envMap) 
             throws EnvInjectException, IOException, InterruptedException {
 
         EnvInjectPluginAction envInjectAction = run.getAction(EnvInjectPluginAction.class);

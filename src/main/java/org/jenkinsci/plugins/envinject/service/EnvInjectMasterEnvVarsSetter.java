@@ -8,16 +8,16 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
  */
 public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, EnvInjectException> {
 
-    private @Nonnull EnvVars enVars;
+    private @NonNull EnvVars enVars;
 
-    public EnvInjectMasterEnvVarsSetter(@Nonnull EnvVars enVars) {
+    public EnvInjectMasterEnvVarsSetter(@NonNull EnvVars enVars) {
         this.enVars = enVars;
     }
 

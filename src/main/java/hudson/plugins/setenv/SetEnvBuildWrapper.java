@@ -12,7 +12,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 import org.jenkinsci.plugins.envinject.migration.EnvInjectMigrationBuildWrapper;
 
 import java.io.IOException;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author Gregory Boissinot
@@ -22,7 +22,7 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
     private transient String localVarText;
 
     @Override
-    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@Nonnull BuildableItemWithBuildWrappers originalItem) {
+    public EnvInjectBuildWrapper getEnvInjectBuildWrapper(@NonNull BuildableItemWithBuildWrappers originalItem) {
         String varText = localVarText;
         EnvInjectBuildWrapper existing = originalItem.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
         if (existing != null && existing.getInfo() != null) {

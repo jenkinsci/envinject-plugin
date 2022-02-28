@@ -11,7 +11,7 @@ import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import java.io.IOException;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.junit.Rule;
@@ -181,9 +181,9 @@ public class EnvInjectJobPropertyTest {
         assertTrue("loadFilesFromMaster should be true", info.isLoadFilesFromMaster());
     }
     
-    @Nonnull
+    @NonNull
     public EnvInjectJobProperty<FreeStyleProject>
-            forPropertiesContent(@Nonnull FreeStyleProject job, @Nonnull String content) throws IOException {
+            forPropertiesContent(@NonNull FreeStyleProject job, @NonNull String content) throws IOException {
         final EnvInjectJobProperty<FreeStyleProject> prop = new EnvInjectJobProperty<FreeStyleProject>(
                 new EnvInjectJobPropertyInfo(null, content, null, null, false, null));
         prop.setOn(true); // Property becomes enabled by default

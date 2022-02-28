@@ -21,8 +21,8 @@ import org.jenkinsci.plugins.envinject.EnvInjectPasswordWrapper;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Masks {@link PasswordParameterValue}s
@@ -34,7 +34,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
      * @deprecated Use {@link #maskPasswordParametersIfAny(hudson.model.Run, java.util.Map, org.jenkinsci.lib.envinject.EnvInjectLogger)} 
      */
     @Deprecated
-    public void maskPasswordsIfAny(@Nonnull AbstractBuild run, @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
+    public void maskPasswordsIfAny(@NonNull AbstractBuild run, @NonNull EnvInjectLogger logger, @NonNull Map<String, String> envVars) {
         maskPasswordParametersIfAny(run, envVars, logger);
     }
     
@@ -45,13 +45,13 @@ public class EnvInjectPasswordsMasker implements Serializable {
      * @param logger Logger
      * @since 2.1
      */
-    public void maskPasswordParametersIfAny(@Nonnull Run<?, ?> run, @Nonnull Map<String, String> envVars, @Nonnull EnvInjectLogger logger) {
+    public void maskPasswordParametersIfAny(@NonNull Run<?, ?> run, @NonNull Map<String, String> envVars, @NonNull EnvInjectLogger logger) {
         maskPasswordsJobParameterIfAny(run, logger, envVars);
         maskPasswordsEnvInjectIfAny(run, logger, envVars);
     }
 
-    private void maskPasswordsJobParameterIfAny(@Nonnull Run<?, ?> run, 
-            @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVarsTarget) {
+    private void maskPasswordsJobParameterIfAny(@NonNull Run<?, ?> run, 
+            @NonNull EnvInjectLogger logger, @NonNull Map<String, String> envVarsTarget) {
         ParametersAction parametersAction = run.getAction(ParametersAction.class);
         if (parametersAction != null) {
             List<ParameterValue> parameters = parametersAction.getParameters();
@@ -66,8 +66,8 @@ public class EnvInjectPasswordsMasker implements Serializable {
         }
     }
 
-    private void maskPasswordsEnvInjectIfAny(@Nonnull Run<?, ?> build, 
-            @Nonnull EnvInjectLogger logger, @Nonnull Map<String, String> envVars) {
+    private void maskPasswordsEnvInjectIfAny(@NonNull Run<?, ?> build, 
+            @NonNull EnvInjectLogger logger, @NonNull Map<String, String> envVars) {
         try {
 
             EnvInjectPasswordWrapper envInjectPasswordWrapper = getEnvInjectPasswordWrapper(build);
@@ -90,7 +90,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
     }
 
     @CheckForNull
-    private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(@Nonnull Run<?, ?> build) throws EnvInjectException {
+    private EnvInjectPasswordWrapper getEnvInjectPasswordWrapper(@NonNull Run<?, ?> build) throws EnvInjectException {
 
         DescribableList<BuildWrapper, Descriptor<BuildWrapper>> wrappersProject;
         if (build instanceof MatrixRun) {
@@ -126,7 +126,7 @@ public class EnvInjectPasswordsMasker implements Serializable {
         }
     }
 
-    private void maskJobPasswords(@Nonnull Map<String, String> envVarsTarget, @Nonnull List<EnvInjectPasswordEntry> passwordEntries) {
+    private void maskJobPasswords(@NonNull Map<String, String> envVarsTarget, @NonNull List<EnvInjectPasswordEntry> passwordEntries) {
         for (EnvInjectPasswordEntry passwordEntry : passwordEntries) {
             envVarsTarget.put(passwordEntry.getName(), passwordEntry.getValue().getEncryptedValue());
         }

@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.envinject.util;
 
 import hudson.model.FreeStyleProject;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -17,7 +17,7 @@ public class TestUtils {
      * @param project Project to save.
      * @param userId User ID
      */
-    public static void saveConfigurationAs(@Nonnull JenkinsRule jenkins, @Nonnull FreeStyleProject project, @Nonnull String userId) throws Exception {
+    public static void saveConfigurationAs(@NonNull JenkinsRule jenkins, @NonNull FreeStyleProject project, @NonNull String userId) throws Exception {
         JenkinsRule.WebClient w = jenkins.createWebClient().login(userId);
         jenkins.submit(w.getPage(project, "configure").getFormByName("config"));
     }
