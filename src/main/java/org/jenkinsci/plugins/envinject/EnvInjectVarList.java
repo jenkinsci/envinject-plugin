@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * @author Gregory Boissinot
@@ -45,6 +46,7 @@ public class EnvInjectVarList implements Serializable {
         return new Api(this);
     }
 
+    @RequirePOST
     public void doExport(@NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
 
         String path = request.getPathInfo();
