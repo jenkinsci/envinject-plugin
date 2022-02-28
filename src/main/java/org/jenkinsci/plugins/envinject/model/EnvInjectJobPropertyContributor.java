@@ -8,7 +8,7 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 /**
@@ -26,8 +26,8 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
      */
     @Deprecated
     public Map<String, String> getEnvVars(
-            @Nonnull AbstractBuild build, 
-            @Nonnull TaskListener listener) throws EnvInjectException {
+            @NonNull AbstractBuild build, 
+            @NonNull TaskListener listener) throws EnvInjectException {
         return Collections.emptyMap();
     }
 
@@ -39,11 +39,11 @@ public abstract class EnvInjectJobPropertyContributor implements ExtensionPoint,
      * @throws EnvInjectException Environment injection error
      * @since 2.1
      */
-    @Nonnull
+    @NonNull
     public void contributeEnvVarsToRun(
-            @Nonnull Run<?, ?> run, 
-            @Nonnull TaskListener listener,
-            @Nonnull Map<String, String> envVars) throws EnvInjectException {
+            @NonNull Run<?, ?> run, 
+            @NonNull TaskListener listener,
+            @NonNull Map<String, String> envVars) throws EnvInjectException {
         
         // Fallback to the old method for AbstractBuilds, do nothing for other types
         if (run instanceof AbstractBuild) {

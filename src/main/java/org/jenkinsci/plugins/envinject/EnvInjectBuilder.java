@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
 
 /**
@@ -27,7 +27,7 @@ import org.jenkinsci.plugins.envinject.util.RunHelper;
  */
 public class EnvInjectBuilder extends Builder implements Serializable {
 
-    @Nonnull 
+    @NonNull 
     private EnvInjectInfo info;
 
     @DataBoundConstructor
@@ -35,13 +35,13 @@ public class EnvInjectBuilder extends Builder implements Serializable {
         this.info = new EnvInjectInfo(propertiesFilePath, propertiesContent);
     }
 
-    @Nonnull 
+    @NonNull 
     public EnvInjectInfo getInfo() {
         return info;
     }
 
     @Override
-    public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull Launcher launcher, @Nonnull BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(@NonNull AbstractBuild<?, ?> build, @NonNull Launcher launcher, @NonNull BuildListener listener) throws InterruptedException, IOException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Injecting environment variables from a build step.");
@@ -96,7 +96,7 @@ public class EnvInjectBuilder extends Builder implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> getAndAddBuildVariables(@Nonnull AbstractBuild build) {
+    private Map<String, String> getAndAddBuildVariables(@NonNull AbstractBuild build) {
         Map<String, String> result = new HashMap<String, String>();
         result.putAll(build.getBuildVariables());
         FilePath ws = build.getWorkspace();

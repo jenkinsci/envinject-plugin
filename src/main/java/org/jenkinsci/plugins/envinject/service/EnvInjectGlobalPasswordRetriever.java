@@ -9,7 +9,7 @@ import org.jenkinsci.plugins.envinject.EnvInjectNodeProperty;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import javax.annotation.CheckForNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * @author Gregory Boissinot

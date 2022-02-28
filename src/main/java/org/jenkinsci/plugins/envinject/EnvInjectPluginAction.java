@@ -17,9 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import net.jcip.annotations.GuardedBy;
 
 import jenkins.model.RunAction2;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
@@ -46,7 +46,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
      *             Use {@link #EnvInjectPluginAction(java.util.Map)}
      */
     @Deprecated
-    public EnvInjectPluginAction(@Nonnull AbstractBuild build, @CheckForNull Map<String, String> envMap) {
+    public EnvInjectPluginAction(@NonNull AbstractBuild build, @CheckForNull Map<String, String> envMap) {
         super(build, envMap);
     }
     
@@ -83,7 +83,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
         return getEnvInjectVarList();
     }
     
-    @Nonnull
+    @NonNull
     private EnvInjectVarList getEnvInjectVarList() {
         final Map<String, String> currentEnvMap = getEnvMap();
         if (currentEnvMap == null) {
@@ -116,7 +116,7 @@ public class EnvInjectPluginAction extends EnvInjectAction implements Environmen
 
     // The method is synchronized, because it modifies the internal cache
     @Override
-    public synchronized void buildEnvVars(@Nonnull AbstractBuild<?, ?> build, @Nonnull EnvVars env) {
+    public synchronized void buildEnvVars(@NonNull AbstractBuild<?, ?> build, @NonNull EnvVars env) {
         assert build == getOwner() : "Trying to resolve environment for build, which is not an owner of this action";
 
         final Map<String, String> currentEnvMap = getEnvMap();

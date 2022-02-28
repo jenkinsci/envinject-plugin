@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
 import org.jenkinsci.plugins.envinject.util.RunHelper;
@@ -38,14 +38,14 @@ public class EnvInjectVariableGetter {
     /**
      * @deprecated Use {@link #getJenkinsSystemEnvVars(boolean)}
      */
-    @Nonnull
+    @NonNull
     @Deprecated
     public Map<String, String> getJenkinsSystemVariables(boolean forceOnMaster) throws IOException, InterruptedException {
         return getJenkinsSystemEnvVars(forceOnMaster);
     }
     
     //TODO: Move to Another utility class in EnvInject API 
-    @Nonnull
+    @NonNull
     public static Map<String, String> getJenkinsSystemEnvVars(boolean forceOnMaster) throws IOException, InterruptedException {
         Map<String, String> result = new TreeMap<String, String>();
 
@@ -88,7 +88,7 @@ public class EnvInjectVariableGetter {
     /**
      * @deprecated Use {@link RunHelper#getBuildVariables(hudson.model.Run, hudson.EnvVars)}
      */
-    public Map<String, String> getBuildVariables(@Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    public Map<String, String> getBuildVariables(@NonNull AbstractBuild build, @NonNull EnvInjectLogger logger) throws EnvInjectException {
         return RunHelper.getBuildVariables(build, logger);
     }
 
@@ -97,17 +97,17 @@ public class EnvInjectVariableGetter {
      */
     @CheckForNull
     @Deprecated
-    public EnvInjectJobProperty getEnvInjectJobProperty(@Nonnull AbstractBuild build) {
+    public EnvInjectJobProperty getEnvInjectJobProperty(@NonNull AbstractBuild build) {
         return RunHelper.getEnvInjectJobProperty(build);
     }
 
     /**
      * @deprecated Use {@link RunHelper#getEnvVarsPreviousSteps(hudson.model.Run, org.jenkinsci.lib.envinject.EnvInjectLogger)}
      */
-    @Nonnull
+    @NonNull
     @Deprecated
     public Map<String, String> getEnvVarsPreviousSteps(
-            @Nonnull AbstractBuild build, @Nonnull EnvInjectLogger logger) 
+            @NonNull AbstractBuild build, @NonNull EnvInjectLogger logger) 
             throws IOException, InterruptedException, EnvInjectException {
         return RunHelper.getEnvVarsPreviousSteps(build, logger);
     }

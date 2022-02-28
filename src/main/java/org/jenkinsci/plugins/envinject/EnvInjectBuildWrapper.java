@@ -20,7 +20,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
@@ -33,13 +33,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable {
 
-    @Nonnull
+    @NonNull
     private EnvInjectJobPropertyInfo info;
     
     private static final Logger LOGGER = Logger.getLogger(EnvInjectBuildWrapper.class.getName());
     
     @DataBoundConstructor
-    public EnvInjectBuildWrapper(@Nonnull EnvInjectJobPropertyInfo info) {
+    public EnvInjectBuildWrapper(@NonNull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
@@ -55,11 +55,11 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
      * @deprecated Use constructor with the parameter
      */
     @Deprecated
-    public void setInfo(@Nonnull EnvInjectJobPropertyInfo info) {
+    public void setInfo(@NonNull EnvInjectJobPropertyInfo info) {
         this.info = info;
     }
 
-    @Nonnull
+    @NonNull
     public EnvInjectJobPropertyInfo getInfo() {
         return info;
     }
@@ -70,7 +70,7 @@ public class EnvInjectBuildWrapper extends BuildWrapper implements Serializable 
     }
 
     @Override
-    public Environment setUp(@Nonnull AbstractBuild build, final @Nonnull Launcher launcher, final @Nonnull BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUp(@NonNull AbstractBuild build, final @NonNull Launcher launcher, final @NonNull BuildListener listener) throws IOException, InterruptedException {
 
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         logger.info("Executing scripts and injecting environment variables after the SCM step.");

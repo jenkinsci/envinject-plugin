@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.7</version>
+        <version>4.37</version>
         <relativePath />
     </parent>
 
@@ -44,6 +44,15 @@
             </roles>
         </developer>
         <developer>
+            <id>NotMyFault</id>
+            <name>Alext</name>
+            <email>contact@notmyfault.dev</email>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Maintainer</role>
+            </roles>
+        </developer>
+        <developer>
             <id>recena</id>
             <name>Manuel Recena</name>
             <email>recena@gmail.com</email>
@@ -62,9 +71,9 @@
         <java.level>8</java.level>
         <!-- Remove once JENKINS-45055 is fixed -->
         <spotbugs.failOnError>false</spotbugs.failOnError>
-        <!-- 
+        <!--
           Incompatible changes:
-            1.93 - Fix of JENKINS-31573 changed the property file parsing approach. 
+            1.93 - Fix of JENKINS-31573 changed the property file parsing approach.
                  Now it follows the Java property file standard.
             2.0: - Security fixes (SECURITY-256)
             2.1.4 - JENKINS-47364 and JENKINS-47370, they still need to be investigated
@@ -83,7 +92,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.303.x</artifactId>
-                <version>1117.v62a_f6a_01de98</version>
+                <version>1155.v77b_fd92a_26fc</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -127,7 +136,7 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>matrix-project</artifactId>
@@ -152,6 +161,12 @@
             <groupId>io.jenkins</groupId>
             <artifactId>configuration-as-code</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -170,5 +185,3 @@
     </pluginRepositories>
 
 </project>
-
-

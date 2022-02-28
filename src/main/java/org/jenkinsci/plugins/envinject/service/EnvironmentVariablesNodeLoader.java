@@ -14,8 +14,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 // TODO: Restrict?
@@ -31,16 +31,16 @@ public class EnvironmentVariablesNodeLoader implements Serializable {
     /**
      * @deprecated Use {@link #gatherEnvVarsForNode(hudson.model.Run, hudson.model.Node, org.jenkinsci.lib.envinject.EnvInjectLogger)}
      */
-    @Nonnull
+    @NonNull
     @Deprecated
-    public Map<String, String> gatherEnvironmentVariablesNode(@Nonnull Run<?, ?> build, 
-            @CheckForNull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    public Map<String, String> gatherEnvironmentVariablesNode(@NonNull Run<?, ?> build, 
+            @CheckForNull Node buildNode, @NonNull EnvInjectLogger logger) throws EnvInjectException {
         return gatherEnvVarsForNode(build, buildNode, logger);
     }
     
-    @Nonnull
-    public static Map<String, String> gatherEnvVarsForNode(@Nonnull Run<?, ?> build, 
-            @CheckForNull Node buildNode, @Nonnull EnvInjectLogger logger) throws EnvInjectException {
+    @NonNull
+    public static Map<String, String> gatherEnvVarsForNode(@NonNull Run<?, ?> build, 
+            @CheckForNull Node buildNode, @NonNull EnvInjectLogger logger) throws EnvInjectException {
 
         logger.info("Loading node environment variables.");
 

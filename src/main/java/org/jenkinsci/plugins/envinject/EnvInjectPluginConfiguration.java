@@ -27,8 +27,8 @@ import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.XmlFile;
 import java.io.File;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -123,7 +123,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      * Gets the default configuration of {@link EnvInjectPlugin}
      * @return Default configuration
      */
-    @Nonnull 
+    @NonNull 
     public static final EnvInjectPluginConfiguration getDefault() {
         return DEFAULT;
     }
@@ -173,7 +173,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      * @return Settings
      * @throws EnvInjectException The configuration cannot be retrieved
      */
-    @Nonnull
+    @NonNull
     public static EnvInjectPluginConfiguration getOrFail() throws EnvInjectException {
         EnvInjectPluginConfiguration c = EnvInjectPluginConfiguration.all().get(EnvInjectPluginConfiguration.class);
         if (c == null) {
