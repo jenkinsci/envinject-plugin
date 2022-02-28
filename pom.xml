@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>envinject</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>2.${changelist}</version>
     <packaging>hpi</packaging>
     <name>Environment Injector Plugin</name>
     <url>https://github.com/jenkinsci/envinject-plugin</url>
@@ -64,10 +64,9 @@
     </developers>
 
     <properties>
-        <revision>2.4.1</revision>
-        <changelist>-SNAPSHOT</changelist>
+        <changelist>999999-SNAPSHOT</changelist>
         <ivy.plugin.version>2.1</ivy.plugin.version>
-        <jenkins.version>2.303.3</jenkins.version>
+        <jenkins.version>2.319.3</jenkins.version>
         <java.level>8</java.level>
         <!-- Remove once JENKINS-45055 is fixed -->
         <spotbugs.failOnError>false</spotbugs.failOnError>
@@ -84,6 +83,7 @@
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/envinject-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/envinject-plugin</url>
         <tag>${scmTag}</tag>
     </scm>
 
@@ -91,7 +91,7 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.303.x</artifactId>
+                <artifactId>bom-2.319.x</artifactId>
                 <version>1155.v77b_fd92a_26fc</version>
                 <scope>import</scope>
                 <type>pom</type>
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>envinject-api</artifactId>
-            <version>1.8</version>
+            <version>1.180.v98d833b_27470</version>
         </dependency>
 
         <dependency>
