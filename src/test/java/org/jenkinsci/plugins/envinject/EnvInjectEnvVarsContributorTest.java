@@ -30,7 +30,6 @@ public class EnvInjectEnvVarsContributorTest {
         assertNotNull(environment.get("REPO"));
     }
 
-    @Test
     public void notAvailableEnvVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("notAvailableEnvVarsJob");
 
