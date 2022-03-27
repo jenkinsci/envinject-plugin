@@ -81,7 +81,7 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/envinject-plugin.git</connection>
+        <connection>scm:git:https://github.com/jenkinsci/envinject-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/envinject-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/envinject-plugin</url>
         <tag>${scmTag}</tag>
