@@ -6,11 +6,11 @@ files:
     escape_quotes: 0
     escape_special_characters: 0
   - source: '/src/main/resources/org/jenkinsci/plugins/envinject/**/*.html'
-      ignore:
-        - '/src/main/resources/org/jenkinsci/plugins/envinject/**/%file_name%_%two_letters_code%.html'
-      translation: '/src/main/resources/org/jenkinsci/plugins/envinject/**/%file_name%_%two_letters_code%.html'
-      escape_quotes: 0
-      escape_special_characters: 0
+    ignore:
+      - '/src/main/resources/org/jenkinsci/plugins/envinject/**/%file_name%_%two_letters_code%.html'
+    translation: '/src/main/resources/org/jenkinsci/plugins/envinject/**/%file_name%_%two_letters_code%.html'
+    escape_quotes: 0
+    escape_special_characters: 0
 
 project_id_env: CROWDIN_PROJECT_ID
 api_token_env: CROWDIN_PERSONAL_TOKEN
