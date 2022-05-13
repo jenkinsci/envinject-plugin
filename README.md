@@ -3,6 +3,7 @@
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/envinject.svg)](https://plugins.jenkins.io/envinject)
 [![GitHub release](https://img.shields.io/github/release/jenkinsci/envinject-plugin.svg?label=changelog)](https://github.com/jenkinsci/envinject-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/envinject.svg?color=blue)](https://plugins.jenkins.io/envinject)
+[![Crowdin](https://badges.crowdin.net/e/1e527e5f51ea7c0403a0f74a5d7f09e5/localized.svg)](https://jenkins.crowdin.com/envinject-plugin)
 
 This plugin makes it possible to setup a custom environment for your jobs.
 
