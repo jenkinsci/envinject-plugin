@@ -1,15 +1,14 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
-    <f:entry title="${%Properties File Path}"
+    <f:entry title="${%propertiesFilePath}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper/help/propertiesFilePath">
         <f:textbox
                 name="envInjectInfoBuilder.propertiesFilePath"
                 value="${instance.info.propertiesFilePath}"/>
     </f:entry>
 
-    <f:entry title="${%Properties Content}"
+    <f:entry title="${%propertiesContent}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/propertiesContent">
         <f:textarea
                 name="envInjectInfoBuilder.propertiesContent"

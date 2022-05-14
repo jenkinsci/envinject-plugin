@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:documentation>
         Adapted from https://github.com/jenkinsci/jenkins/blob/master/core/src/main/resources/lib/form/hetero-list.jelly
 
-        Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
+        Outermost tag for creating a heterogeneous list, where the user can choose arbitrary number of
         arbitrary items from the given list of descriptors, and configure them independently.
 
         The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.

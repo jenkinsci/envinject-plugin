@@ -1,19 +1,18 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:section title="${%Global Passwords}">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%globalPasswords}">
 
-        <f:entry title="${%Global Passwords}" description="${%Global passwords list}">
+        <f:entry title="${%globalPasswords}" description="${%globalPasswordList}">
 
             <f:repeatable var="inst" items="${descriptor.envInjectGlobalPasswordEntries}">
                 <div width="100%">
 
-                    <f:entry title="${%Name}"
+                    <f:entry title="${%name}"
                              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
                         <f:textbox name="envInject.name" value="${inst.name}"/>
                     </f:entry>
 
-                    <f:entry title="${%Password}"
+                    <f:entry title="${%password}"
                              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
                         <f:password name="envInject.password" value="${inst.value}"/>
                     </f:entry>

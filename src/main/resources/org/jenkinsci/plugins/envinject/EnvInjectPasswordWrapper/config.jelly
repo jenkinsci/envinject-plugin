@@ -1,28 +1,27 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
     <f:entry field="injectGlobalPasswords"
-             title="${%Global passwords}"
+             title="${%globalPasswords}"
              help="/plugin/envinject/help-buildWrapperGlobalPasswords.html">
         <f:checkbox
                 name="injectGlobalPasswords"
                 checked="${instance.injectGlobalPasswords}" default="${false}"/>
     </f:entry>
 
-    <f:entry title="${%Job passwords}"
-             description="${%Passwords list}"
+    <f:entry title="${%jobPasswords}"
+             description="${%passwordsList}"
              help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectJobProperty/help/jobPasswords">
 
         <f:repeatable var="passwordEntry" items="${instance.passwordEntries}">
             <div width="100%">
 
-                <f:entry title="${%Name}"
+                <f:entry title="${%name}"
                          help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/name">
                     <f:textbox name="envInjectPasswordEntry.name" value="${passwordEntry.name}"/>
                 </f:entry>
 
-                <f:entry title="${%Password}"
+                <f:entry title="${%password}"
                          help="/descriptor/org.jenkinsci.plugins.envinject.EnvInjectNodeProperty/help/password">
                     <f:password name="envInjectPasswordEntry.password" value="${passwordEntry.value}"/>
                 </f:entry>
@@ -39,7 +38,7 @@
     </f:entry>
 
     <f:entry field="maskPasswordParameters"
-             title="${%Mask password parameters}"
+             title="${%maskPassword}"
              help="/plugin/envinject/help-buildWrapperMaskPasswordParameters.html">
         <f:checkbox
                 name="maskPasswordParameters"
