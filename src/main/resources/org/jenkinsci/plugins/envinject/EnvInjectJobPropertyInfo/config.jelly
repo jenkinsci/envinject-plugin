@@ -1,33 +1,33 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry field="propertiesFilePath"
-             title="${%Properties File Path}">
+             title="${%propertiesFilePath}">
         <f:textbox/>
     </f:entry>
 
-    <f:entry title="${%Properties Content}"
+    <f:entry title="${%propertiesContent}"
              field="propertiesContent">
         <f:textarea/>
     </f:entry>
 
     <f:entry field="scriptFilePath"
-             title="${%Script File Path}">
+             title="${%scriptFilePath}">
         <f:textbox/>
     </f:entry>
 
-    <f:entry title="${%Script Content}"
+    <f:entry title="${%scriptContent}"
              field="scriptContent">
         <f:textarea/>
     </f:entry>
 
-    <f:entry title="${%Evaluated Groovy script}"
+    <f:entry title="${%evaluatedGroovyScript}"
              field="secureGroovyScript">
     </f:entry>
     <f:property field="secureGroovyScript"/>
 
     <j:choose>
         <j:when test="${showLoadFilesFromMaster}">
-            <f:entry title="${%Load script and properties files from the master}"
+            <f:entry title="${%loadFilesFromMaster}"
                      field="loadFilesFromMaster">
                 <f:checkbox />
             </f:entry>

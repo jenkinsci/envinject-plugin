@@ -2,20 +2,20 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:u="/util">
 
     <f:optionalBlock name="on"
-                     title="${%Prepare an environment for the run}"
+                     title="${%prepareEnvironment}"
                      checked="${instance != null and instance.on}"
                      inline="true"
                      help="/plugin/envinject/help.html">
 
-        <f:entry field="keepJenkinsSystemVariables" title="${%Keep Jenkins Environment Variables}">
+        <f:entry field="keepJenkinsSystemVariables" title="${%keepEnvVars}">
             <f:checkbox default="${true}"/>
         </f:entry>
 
-        <f:entry field="keepBuildVariables" title="${%Keep Jenkins Build Variables}">
+        <f:entry field="keepBuildVariables" title="${%keepBuildVars}">
             <f:checkbox default="${true}"/>
         </f:entry>
 
-        <f:entry field="overrideBuildParameters" title="${%Override Build Parameters}">
+        <f:entry field="overrideBuildParameters" title="${%overrideBuildParams}">
             <f:checkbox default="${false}"/>
         </f:entry>
 
@@ -27,13 +27,13 @@
             <j:if test="${jobPropertyContributors == null}">
                 <j:set var="jobPropertyContributors" value="${descriptor.contributorsInstance}"/>
             </j:if>
-            <f:entry title="${%EnvInject Contributions}">
+            <f:entry title="${%envinjectContributions}">
                 <u:hetero-list-readonly
                         name="contributors"
                         descriptors="${descriptor.envInjectContributors}"
                         items="${jobPropertyContributors}"
-                        addCaption="${%Add a contribution}"
-                        deleteCaption="${%Delete a contribution}"/>
+                        addCaption="${%addContribution}"
+                        deleteCaption="${%deleteContribution}"/>
             </f:entry>
         </j:if>
     </f:optionalBlock>
