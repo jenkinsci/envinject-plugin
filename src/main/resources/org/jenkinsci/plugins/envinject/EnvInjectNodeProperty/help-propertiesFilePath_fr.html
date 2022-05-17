@@ -1,0 +1,21 @@
+<div>
+  <p>
+    Spécifie l'emplacement d'un fichier de propriétés avec des variables supplémentaires à injecter.
+  </p>
+  <p>
+    Si vous spécifiez un chemin relatif, Jenkins essaiera d'abord de résoudre ce chemin
+    par rapport au répertoire HOME de l'utilisateur du nœud.
+    S'il ne parvient pas à trouver un fichier à cet endroit, il tentera alors de résoudre ce chemin à partir du répertoire de travail 
+    du nœud.
+    Ce comportement est sujet à changement 
+    (voir <a href="https://issues.jenkins.io/browse/JENKINS-23666">JENKINS-23666</a>).
+  </p>
+  <p>
+    <b>Attention !</b> Les variables spécifiées par ce fichier ne sont mises en cache et actualisées
+    que lors de la connexion au nœud.
+    Si vous modifiez cette entrée ou le contenu du fichier pour un agent Jenkins, 
+    il faudra reconnecter cet agent au contrôleur pour faire appliquer
+    les modifications.
+    Si vous modifiez les paramètres du nœud principal, vous devrez redémarrer le contrôleur.
+  </p>
+</div>

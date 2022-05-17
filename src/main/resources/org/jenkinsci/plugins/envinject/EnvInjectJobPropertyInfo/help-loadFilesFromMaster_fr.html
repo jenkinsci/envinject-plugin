@@ -1,0 +1,18 @@
+<div>
+    <p>
+        Si activé, charger les fichiers (propriétés ou scripts) depuis le nœud principal.
+        Sans cocher cette option, Jenkins charge les fichiers depuis le nœud cible (agent ou principal).
+        Le chargement des fichiers depuis le nœud principal peut vous permettre d'éviter les conflits entre avoir un chemin
+        générique, comme le problème entre Windows et Linux lorsque votre job n'est pas attaché à un nœud spécifique.
+        Quoi qu'il en soit, le fichier sera traité à partir du nœud cible.
+    </p>
+    <p>
+        Depuis EnvInject 2.0, la configuration globale peut désactiver cette option.
+        Lorsque l'option a été désactivée par la configuration globale, vous verrez un avertissement afin de signaler que l'option a été configurée par le job, mais est maintenant désactivée.
+        Une fois que l'option a été désactivée - pour reconnaître que la tâche a été reconfigurée - l'option disparaîtra de l'interface utilisateur.
+    </p>
+    <p>
+        Il n'est <b>pas recommandé</b> d'utiliser cette option dans de nouveaux jobs, même si elle est activée.
+    </p>
+</div>
+

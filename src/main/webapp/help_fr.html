@@ -1,0 +1,14 @@
+<div>
+    <p>Si cette option est cochée, Jenkins permet de définir un environnement pour le job (ou pour chaque exécution sur
+        un projet matriciel) en définissant des variables d'environnement et en exécutant un script (un script d'installation).</p>
+
+    <p>Toutes ces actions seront exécutées avant un checkout SCM.</p>
+
+    <p>Par défaut, après la configuration, seules les variables injectées (avec des variables Jenkins) seront disponibles dans les scripts de build
+        , dans les post-actions de Jenkins, et ainsi de suite.</p>
+
+    <p>Les variables d'environnement par défaut héritées (héritées par le processus Jenkins qui contient souvent des
+        informations spécifiques à la machine comme <code>PATH</code>, <code>TIMEZONE</code>, etc.) peuvent être déselectionnées si vous activez
+        la propriété <strong>envInject</strong> et
+        cochez <strong>Désélectionner les variables système</strong> dans la page de configuration du noeud.</p>
+</div>
