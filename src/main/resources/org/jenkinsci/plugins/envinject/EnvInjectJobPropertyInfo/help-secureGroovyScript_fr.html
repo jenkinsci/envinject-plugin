@@ -1,0 +1,52 @@
+<div>
+    <p>
+      Évalue un script Groovy et injecte les résultats dans l'environnement.
+      Ce script est alimenté par le <a href="https://plugins.jenkins.io/script-security">Script Security Plugin</a>;
+      les modes Approved Script et Groovy Sandbox sont disponibles.
+      Pour les nouveaux scripts, il est recommandé d'utiliser le mode Sandbox.
+    </p>
+    
+    <h3>Utilisation</h3>
+    <p>
+      Le script groovy doit retourner un objet Java <code>Map&lt;String,String&gt;</code>.
+      Vous pouvez accéder aux paramètres et à d'autres variables d'environnement à travers des variables dans le script Groovy.
+      Dans les scripts, vous pouvez également utiliser les variables suivantes.
+    </p>
+    <dl>
+      <dt>currentJob</dt>
+      <dd>Instance actuelle de <a href="https://javadoc.jenkins.io/hudson/model/Job.html">hudson.model.Job</a>.</dd>
+      <dt>currentBuild</dt>
+      <dd>Instance actuelle de <a href="https://javadoc.jenkins.io/hudson/model/Run.html">hudson.model.Run</a>.</dd>
+      <dt>currentListener</dt>
+      <dd>Instance actuelle de <a href="https://javadoc.jenkins.io/hudson/model/TaskListener.html">hudson.model.TaskListener</a>,
+          qui peut être utilisée à des fins de journalisation.
+      </dd>
+      <dt>out</dt>
+      <dd>Une autre instance de journalisation comme 
+        <a href="https://docs.oracle.com/javase/8/docs/api/java/io/PrintStream.html">java.io.PrintStream</a>.
+        Il est recommandé d'utiliser <code>currentListener</code> au lieu de cette variable si possible.
+      </dd>
+    </dl>
+    <p>
+      Toutes les variables listées peuvent être utilisées dans les deux modes de script.
+      Dans le mode Sandbox, l'accès à des champs et méthodes particuliers peut nécessiter une approbation supplémentaire.
+    </p>
+    
+    <h3>Exemple</h3>
+    <p>
+      Par exemple, le script Groovy peut calculer des variables d'environnement à partir des paramètres entrés par l'utilisateur.
+      Le script ci-dessous injecte la variable d'environnement <code>COMPUTE_VAR</code> selon la valeur du paramètre CASE.
+    </p>
+        <pre><code>
+          def stringValue="StRinG";
+          if ("upper".equals(CASE)){
+            def map = ["COMPUTE_VAR": stringValue.toUpperCase()]
+            return map
+          } else if ("lower".equals(CASE)){
+            def map = ["COMPUTE_VAR": stringValue.toLowerCase()]
+            return map
+          } else {
+            return null;
+          }
+        </code></pre>
+</div>

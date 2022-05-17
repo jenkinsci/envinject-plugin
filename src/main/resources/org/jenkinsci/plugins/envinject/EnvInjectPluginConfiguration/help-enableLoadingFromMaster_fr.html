@@ -1,0 +1,16 @@
+<div>
+  <p>
+    Si activé, les utilisateurs seront en mesure d'utiliser l'option "Charger les fichiers de script et de propriétés depuis le contrôleur" dans les configurations de jobs.
+    C'était le comportement par défaut dans les versions d'EnvInject avant 2.0, mais il a été désactivé pour des raisons de sécurité.
+    Il n'est <b>pas recommandé</b> d'activer cette option sur les nouvelles installations.
+  </p>
+  <p>
+    <b>Attention : </b>Si les utilisateurs habituels de Jenkins sont autorisés à exécuter des tâches sur le contrôleur,
+    cette option n'<b>est pas suffisante</b> pour protéger les fichiers sur l'instance du contrôleur.
+    Les exécutions de jobs peuvent accéder à ces fichiers en chargeant des fichiers locaux dans la configuration d'EnvInject
+    ou simplement en exécutant une étape de build Shell/Batch.
+    La seule façon de protéger votre instance contre une telle menace est de désactiver l'exécution du job sur le nœud principal.
+    Cela peut être fait via des greffons comme <a href="https://plugins.jenkins.io/job-restrictions">Job Restrictions Plugin</a>.
+    Voir aussi <a href="https://issues.jenkins.io/browse/JENKINS-24513">JENKINS-24513</a>, qui suit la proposition d'amélioration dans le noyau.
+  </p>
+</div>
