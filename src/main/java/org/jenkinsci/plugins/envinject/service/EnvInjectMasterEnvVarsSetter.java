@@ -53,13 +53,9 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
             modifiersField.setAccessible(true);
             modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
             masterEnvVarsFiled.set(null, enVars);
-        } catch (IllegalAccessException iae) {
+        } catch (IllegalAccessException | NoSuchFieldException iae) {
             throw new EnvInjectException(iae);
-        } catch (NoSuchFieldException nsfe) {
-            throw new EnvInjectException(nsfe);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
+        } catch (InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
 
