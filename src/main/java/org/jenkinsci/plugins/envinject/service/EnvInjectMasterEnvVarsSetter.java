@@ -24,7 +24,7 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
         this.enVars = enVars;
     }
 
-    private Field getModifiers() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private Field getModifiers() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
         getDeclaredFields0.setAccessible(true);
         Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
@@ -34,6 +34,9 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
                 modifiers = each;
                 break;
             }
+        }
+        if (modifiers == null) {
+            throw new NoSuchFieldException();
         }
         return modifiers;
     }
