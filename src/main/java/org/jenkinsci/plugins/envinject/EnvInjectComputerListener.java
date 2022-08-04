@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.envinject;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
@@ -21,6 +20,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
@@ -31,7 +32,7 @@ import jenkins.model.Jenkins;
 @Extension
 public class EnvInjectComputerListener extends ComputerListener implements Serializable {
 
-    private EnvVars getNewMasterEnvironmentVariables(@NonNull Computer c, 
+    private NavigableMap<String, String> getNewMasterEnvironmentVariables(@NonNull Computer c,
             @NonNull FilePath nodePath, @NonNull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         //Get env vars for the current node
@@ -67,7 +68,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         //Resolve against node env vars
         envInjectEnvVarsService.resolveVars(globalPropertiesEnvVars, nodeEnvVars);
 
-        EnvVars envVars2Set = new EnvVars();
+        NavigableMap<String, String> envVars2Set = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         if (!unsetSystemVariables) {
             envVars2Set.putAll(nodeEnvVars);
         }
@@ -76,7 +77,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         return envVars2Set;
     }
 
-    private EnvVars getNewSlaveEnvironmentVariables(@NonNull Computer c, 
+    private NavigableMap<String, String> getNewSlaveEnvironmentVariables(@NonNull Computer c,
             @NonNull FilePath nodePath, @NonNull TaskListener listener) throws EnvInjectException, IOException, InterruptedException {
 
         Map<String, String> currentEnvVars = new HashMap<>();
@@ -114,7 +115,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         //Resolve against node env vars
         envInjectEnvVarsService.resolveVars(currentEnvVars, nodeEnvVars);
 
-        EnvVars envVars2Set = new EnvVars();
+        NavigableMap<String, String> envVars2Set = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         if (!unsetSystemVariables) {
             envVars2Set.putAll(nodeEnvVars);
         }
@@ -140,7 +141,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         if (isActiveSlave(c)) {
 
             try {
-                EnvVars envVars2Set = getNewSlaveEnvironmentVariables(c, nodePath, listener);
+                NavigableMap<String, String> envVars2Set = getNewSlaveEnvironmentVariables(c, nodePath, listener);
                 nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
             } catch (EnvInjectException e) {
                 throw new IOException(e);
@@ -151,7 +152,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         //use case : it is only on master
         else if (isGlobalEnvInjectActivatedOnMaster()) {
             try {
-                EnvVars envVars2Set = getNewMasterEnvironmentVariables(c, nodePath, listener);
+                NavigableMap<String, String> envVars2Set = getNewMasterEnvironmentVariables(c, nodePath, listener);
                 nodePath.act(new EnvInjectMasterEnvVarsSetter(envVars2Set));
             } catch (EnvInjectException e) {
                 throw new IOException(e);
