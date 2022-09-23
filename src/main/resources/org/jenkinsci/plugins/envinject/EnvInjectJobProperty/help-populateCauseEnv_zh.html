@@ -1,0 +1,22 @@
+<div>
+    <p>
+        通過將此設置為 true，將填充包含運行構建的所有原因的環境變量“BUILD_CAUSE”(由“,”分隔)。
+
+    <ul>
+        <li>BUILD_CAUSE = SCMTRIGGER,TIMERTRIGGER,MANUALTRIGGER,UPSTREAMTRIGGER</li>
+    </ul>
+
+
+    此外，每個觸發器都可用作單個環境變量：<br/>
+    <ul>
+        <li>BUILD_CAUSE_SCMTRIGGER = true (SCM Trigger)</li>
+        <li>BUILD_CAUSE_TIMERTRIGGER = true (Triggered by Schedule)</li>
+        <li>BUILD_CAUSE_MANUALTRIGGER = true (triggered by user)</li>
+        <li>BUILD_CAUSE_UPSTREAMTRIGGER = true (triggered by upstream project)</li>
+    </ul>
+
+    ...未知觸發器將被添加，其實現名稱為大寫。<br/>
+...未知的觸發器/原因(例如，來自核心以外的插件)將被添加，其實現名稱為大寫。
+
+    </p>
+</div>

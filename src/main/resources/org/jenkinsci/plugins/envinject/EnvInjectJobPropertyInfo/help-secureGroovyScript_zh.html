@@ -1,0 +1,50 @@
+<div>
+    <p>
+      評估 Groovy 腳本並將結果注入到環境中。
+      此腳本由 <a href="https://plugins.jenkins.io/script-security">Script Security Plugin</a> 提供支持；
+Approved Script 和 Groovy Sandbox 模式均可用。
+      對於新腳本，建議使用 Sandbox 模式。
+    </p>
+    
+    <h3>用法</h3>
+    <p>
+      Groovy 腳本必須返回一個 <code>Map&lt;String,String&gt;</code> Java 對象。
+      您可以通過 Groovy 腳本中的變量取參數和其他環境變量。
+      在腳本中，您還可以使用以下變量。
+    </p>
+    <dl>
+      <dt>currentJob</dt>
+      <dd>當前 <a href="https://javadoc.jenkins.io/hudson/model/Job.html">hudson.model.Job</a> 實例。</dd>
+      <dt>currentBuild</dt>
+      <dd>當前 <a href="https://javadoc.jenkins.io/hudson/model/Run.html">hudson.model.Run</a> 實例。</dd>
+      <dt>currentListener</dt>
+      <dd>當前 <a href="https://javadoc.jenkins.io/hudson/model/TaskListener.html">hudson.model.TaskListener</a> 實例，可用於記錄目的。
+      </dd>
+      <dt>out</dt>
+      <dd>另一個記錄實例為 <a href="https://docs.oracle.com/javase/8/docs/api/java/io/PrintStream.html">java.io.PrintStream</a>。
+        建議盡可能使用 <code>currentListener</code> 代替此變量。
+      </dd>
+    </dl>
+    <p>
+      所有列出的變量都可以在兩種腳本模式下使用。
+      在沙盒模式下，對特定字段和方法的取數可能需要額外的批准。
+    </p>
+    
+    <h3>例子</h3>
+    <p>
+      例如，Groovy 可以根據用戶輸入參數計算環境變量。
+      下面的腳本根據 CASE 參數值注入 <code>COMPUTE_VAR</code> 環境變量。
+    </p>
+        <pre><code>
+          def stringValue="StRinG";
+          if ("upper".equals(CASE)){
+            def map = ["COMPUTE_VAR": stringValue.toUpperCase()]
+            return map
+          } else if ("lower".equals(CASE)){
+            def map = ["COMPUTE_VAR": stringValue.toLowerCase()]
+            return map
+          } else {
+            return null;
+          }
+        </code></pre>
+</div>

@@ -1,0 +1,16 @@
+<div>
+  <p>
+    Określa lokalizację pliku właściwości z dodatkowymi zmiennymi do wprowadzenia.
+  </p>
+  <p>
+    Jeśli ścieżka będzie względna, Jenkins najpierw spróbuje określić (rozwiązać) tę ścieżkę w odniesieniu do folderu 'HOME ' użytkownika zlokalizowanego na agentcie/kontrolerze.
+    Jeśli nie znajdzie pliku, to spróbuje odnaleść go w katalogu roboczm agenta/kontrolera.
+    To zachowanie jest nieintuicyjne i zostało opisane w tym wniosku <a href="https://issues.jenkins.io/browse/JENKINS-23666">JENKINS-23666</a>.
+  </p>
+  <p>
+    <b>Uwaga!</b> Zmienne określone przez ten plik są buforowane i odświeżane
+    tylko przy połączeniu z węzłem.
+    Jeśli zmodyfikujesz ten wpis lub zawartość pliku dla agenta Jenkinsa, kontroler będzie musiał ponownie połączyć do tego agenta, aby wprowadzić zmiany.
+    Jeśli zmodyfikujesz ustawienia dla kontrolera, musisz tylko go zrestartować.
+  </p>
+</div>
