@@ -1,0 +1,14 @@
+<div>
+  <p>
+    Jeśli ta opcja jest włączona, użytkownicy będą mogli używać opcji "Załaduj skrypt i pliki właściwości z kontrolera" w konfiguracji zadań.
+    Było to domyślne zachowanie w wersjach EnvInject 2.0 (WprowadzenieZmiennych 2.0), ale zostało wyłączone ze względów bezpieczeństwa.
+    <b>Nie zaleca się</b> włączenia tej opcji w nowych instalacjach.
+  </p>
+  <p>
+    <b>Ostrzeżenie: </b>Jeśli zwykli użytkownicy Jenkinsa mogą uruchamiać zadania na kontrolerze, ta opcja <b>nie wystarczy</b>, aby chronić pliki zlokalizowane na kontrolerze.
+    Poszczególne wykonanie zadań może mieć dostęp do tych plików poprzez wczytywanie plików lokalnych w konfiguracji EnvInject lub po prostu poprzez wykonanie etapu budowania z poziomu powłoki/serii.
+    Jedynym sposobem ochrony twojej instancji przed takim zagrożeniem jest wyłączenie wykonywania pracy na węźle kontrolera.
+    Można to zrobić za pomocą wtyczek takich jak <a href="https://plugins.jenkins.io/job-restrictions">Job Restrictions Plugin (Wtyczka Ograniczanie Zadań)</a>.
+    Zobacz również <a href="https://issues.jenkins.io/browse/JENKINS-24513">JENKINS-24513</a>, który śledzi propozycje poprawek w rdzeniu Jenkinsa.
+  </p>
+</div>

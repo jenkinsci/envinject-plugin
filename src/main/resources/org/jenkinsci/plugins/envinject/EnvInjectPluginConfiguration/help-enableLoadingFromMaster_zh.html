@@ -1,0 +1,14 @@
+<div>
+  <p>
+    如果啟用，用戶將能夠在作業配置中使用“從主服務器加載腳本和屬性文件”選項。
+    這是 EnvInject 2.0 之前版本中的默認行為，但由於安全原因，它已被禁用。
+    <b>不建議</b>在新安裝時啟用此選項。
+  </p>
+  <p>
+    <b>警告：</b>如果允許普通 Jenkins 用戶在主實例上運行作業，則此選項<b>不足以</b>保護主實例上的文件。
+    作業運行可以通過在 EnvInject 配置中加載本地文件或僅通過執行 Shell/Batch 構建步驟來訪問這些文件。
+    保護您的實例免受此類威脅的唯一方法是禁用主節點上的作業執行。
+    可以通過 <a href="https://plugins.jenkins.io/job-restrictions">Job Restrictions Plugin</a> 等插件來完成。
+    另請參閱 <a href="https://issues.jenkins.io/browse/JENKINS-24513">JENKINS-24513</a>，它跟踪核心中的改進建議。
+  </p>
+</div>

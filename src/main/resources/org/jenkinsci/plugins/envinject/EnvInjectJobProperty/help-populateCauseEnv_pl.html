@@ -1,0 +1,22 @@
+<div>
+    <p>
+        Ustawiając na 'prawda' ('true'), zmienna środowiskowa 'BUILD_CAUSE' będzie przechowywać wszystkie informacje na temat źródła, z jakiego został uruchomione budowanie (oddzielone znakiem ',').
+
+    <ul>
+        <li>BUILD_CAUSE = SCMTRIGGER,TIMERTRIGGER,MANUALTRIGGER,UPSTREAMTRIGGER</li>
+    </ul>
+
+
+    Ponadto każde pojedyncze źródło wyzwalania jest dostępne jako odpowiednia zmienna środowiskowa:<br/>
+    <ul>
+        <li>BUILD_CAUSE_SCMTRIGGER = true (wyzwalany przez obiekt SCM)</li>
+        <li>BUILD_CAUSE_TIMERTRIGGER = true (wyzwalane przez harmonogram)</li>
+        <li>BUILD_CAUSE_MANUALTRIGGER = true (wyzwalane przez użytkownika)</li>
+        <li>BUILD_CAUSE_UPSTREAMTRIGGER = true (wyzwolone przez nadrzędny projekt)</li>
+    </ul>
+
+    Nieznane definicje przyczyn/źródeł wyzwalania, będą dodane do zmiennych środowiskowych. Nazwa tych zmiennych będzie odzwierciedlała nazwę implementacji przyczyny/źródła wyzwalania.
+Example: BUILD_CAUSE_GITHUB_PUSH
+
+    </p>
+</div>
