@@ -124,9 +124,9 @@ public class EnvInjectActionTest {
     }
 
     private FreeStyleProject setupProjectWithDefaultEnvValue()throws Exception, IOException {
-        DumbSlave slave = slaveContributing("DISPLAY", "SLAVE_VAL");
+        DumbSlave agent = slaveContributing("DISPLAY", "SLAVE_VAL");
         FreeStyleProject p = j.jenkins.createProject(FreeStyleProject.class, "project");
-        p.setAssignedNode(slave);
+        p.setAssignedNode(agent);
         return p;
     }
 

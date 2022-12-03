@@ -37,7 +37,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
-        // -- Retrieve Environment variables from master
+        // -- Retrieve Environment variables from controller
         EnvInjectLogger logger = new EnvInjectLogger(listener);
         EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
 
@@ -92,7 +92,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         //Get env vars for the current node
         Map<String, String> nodeEnvVars = nodePath.act(new EnvInjectMasterEnvVarsRetriever());
 
-        // -- Process slave properties
+        // -- Process agent properties
         boolean unsetSystemVariables = false;
         for (NodeProperty<?> nodeProperty : node.getNodeProperties()) {
 
@@ -136,7 +136,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
         }
 
 
-        //use case : it is a slave
+        //use case : it is an agent
         if (isActiveSlave(c)) {
 
             try {
@@ -148,7 +148,7 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
 
         }
 
-        //use case : it is only on master
+        //use case : it is only on controller
         else if (isGlobalEnvInjectActivatedOnMaster()) {
             try {
                 EnvVars envVars2Set = getNewMasterEnvironmentVariables(c, nodePath, listener);
@@ -164,8 +164,8 @@ public class EnvInjectComputerListener extends ComputerListener implements Seria
             return false;
         }
 
-        Node slave = Jenkins.get().getNode(c.getName());
-        return slave != null;
+        Node agent = Jenkins.get().getNode(c.getName());
+        return agent != null;
     }
 
     private boolean isGlobalEnvInjectActivatedOnMaster() {
