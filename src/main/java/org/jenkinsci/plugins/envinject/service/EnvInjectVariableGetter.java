@@ -62,7 +62,7 @@ public class EnvInjectVariableGetter {
         if (computer != null) {
             result = computer.getEnvironment().overrideAll(result);
             if(computer instanceof MasterComputer) {
-                result.put("NODE_NAME", "master");
+                result.put("NODE_NAME", Jenkins.get().getSelfLabel().getName());
             } else {
                 result.put("NODE_NAME", computer.getName());
             }
