@@ -16,8 +16,8 @@ public class EnvInjectExceptionFormatter {
     }
     
     public static EnvInjectException forProhibitedLoadFromMaster(String path) {
-        return new EnvInjectException("Cannot load file " + path + " from the master. "
-            + "Loading of files from the master is prohibited globally.");
+        return new EnvInjectException("Cannot load file " + path + " from the controller. "
+            + "Loading of files from the controller is prohibited globally.");
     }
     
 }

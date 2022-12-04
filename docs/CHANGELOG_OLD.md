@@ -32,12 +32,12 @@ Release with minor improvements in the codebase:
     plugins by the values persisted in its cache.
     -   This update does not solve all potential conflicts between
         EnvInject and other environment-contributing plugins
--   [![(error)](images/bug.svg)](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin)[JENKINS-46479](https://issues.jenkins-ci.org/browse/JENKINS-46479) -
+-   [![(error)](images/bug.svg)](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin)[JENKINS-46479](https://issues.jenkins-ci.org/browse/JENKINS-46479) -
     Prevent environment variables from being deleted on existing builds
     when the action is saved before cache initialization.
--   ![(info)](images/improvement.svg) Update
+-   ![(info)](images/improvement.svg) Update
     EnvInject Lib from 1.26 to 1.27 in order to pick FindBugs fixes
-    and [JENKINS-46479](https://issues.jenkins-ci.org/browse/JENKINS-46479).
+    and [JENKINS-46479](https://issues.jenkins-ci.org/browse/JENKINS-46479).
 
 #### 2.1.3 (July 3, 2017)
 
@@ -51,7 +51,7 @@ Release with minor improvements in the codebase:
 -   [![(error)](images/bug.svg)](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin)
     [](https://issues.jenkins-ci.org/browse/JENKINS-32428)
     [JENKINS-45056](https://issues.jenkins-ci.org/browse/JENKINS-45056)
-    - Fix issue with the incorrect [EnvInject API
+    - Fix issue with the incorrect [EnvInject API
     Plugin](https://wiki.jenkins.io/display/JENKINS/EnvInject+API+Plugin)
     1.0 packaging. Now there is a plugin dependency
 -   [![(error)](images/bug.svg)](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin)
@@ -78,15 +78,15 @@ This is an API release, which is a preparation for a better Jenkins
 Pipeline support in the plugin
 ([JENKINS-42614](https://issues.jenkins-ci.org/browse/JENKINS-42614)).
 
--   [![(plus)](images/rfe.svg) JENKINS-43845](https://issues.jenkins-ci.org/browse/JENKINS-43845) -
+-   [![(plus)](images/rfe.svg) JENKINS-43845](https://issues.jenkins-ci.org/browse/JENKINS-43845) -
     Create new [EnvInject
     API](https://wiki.jenkins.io/display/JENKINS/EnvInject+API+Plugin)
     plugin, which provides new Pipeline-compatible API of EnvInject Lib
     and EnvInject API util classes
--   [![(plus)](images/rfe.svg) JENKINS-43536](https://issues.jenkins-ci.org/browse/JENKINS-43536) -
+-   [![(plus)](images/rfe.svg) JENKINS-43536](https://issues.jenkins-ci.org/browse/JENKINS-43536) -
     Rework internal logic to avoid using AbstractProject explicitly
     where possible
--   [![(plus)](images/rfe.svg) JENKINS-43535](https://issues.jenkins-ci.org/browse/JENKINS-43535) -
+-   [![(plus)](images/rfe.svg) JENKINS-43535](https://issues.jenkins-ci.org/browse/JENKINS-43535) -
     Deprecate old API in EnvInject Lib and provide migration guidelines
 
 Expected behavior changes:
@@ -100,19 +100,17 @@ Expected behavior changes:
 
 This is a security release of the plugin.
 
--   [![(error)](images/bug.svg) SECURITY-256](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin) -
+-   [![(error)](images/bug.svg) SECURITY-256](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin) -
     Arbitrary Groovy code execution vulnerability
--   [![(error)](images/bug.svg) SECURITY-348](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin-allows-low-privilege-users-to-access-parts-of-arbitrary-files-on-master)
-    - Low privilege users are able to read parts of some files on master
+-   [![(error)](images/bug.svg) SECURITY-348](https://jenkins.io/security/advisory/2017-04-10/#environment-injector-envinject-plugin-allows-low-privilege-users-to-access-parts-of-arbitrary-files-on-master)
+    - Low privilege users are able to read parts of some files on controller
 
-  
-
-| WARNING: This plugin release is not fully compatible with Previous EnvInject versions. A manual job configuration update may be required. See the referenced issues for more information. |
+| WARNING: This plugin release is not fully compatible with Previous EnvInject versions. A manual job configuration update may be required. See the referenced issues for more information. |
 | --- |
 
 #### 1.93.1 (Sep 30th, 2016)
 
--   ![(plus)](images/rfe.svg) [JENKINS-31829](https://issues.jenkins-ci.org/browse/JENKINS-31829) -
+-   ![(plus)](images/rfe.svg) [JENKINS-31829](https://issues.jenkins-ci.org/browse/JENKINS-31829) -
     Add currentListener Groovy variable
 -   ![(info)](images/improvement.svg)
     [JENKINS-38607](https://issues.jenkins-ci.org/browse/JENKINS-38607) -
@@ -247,19 +245,17 @@ This is a security release of the plugin.
 * Fix
 [JENKINS-19852](https://issues.jenkins-ci.org/browse/JENKINS-19852) -
 NPE during submission of EnvInject JobProperty configurations w/o admin
-permissions  
+permissions
 * Fix
 [JENKINS-19222](https://issues.jenkins-ci.org/browse/JENKINS-19222) -
-EnvInject undefines NODE\_NAME environment variable on master  
+EnvInject undefines NODE\_NAME environment variable on controller
 * Fix
 [JENKINS-23447](https://issues.jenkins-ci.org/browse/JENKINS-23447) -
 Mask sensitive data in injectedEnvVars.txt when displayed on UI or
-persisted on disk  
+persisted on disk
 * Fix
 [JENKINS-24785](https://issues.jenkins-ci.org/browse/JENKINS-24785) -
 BUILD\_CAUSE is always UPSTREAMTRIGGER in multi-configuration jobs
-
-  
 
 |                                                                                                     |
 |-----------------------------------------------------------------------------------------------------|
@@ -268,14 +264,14 @@ BUILD\_CAUSE is always UPSTREAMTRIGGER in multi-configuration jobs
 #### 1.90
 
 * [JENKINS-24130](https://issues.jenkins-ci.org/browse/JENKINS-24130) -
-Added an option to mask PasswordParameters  
+Added an option to mask PasswordParameters
 * Execute Groovy scripts to inject environment variables in Build
-Wrappers  
+Wrappers
 * Fix
 [JENKINS-22126](https://issues.jenkins-ci.org/browse/JENKINS-22126) -
-Override build parameters only when explicitly requested  
+Override build parameters only when explicitly requested
 * EnvInject escapes a sensitive data from other Environment
-contributors  
+contributors
 * Fix
 [JENKINS-22169](https://issues.jenkins-ci.org/browse/JENKINS-22169) -
 Migration from [Setenv
@@ -284,22 +280,22 @@ overwrites existing envinject configurations
 
 #### 1.89
 
-* Don't mask stacktraces on errors  
+* Don't mask stacktraces on errors
 * Upgrade to envinject-lib-1.19
 
 #### 1.88
 
 * Fix
 [JENKINS-16316](https://issues.jenkins-ci.org/browse/JENKINS-16316) -
-Changes to global variables not honored  
-* Log both source and resolved unreachable properties file paths  
+Changes to global variables not honored
+* Log both source and resolved unreachable properties file paths
 * Fix
 [JENKINS-14144](https://issues.jenkins-ci.org/browse/JENKINS-14144) -
 use a WorkspaceListener to avoid injecting a temporary
 
 #### 1.87
 
-* Actually load script from master
+* Actually load script from controller
 
 #### 1.86
 
@@ -325,24 +321,24 @@ Global variables not updated
 
 * Fix
 [JENKINS-16566](https://issues.jenkins-ci.org/browse/JENKINS-16566) -
-poll SCM not work after upgrade the EnvInject Plugin to 1.81  
+poll SCM not work after upgrade the EnvInject Plugin to 1.81
 * Fix
 [JENKINS-16575](https://issues.jenkins-ci.org/browse/JENKINS-16575) -
 SEVERE: Failed to record SCM polling - java.lang.NullPointerException -
-EnvInject Plugin  
+EnvInject Plugin
 * Update to envinject-lib 1.15
 
 #### 1.81
 
 * Fix
 [JENKINS-16239](https://issues.jenkins-ci.org/browse/JENKINS-16239) -
-NPE in getRootDir  
-** Update to envinject-lib 1.14  
-* Remove Injected from Labels  
+NPE in getRootDir
+** Update to envinject-lib 1.14
+* Remove Injected from Labels
 * Fix
 [JENKINS-16380](https://issues.jenkins-ci.org/browse/JENKINS-16380) -
 Starting with \>1.73 global environment variables overrule build
-specific parameter variables  
+specific parameter variables
 * Fix
 [JENKINS-16372](https://issues.jenkins-ci.org/browse/JENKINS-16372)
 -Password parameter is malformed
@@ -357,7 +353,7 @@ EnvInject plugin using a cached value for ${WORKSPACE}
 
 * Fix
 [JENKINS-16316](https://issues.jenkins-ci.org/browse/JENKINS-16316) -
-Global variables not updated  
+Global variables not updated
 * Fix
 [JENKINS-16399](https://issues.jenkins-ci.org/browse/JENKINS-16399) -
 SCM documentation is incorrect
@@ -397,7 +393,7 @@ request)
 * Fix
 [JENKINS-15658](https://issues.jenkins-ci.org/browse/JENKINS-15658) -
 EnvInject Undefines Jenkins Global properties referencing WORKSPACE
-variable  
+variable
 * Fix
 [JENKINS-15664](https://issues.jenkins-ci.org/browse/JENKINS-15664) -
 Help text for EnvInject plugin is wrong
@@ -410,7 +406,7 @@ EnvInject unsets empty string properties returned in maps
 
 #### 1.71
 
-* Support for new job types  
+* Support for new job types
 * Replace "white-list" strategy for supported job types by use of
 BuildableItemWithBuildWrappers interface to access the job's
 buildWrapper list.
@@ -419,7 +415,7 @@ buildWrapper list.
 
 * Fix
 [JENKINS-15071](https://issues.jenkins-ci.org/browse/JENKINS-15071) -
-Editing the description of Jobs throws an Error 500 message  
+Editing the description of Jobs throws an Error 500 message
 * Update to envinject-lib 1.13
 
 #### 1.69
@@ -432,17 +428,17 @@ Can't overload/update PYTHONPATH
 
 * Fix
 [JENKINS-14897](https://issues.jenkins-ci.org/browse/JENKINS-14897) -
-ConfigFileProvider variable is not seen by EnvInject  
+ConfigFileProvider variable is not seen by EnvInject
 * Require Jenkins 1.444+
 
 #### 1.67
 
 * Fix
 [JENKINS-14761](https://issues.jenkins-ci.org/browse/JENKINS-14761) -
-Backslash broken on Properties Content injection  
+Backslash broken on Properties Content injection
 * Fix
 [JENKINS-14768](https://issues.jenkins-ci.org/browse/JENKINS-14768) -
-Backslash is escaped from injected $WORKSPACE property on slave node
+Backslash is escaped from injected $WORKSPACE property on agent node
 
 #### 1.66
 
@@ -466,7 +462,7 @@ cannot be cast to AbstractBuild)
 * Fix reponed
 [JENKINS-14371](https://issues.jenkins-ci.org/browse/JENKINS-14371) -
 NullPointerException in EnvInjectBuilderContributionAction.buildEnvVars
-during SCM poll  
+during SCM poll
 * Fix
 [JENKINS-14459](https://issues.jenkins-ci.org/browse/JENKINS-14459) -
 Failed to record SCM polling with envinject plugin
@@ -494,7 +490,7 @@ Support for Ivy project type
 
 * Fix
 [JENKINS-14271](https://issues.jenkins-ci.org/browse/JENKINS-14271) -
-EnvInject claims global env vars are unresolved on slave
+EnvInject claims global env vars are unresolved on agent
 
 #### 1.58
 
@@ -511,7 +507,7 @@ EnvInject not handling properties file with logical lines
 #### 1.56
 
 * Load environment variables from the node (therefore, you are able to
-redefine classic variables such as the PATH variable at node level)  
+redefine classic variables such as the PATH variable at node level)
 * Upgrade to envinject-lib 1.8
 
 #### 1.55
@@ -546,7 +542,7 @@ envVars)
 #### 1.49
 
 * Merge pull request - use UnsupportedOperationException instead of
-UnsupportedMediaException  
+UnsupportedMediaException
 * Merge pull request - added Japanese localization
 
 #### 1.48
@@ -561,7 +557,7 @@ hudson.model.Actionable\#actions for class hudson.model.FreeStyleBuild
 * Fix
 [JENKINS-13566](https://issues.jenkins-ci.org/browse/JENKINS-13566) -
 EnvInject is messing around with my TEMP variable when username contains
-a dollar sign (windows)  
+a dollar sign (windows)
 * Update to envinject-lib 1.5
 
 #### 1.46
@@ -618,14 +614,14 @@ parameter
 
 * Fix
 [JENKINS-13085](https://issues.jenkins-ci.org/browse/JENKINS-13085) -
-Environment Variable Injection doesn't work when project run on slave
+Environment Variable Injection doesn't work when project run on agent
 node that sets the same variable
 
 #### 1.36
 
 * Fix
 [JENKINS-13041](https://issues.jenkins-ci.org/browse/JENKINS-13041) -
-PATH variable is being injected from master on multiconfiguration jobs
+PATH variable is being injected from controller on multiconfiguration jobs
 
 #### 1.35
 
@@ -640,7 +636,7 @@ EnvInject 1.33 doesn''t seem to work with Jenkins 1.454
 #### 1.33
 
 * Move global passwords injection to the 'Prepare job environment'
-section  
+section
 * Add 'Inject job passwords'
 
 #### 1.32
@@ -648,7 +644,7 @@ section
 * Fix
 [JENKINS-12944](https://issues.jenkins-ci.org/browse/JENKINS-12944) -
 Env Inject Plugin doesn't substitute ${WORKSPACE} variable at all when
-used in 'Preparing an environment for the job'  
+used in 'Preparing an environment for the job'
 * Fix
 [JENKINS-12963](https://issues.jenkins-ci.org/browse/JENKINS-12963) -
 EnvInject plugin causes job to use JAVA\_HOME instead of configured JDK
@@ -669,7 +665,7 @@ PATH variable is not injected
 
 * Fix
 [JENKINS-12876](https://issues.jenkins-ci.org/browse/JENKINS-12876) -
-Version 1.20 and later removed all comments and new-lines  
+Version 1.20 and later removed all comments and new-lines
 * Add test to
 [JENKINS-12841](https://issues.jenkins-ci.org/browse/JENKINS-12841) -
 EnvInject Plugin 1.26 does not substitute ${WORKSPACE} correctly
@@ -678,7 +674,7 @@ EnvInject Plugin 1.26 does not substitute ${WORKSPACE} correctly
 
 * Fix reponed
 [JENKINS-12108](https://issues.jenkins-ci.org/browse/JENKINS-12108) -
-EnvInject failure using multi-configuration jobs  
+EnvInject failure using multi-configuration jobs
 * Fix
 [JENKINS-12841](https://issues.jenkins-ci.org/browse/JENKINS-12841) -
 EnvInject Plugin 1.26 does not substitute ${WORKSPACE} correctly
@@ -701,7 +697,7 @@ Injecting from file removes backslashes on ${WORKSPACE}
 
 #### 1.24
 
-* Add the ability to inject password values  
+* Add the ability to inject password values
 * Fix
 [JENKINS-12423](https://issues.jenkins-ci.org/browse/JENKINS-12423) -
 Password masked by Mask Passwords are visible when using envinject
@@ -726,8 +722,8 @@ envinject strips off "\\" each time config page is opened
 #### 1.20
 
 * Move properties content serialization to a Map (avoid carriage return
-issues)  
-* Fix usage of build variables for the 'Prepare environment jobs'  
+issues)
+* Fix usage of build variables for the 'Prepare environment jobs'
 * Fix Injected environment vars when EnvInject is not configured
 
 #### 1.19
@@ -749,7 +745,7 @@ Property variable not set if using a property file
 
 #### 1.16
 
-* Fix external EnvInjectContribution section display  
+* Fix external EnvInjectContribution section display
 * Fix text typo
 
 #### 1.15 (technical release)
@@ -781,12 +777,12 @@ plugin
 
 #### 1.10
 
-* Update to envinject-lib 1.1  
+* Update to envinject-lib 1.1
 * Fix bug on the build end
 
 #### 1.9
 
-* Export reuse code to a dedicated library: envinject-lib 1.0  
+* Export reuse code to a dedicated library: envinject-lib 1.0
 * Fix typo
 
 #### 1.8
@@ -797,7 +793,7 @@ plugin
 
 * Fix
 [JENKINS-12293](https://issues.jenkins-ci.org/browse/JENKINS-12293) -
-Incorrect inserting environment variables on linux slave
+Incorrect inserting environment variables on linux agent
 
 #### 1.6
 
@@ -813,29 +809,29 @@ envinject does not fail the build after Environment Script Content fails
 #### 1.4
 
 * Fix portability in the history build.xml file (using the build
-reference instead of the absolute path of the EnvInjected file)  
-* Add the ability to load a properties file at node startup (at master
-and/or at slave startup)
+reference instead of the absolute path of the EnvInjected file)
+* Add the ability to load a properties file at node startup (at controller
+and/or at agent startup)
 
 #### 1.3
 
-* Move 'Triggered Build Cause' to Jenkins build variables option  
+* Move 'Triggered Build Cause' to Jenkins build variables option
 * Add an export option to export environment variables to TXT, XML or
 JSON
 
 #### 1.2
 
-* Fix NullPointerException when master has 0 executors
+* Fix NullPointerException when controller has 0 executors
 
 #### 1.1
 
 * Fix
 [JENKINS-12108](https://issues.jenkins-ci.org/browse/JENKINS-12108) -
-EnvInject failure using multi-configuration jobs  
+EnvInject failure using multi-configuration jobs
 * Fix
 [JENKINS-12084](https://issues.jenkins-ci.org/browse/JENKINS-12084)
 -Variables resolved alphabetically rather than order found in
-content/file. ${WORKSPACE} not always getting resolved as result  
+content/file. ${WORKSPACE} not always getting resolved as result
 * Accept script parameters to script path sections
 
 #### 1.0
@@ -843,19 +839,19 @@ content/file. ${WORKSPACE} not always getting resolved as result
 * Fix
 [JENKINS-12027](https://issues.jenkins-ci.org/browse/JENKINS-12027) -
 ${WORKSPACE} variable doesn't use my specific workspace directory
-anymore in a build step  
+anymore in a build step
 * Make it stable for production
 
 #### 0.26
 
-* Enhance display log  
+* Enhance display log
 * Refactoring for fixing properties variables propagation
 
 #### 0.25
 
 * Fix
 [JENKINS-11763](https://issues.jenkins-ci.org/browse/JENKINS-11763) -
-Can not set some 'special' variable names the first time  
+Can not set some 'special' variable names the first time
 * Technical Refactoring
 
 #### 0.24
@@ -871,8 +867,8 @@ Some env variables can not be used to inject, for example $NODE\_NAME
 #### 0.22
 
 * Add the ability for the 'prepare environment' feature to load the
-properties file and the script file from the master node even if the
-build runs on a slave node.
+properties file and the script file from the controller node even if the
+build runs on an agent.
 
 #### 0.21
 
@@ -914,13 +910,13 @@ Content
 
 #### 0.15
 
-* Backslashes in file path for windows platform are managed  
+* Backslashes in file path for windows platform are managed
 * Added feature 'unset variable' when the variable is unresolved
 
 #### 0.14
 
 * Integrate domi pull request (add trigger causes as environment
-variables)  
+variables)
 * Fix
 [JENKINS-10980](https://issues.jenkins-ci.org/browse/JENKINS-10980) -
 EnvInject to optinally trim trailing spaces
@@ -953,12 +949,12 @@ Inject environment variables with property file not working
 
 #### 0.10
 
-* Add the ability to unset system variable at node level  
-* Add an option to 'Keep Jenkins system variables'  
+* Add the ability to unset system variable at node level
+* Add an option to 'Keep Jenkins system variables'
 * Fix
 [JENKINS-10845](https://issues.jenkins-ci.org/browse/JENKINS-10845) and
 [JENKINS-10877](https://issues.jenkins-ci.org/browse/JENKINS-10877) -
-master/slave sync / Job variables/parameters are missing  
+controller/agent sync / Job variables/parameters are missing
 * Complete the fix to
 [JENKINS-10847](https://issues.jenkins-ci.org/browse/JENKINS-10847)
 
@@ -967,9 +963,9 @@ master/slave sync / Job variables/parameters are missing
 * Fix partially
 [JENKINS-10847](https://issues.jenkins-ci.org/browse/JENKINS-10847) and
 [JENKINS-10845](https://issues.jenkins-ci.org/browse/JENKINS-10845) -
-Enivronment is not separated  
+Enivronment is not separated
 * The ability to 'Keep system variables' has been removed. The feature
-will be restored later (and moved at slave/node level (not at job
+will be restored later (and moved at agent/node level (not at job
 level).
 
 #### 0.8
@@ -978,13 +974,13 @@ level).
 
 #### 0.7
 
-* Fixed variables propagation between typologies  
+* Fixed variables propagation between typologies
 * Fixed variables restore for all typologies
 
 #### 0.6
 
-* Add a 'Keep Jenkins Build variables' option  
-* Add 'EnvInject' as prefix for plugin log messages  
+* Add a 'Keep Jenkins Build variables' option
+* Add 'EnvInject' as prefix for plugin log messages
 * Sort the EnvInject variables table
 
 #### 0.5
@@ -993,8 +989,8 @@ level).
 
 #### 0.4
 
-* Add a build wrapper  
-* Fix serialization fiels for JobProperty  
+* Add a build wrapper
+* Fix serialization fiels for JobProperty
 * Add a migration procedure for setenv and envfile plugins
 
 #### 0.3
@@ -1011,7 +1007,4 @@ level).
 
 #### 0.1
 
-* Initial versio
-
- 
-
+* Initial version

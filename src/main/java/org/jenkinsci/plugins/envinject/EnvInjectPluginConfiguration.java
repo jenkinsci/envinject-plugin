@@ -70,7 +70,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     
     /**
      * @deprecated Use {@link #EnvInjectPluginConfiguration(boolean, boolean, boolean)}
-     * @since 2.0 Loading of files from master is disabled by default
+     * @since 2.0 Loading of files from controller is disabled by default
      */
     @Deprecated
     public EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions) {
@@ -83,7 +83,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
      * Constructor.
      * @param hideInjectedVars Hides the Injected Env Vars action in all builds.
      * @param enablePermissions Enables a specific permission for viewing Injected Env Vars
-     * @param enableLoadingFromMaster Enables remote loading of property and script files from the master in builds
+     * @param enableLoadingFromMaster Enables remote loading of property and script files from the controller in builds
      */
     /*package*/ EnvInjectPluginConfiguration(boolean hideInjectedVars, boolean enablePermissions, boolean enableLoadingFromMaster) {
         this.hideInjectedVars = hideInjectedVars;
@@ -106,7 +106,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     public void setEnablePermissions(boolean enabledPermissions) { this.enablePermissions = enabledPermissions; }
 
     /**
-     * Check if the instance supports loading of scripts and property files from the master.
+     * Check if the instance supports loading of scripts and property files from the controller.
      * It does not prevent local loading of files.
      * @return {@code true} if it is enabled
      * @see EnvInjectJobPropertyInfo#loadFilesFromMaster
