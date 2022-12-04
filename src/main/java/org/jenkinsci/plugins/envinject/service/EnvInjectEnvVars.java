@@ -54,7 +54,7 @@ public class EnvInjectEnvVars implements Serializable {
         try {
             if (loadFilesFromMaster) {
                 // Even if the propertiesFilePath is null, we do not want to allow loading
-                // from the master, because it may expose sensitive Environment Variables
+                // from the controller, because it may expose sensitive Environment Variables
                 if (!EnvInjectPluginConfiguration.getOrFail().isEnableLoadingFromMaster()) {
                     throw EnvInjectExceptionFormatter.forProhibitedLoadFromMaster(propertiesFilePath);
                 }
@@ -124,7 +124,7 @@ public class EnvInjectEnvVars implements Serializable {
                 try {
                     content = FileUtils.readFileToString(new File(scriptFilePathResolved));
                 } catch (IOException e) {
-                    throw new EnvInjectException("Failed to load script from master", e);
+                    throw new EnvInjectException("Failed to load script from controller", e);
                 }
                 return scriptExecutor.executeScriptSection(scriptExecutionRoot, null, content, scriptPathExecutionEnvVars, scriptExecutionEnvVars);
             }

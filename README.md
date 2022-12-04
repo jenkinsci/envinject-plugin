@@ -9,7 +9,7 @@ This plugin makes it possible to setup a custom environment for your jobs.
 
 Features:
 * Removes inherited environment variables by the Jenkins Java process
-* Injects environment variables at node (master/agent) startup
+* Injects environment variables at node (controller/agent) startup
 * Executes a setup script before or/and after a SCM checkout for a run
 * Injects environment variables before or/and after a SCM checkout for a run
 * Injects environment variables as a build step for a run
@@ -19,7 +19,7 @@ Features:
 ## Use cases
 
 -   To remove inherited environment variables (`PATH`, `ANT_HOME`, ...) at
-    node level (master/agent), available by default for a job run.
+    node level (controller/agent), available by default for a job run.
 -   To inject variables in the first step of the job (before the SCM checkout)
 -   To inject variables based on user parameter values
 -   To execute an initialization script before a SCM checkout.
@@ -35,7 +35,7 @@ Features:
 
 ## Configuration
 
-### At node (master and agent) level
+### At node (controller and agent) level
 
 ![](docs/images/a0fe189750e157d60b0a0f6ef844ca9221a1269d.png "Jenkins > EnvInject Plugin > EnvInject_node.png")
 
@@ -57,13 +57,13 @@ Features:
 
 ### Variables Traceability
 
-Each build captures environment variables and stores them in an environment file called 'injectedEnvVars.txt' located in  
+Each build captures environment variables and stores them in an environment file called 'injectedEnvVars.txt' located in
 `$JENKINS\_HOME/jobs/\<your\_job\>/builds/\<your\_build\>`.
 For an old build, you can display injected environment variables through the right UI menu on the build page.
 
 You can also get build environment variables by the following HTTP GET URL:
-`\<jenkins\_url\>/job/\<job\_name\>/\<build\_number\>/injectedEnvVars/export`.  
-XML, JSON and TXT format are supported.  
+`\<jenkins\_url\>/job/\<job\_name\>/\<build\_number\>/injectedEnvVars/export`.
+XML, JSON and TXT format are supported.
 
 For example:
 
@@ -120,10 +120,10 @@ if (!binding.variables.containsKey('GERRIT_REFSPEC')) {
 
 ## Extensibility with other plugins
 
-EnvInject captures build environment variables populated by plugins providing environment variables through Jenkins extension points 
-(such as BuildWrappers, EnvironmentContributions and so on).  
+EnvInject captures build environment variables populated by plugins providing environment variables through Jenkins extension points
+(such as BuildWrappers, EnvironmentContributions and so on).
 Environment variables injected by the EnvInject plugin are available in Jenkins triggers
-(for example in all [XTrigger plugin](https://plugins.jenkins.io/xtrigger) typologies, injected environment variable can be used).  
+(for example in all [XTrigger plugin](https://plugins.jenkins.io/xtrigger) typologies, injected environment variable can be used).
 Injected environment variables with the EnvInject plugin are captured by the [BuildContext capture plugin](https://plugins.jenkins.io/buildcontext-capture).
 
 ## Comparison with other plugins
@@ -133,8 +133,8 @@ Plugin](https://wiki.jenkins.io/display/JENKINS/Setenv+Plugin) and
 [Envfile Plugin](https://plugins.jenkins.io/envfile) plugins which are currently deprecated.
 
 * Note 1: The EnvInject plugin automatically migrates the Jobs configuration from these plugins.
-The setenv and/or the envfile plugins can be deleted from your plugin list.  
-* Note 2: Master and agents are managed.
+The setenv and/or the envfile plugins can be deleted from your plugin list.
+* Note 2: Controller and agents are managed.
 
 ## Known limitations
 
@@ -142,18 +142,18 @@ The setenv and/or the envfile plugins can be deleted from your plugin list.
 
 Even though it is possible to set up the EnvInject Job Property and
 build step in Pipeline, the plugin does not provide full compatibility
-with [Jenkins Pipeline](https://jenkins.io/doc/book/pipeline/).
+with [Jenkins Pipeline](https://jenkins.io/doc/book/pipeline/).
 
 Supported use-cases:
 
 -   Injection of EnvVars defined in the "Properties Content" field of
     the Job Property
     -   These EnvVars are being injected to the script environment and will be inaccessible via the "env" Pipeline global variable
-    -   Please note there is also a known compatibility issue with [Durable Task Plugin](https://plugins.jenkins.io/durable-task) 1.13
+    -   Please note there is also a known compatibility issue with [Durable Task Plugin](https://plugins.jenkins.io/durable-task) 1.13
 
 All other use-cases of the plugin may work incorrectly in Jenkins Pipeline.
 Please
-see [JENKINS-42614](https://issues.jenkins-ci.org/browse/JENKINS-42614) for more information about unsupported use-cases.
+see [JENKINS-42614](https://issues.jenkins-ci.org/browse/JENKINS-42614) for more information about unsupported use-cases.
 There is no short-term plan to fix the compatibility issues though any pull requests to the plugin will be appreciated.
 
 ### Mask Passwords Plugin compatibility
@@ -167,7 +167,7 @@ However, EnvInject provides all MaskPassword's features.
 
 ### Tool Environment Plugin compatibility
 
-EnvInject can't use exported environment variables provided by the [Tool Environment](https://plugins.jenkins.io/toolenv) plugin.  
+EnvInject can't use exported environment variables provided by the [Tool Environment](https://plugins.jenkins.io/toolenv) plugin.
 Instead, we suggest to use the [SharedObjects Plugin](https://plugins.jenkins.io/shared-objects).
 It covers Tool Env plugin features and provides a good integration with EnvInject.
 
