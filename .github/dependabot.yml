@@ -4,16 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-      day: monday
     open-pull-requests-limit: 10
     target-branch: master
     labels:
       - dependencies
-    commit-message:
-      prefix: "build: "
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
-    commit-message:
-      prefix: "build: "
+      interval: weekly
