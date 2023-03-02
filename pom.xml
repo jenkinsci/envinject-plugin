@@ -46,19 +46,10 @@
         <developer>
             <id>NotMyFault</id>
             <name>Alexander Brandes</name>
-            <email>contact@notmyfault.dev</email>
+            <email>contact(at)notmyfault.dev</email>
             <timezone>+1</timezone>
             <roles>
                 <role>Maintainer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>recena</id>
-            <name>Manuel Recena</name>
-            <email>recena@gmail.com</email>
-            <timezone>+1</timezone>
-            <roles>
-                <role>Contributor</role>
             </roles>
         </developer>
     </developers>
