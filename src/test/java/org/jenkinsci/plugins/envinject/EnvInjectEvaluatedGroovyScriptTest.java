@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.envinject;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import hudson.EnvVars;
 import hudson.model.*;
 
