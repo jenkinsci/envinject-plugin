@@ -57,7 +57,7 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
         <ivy.plugin.version>2.2</ivy.plugin.version>
-        <jenkins.version>2.332.1</jenkins.version>
+        <jenkins.version>2.387.4</jenkins.version>
         <!-- Remove once JENKINS-45055 is fixed -->
         <spotbugs.failOnError>false</spotbugs.failOnError>
         <!--
@@ -81,8 +81,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.332.x</artifactId>
-                <version>1382.v7d694476f340</version>
+                <artifactId>bom-2.387.x</artifactId>
+                <version>2143.ve4c3c9ec790a</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
