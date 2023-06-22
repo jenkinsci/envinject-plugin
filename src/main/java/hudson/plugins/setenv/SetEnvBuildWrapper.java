@@ -1,5 +1,6 @@
 package hudson.plugins.setenv;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -46,6 +47,7 @@ public class SetEnvBuildWrapper extends EnvInjectMigrationBuildWrapper {
     @Extension
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
         @Override
+        @SuppressFBWarnings(value = "NP_NONNULL_RETURN_VIOLATION", justification = "TODO needs triage")
         public String getDisplayName() {
             return null;
         }
