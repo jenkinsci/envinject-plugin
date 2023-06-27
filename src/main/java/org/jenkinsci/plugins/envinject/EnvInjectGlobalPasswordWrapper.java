@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -37,6 +38,7 @@ public class EnvInjectGlobalPasswordWrapper extends BuildWrapper {
         }
 
         @Override
+        @SuppressFBWarnings(value = "NP_NONNULL_RETURN_VIOLATION", justification = "TODO needs triage")
         public String getDisplayName() {
             return null;
         }

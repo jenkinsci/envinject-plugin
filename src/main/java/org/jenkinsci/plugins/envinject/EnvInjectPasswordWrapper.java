@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.envinject;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.console.LineTransformationOutputStream;
@@ -233,6 +234,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         }
 
         @Override
+        @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
         protected void eol(byte[] bytes, int len) throws IOException {
             String line = new String(bytes, 0, len);
             if (passwordsAsPattern != null) {

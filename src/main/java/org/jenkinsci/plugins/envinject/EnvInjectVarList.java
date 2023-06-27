@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.envinject;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Api;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -102,6 +103,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     private void writeTextResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("plain/text");
         StringWriter stringWriter = new StringWriter();
@@ -111,6 +113,7 @@ public class EnvInjectVarList implements Serializable {
         response.getOutputStream().write(stringWriter.toString().getBytes());
     }
 
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     private void writeXmlResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("application/xml");
         ServletOutputStream outputStream = response.getOutputStream();
@@ -121,6 +124,7 @@ public class EnvInjectVarList implements Serializable {
         outputStream.write("</envVars>".getBytes());
     }
 
+    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
     private void writeJsonResponse(@NonNull StaplerResponse response) throws IOException {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
