@@ -86,31 +86,6 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            <!--
-                TODO script-security 1172.v35f6a_0b_8207e breaks
-                EnvInjectEvaluatedGroovyScriptTest#testWorkaroundSecurity86, so downgrade it to the
-                last working version along with anything that depends on the newer broken version
-            -->
-            <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>junit</artifactId>
-                <version>1.63</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>matrix-project</artifactId>
-                <version>771.v574584b_39e60</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>script-security</artifactId>
-                <version>1158.v7c1b_73a_69a_08</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.plugins.workflow</groupId>
-                <artifactId>workflow-support</artifactId>
-                <version>820.vd1a_6cc65ef33</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
