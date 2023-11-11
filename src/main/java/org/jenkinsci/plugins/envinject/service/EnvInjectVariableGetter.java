@@ -88,6 +88,7 @@ public class EnvInjectVariableGetter {
     /**
      * @deprecated Use {@link RunHelper#getBuildVariables(hudson.model.Run, hudson.EnvVars)}
      */
+    @Deprecated
     public Map<String, String> getBuildVariables(@NonNull AbstractBuild build, @NonNull EnvInjectLogger logger) throws EnvInjectException {
         return RunHelper.getBuildVariables(build, logger);
     }
