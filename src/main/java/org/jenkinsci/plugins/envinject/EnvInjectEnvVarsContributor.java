@@ -27,8 +27,8 @@ public class EnvInjectEnvVarsContributor extends EnvironmentContributor {
                     int expectedEnvSize = env.size() + result.size();
                     env.putAll(result);
                     if (env.size() != expectedEnvSize) {
-                        listener.error("Not all environment variables could be successfully injected. " +
-                                "Check for similarly-named environment variables.");
+                        listener.error("Some environment variables were not successfully injected. " +
+                                "This may be due to conflicts with existing environment variables that have the same name.");
                     }
                 }
             }
