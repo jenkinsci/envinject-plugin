@@ -43,6 +43,18 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
 
     @Override
     public Void call() throws EnvInjectException {
+        if (EnvVars.masterEnvVars.equals(enVars)) {
+            // Nothing to update
+            return null;
+        } else if (EnvVars.masterEnvVars.keySet().equals(enVars.keySet())) {
+           /*
+            * Per the Javadoc, merely changing the value associated with an existing key is not a structural
+            * modification and thus does not require synchronization.
+            */
+           EnvVars.masterEnvVars.putAll(enVars);
+           return null;
+        }
+
         try {
             Field platformField = EnvVars.class.getDeclaredField("platform");
             platformField.setAccessible(true);
