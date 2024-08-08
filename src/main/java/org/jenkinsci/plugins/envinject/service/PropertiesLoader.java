@@ -10,6 +10,7 @@ import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -69,17 +70,23 @@ public class PropertiesLoader implements Serializable {
     private Map<String, String> getVars(@NonNull String content, @NonNull Map<String, String> currentEnvVars) 
             throws EnvInjectException {
 
-        // Replace single backslashes with double ones so they won't be removed by Property.load()
-        String escapedContent = content;
-        escapedContent = escapedContent.replaceAll("(?<![\\\\])\\\\(?![n:*?\"<>\\\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
-        //Escape windows network shares initial double backslash i.e \\Network\Share
-        escapedContent = escapedContent.replaceAll("(?m)^([^=]+=)(\\\\\\\\)(?![:*?\"<>\\\\/])", "$1\\\\\\\\\\\\\\\\");
-
+        String[] contentArray = content.split("\n");
+        content = "";
+        //Check if string contains windows network or local paths
+        for (String s : contentArray) {
+            if (s.indexOf("=\\\\", 0) != -1 || Pattern.matches("[A-z_0-9]+=[A-z]:\\\\.*", s)) {
+                // Replace single backslashes with double ones so they won't be removed by Property.load()
+                s = s.replaceAll("(?<![\\\\])\\\\(?![:*?\"<>\\\\/])(?![\\\\])(?![\n])", "\\\\\\\\");
+                //Escape windows network shares initial double backslash i.e \\Network\Share
+                s = s.replaceAll("(?m)^([^=]+=)(\\\\\\\\)(?![:*?\"<>\\\\/])", "$1\\\\\\\\\\\\\\\\");
+            }
+            content += s + "\n";
+        }
         Map<String, String> result = new LinkedHashMap<>();
         
         Properties properties = new Properties();
 
-        try (StringReader stringReader = new StringReader(escapedContent)) {
+        try (StringReader stringReader = new StringReader(content)) {
             properties.load(stringReader);
         } catch (IOException ioe) {
             throw new EnvInjectException("Problem occurs on loading content", ioe);
