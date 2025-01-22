@@ -8,6 +8,7 @@ import hudson.RestrictedSince;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.util.VariableResolver;
@@ -168,7 +169,12 @@ public class EnvInjectEnvVars implements Serializable {
         }
 
         logger.info("Using the deprecated API (EnvInjectEnvVars#executeAndGetMapGroovyScript()). Starting from EnvInject 2.0 the call may require the script approval for a non-admin user.");
-        SecureGroovyScript script = new SecureGroovyScript(scriptContent, false, null);
+        SecureGroovyScript script;
+        try {
+            script = new SecureGroovyScript(scriptContent, false, null);
+        } catch (Descriptor.FormException e) {
+            throw new RuntimeException(e);
+        }
         return executeGroovyScript(logger, script, envVars);
     }
 

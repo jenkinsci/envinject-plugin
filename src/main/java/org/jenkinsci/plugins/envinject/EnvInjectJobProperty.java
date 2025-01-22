@@ -14,7 +14,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -172,7 +172,7 @@ public class EnvInjectJobProperty<T extends Job<?, ?>> extends JobProperty<T> {
         }
 
         @Override
-        public EnvInjectJobProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public EnvInjectJobProperty newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             if (formData.optBoolean("on")) {
                 return (EnvInjectJobProperty)super.newInstance(req, formData);
             }

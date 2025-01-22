@@ -2,12 +2,12 @@ package org.jenkinsci.plugins.envinject;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Api;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import javax.servlet.ServletOutputStream;
+import jakarta.servlet.ServletOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -48,7 +48,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
     @RequirePOST
-    public void doExport(@NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
+    public void doExport(@NonNull StaplerRequest2 request, @NonNull StaplerResponse2 response) throws IOException {
 
         String path = request.getPathInfo();
         if (path != null) {
@@ -60,7 +60,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
 
-    private void doExportWithPath(@NonNull String path, @NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
+    private void doExportWithPath(@NonNull String path, @NonNull StaplerRequest2 request, @NonNull StaplerResponse2 response) throws IOException {
 
         if (path.endsWith("text")) {
             writeTextResponse(response);
@@ -80,7 +80,7 @@ public class EnvInjectVarList implements Serializable {
         doExportHeaders(request, response);
     }
 
-    private void doExportHeaders(@NonNull StaplerRequest request, @NonNull StaplerResponse response) throws IOException {
+    private void doExportHeaders(@NonNull StaplerRequest2 request, @NonNull StaplerResponse2 response) throws IOException {
 
         String acceptHeader = request.getHeader("Accept");
 
@@ -104,7 +104,7 @@ public class EnvInjectVarList implements Serializable {
 
 
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
-    private void writeTextResponse(@NonNull StaplerResponse response) throws IOException {
+    private void writeTextResponse(@NonNull StaplerResponse2 response) throws IOException {
         response.setContentType("plain/text");
         StringWriter stringWriter = new StringWriter();
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
@@ -114,7 +114,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
-    private void writeXmlResponse(@NonNull StaplerResponse response) throws IOException {
+    private void writeXmlResponse(@NonNull StaplerResponse2 response) throws IOException {
         response.setContentType("application/xml");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("<envVars>".getBytes());
@@ -125,7 +125,7 @@ public class EnvInjectVarList implements Serializable {
     }
 
     @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "TODO needs triage")
-    private void writeJsonResponse(@NonNull StaplerResponse response) throws IOException {
+    private void writeJsonResponse(@NonNull StaplerResponse2 response) throws IOException {
         response.setContentType("application/json");
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write("{\"envVars\": { \"envVar\":[".getBytes());

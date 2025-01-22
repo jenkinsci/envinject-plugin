@@ -73,7 +73,15 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
         
         // If the groovy script is specified, it should become the SecureGroovyScript
         this(propertiesFilePath, propertiesContent, scriptFilePath, scriptContent, loadFilesFromMaster,
-                StringUtils.isNotBlank(groovyScriptContent) ? new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create()) : null);
+                StringUtils.isNotBlank(groovyScriptContent) ? newSecureGroovyScript(groovyScriptContent) : null);
+    }
+
+    private static SecureGroovyScript newSecureGroovyScript(String groovyScriptContent) {
+        try {
+            return new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create());
+        } catch (Descriptor.FormException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @CheckForNull
@@ -117,7 +125,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
 
     protected Object readResolve() {
         if (secureGroovyScript == null && !StringUtils.isBlank(groovyScriptContent)) {
-            secureGroovyScript = new SecureGroovyScript(groovyScriptContent, false, null).configuring(ApprovalContext.create());
+            secureGroovyScript = newSecureGroovyScript(groovyScriptContent);
             groovyScriptContent = null;
         }
         return this;
