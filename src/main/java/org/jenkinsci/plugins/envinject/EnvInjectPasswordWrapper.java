@@ -22,7 +22,7 @@ import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -292,7 +292,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
         }
 
         @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public BuildWrapper newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
 
             EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
             passwordWrapper.setInjectGlobalPasswords(formData.getBoolean("injectGlobalPasswords"));

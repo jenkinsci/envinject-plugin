@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import static org.hamcrest.Matchers.containsString;
 
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -184,7 +185,11 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         job.addProperty(property);
 
         TestUtils.saveConfigurationAs(jenkins, job, "alice");
-        //Since alice is an admin the script should be approved automatically
+        Set<ScriptApproval.PendingScript> pendingScripts = ScriptApproval.get().getPendingScripts();
+        assertEquals(1, pendingScripts.size());
+        ScriptApproval.PendingScript pendingScript = pendingScripts.iterator().next();
+        assertEquals(script, pendingScript.script);
+        ScriptApproval.get().approveScript(pendingScript.getHash());
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(job);
 
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);

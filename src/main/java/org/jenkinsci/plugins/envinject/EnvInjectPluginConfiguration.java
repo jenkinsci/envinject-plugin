@@ -37,7 +37,7 @@ import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configuration of security options for {@link EnvInjectPlugin}.
@@ -135,7 +135,7 @@ public class EnvInjectPluginConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         final boolean newEnablePermissions = json.getBoolean("enablePermissions");
         final boolean newHideInjectedVars = json.getBoolean("hideInjectedVars");
         final boolean enableLoadingFromMaster = json.getBoolean("enableLoadingFromMaster");

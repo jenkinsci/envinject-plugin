@@ -8,7 +8,7 @@ import hudson.slaves.NodePropertyDescriptor;
 import java.util.Arrays;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -70,7 +70,7 @@ public class EnvInjectNodeProperty extends NodeProperty<Node> {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             List<EnvInjectGlobalPasswordEntry> envInjectGlobalPasswordEntriesList = req.bindParametersToList(EnvInjectGlobalPasswordEntry.class, "envInject.");
             envInjectGlobalPasswordEntries = envInjectGlobalPasswordEntriesList.toArray(new EnvInjectGlobalPasswordEntry[envInjectGlobalPasswordEntriesList.size()]);
             save();
