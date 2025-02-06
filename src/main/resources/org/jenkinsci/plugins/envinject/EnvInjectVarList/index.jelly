@@ -5,7 +5,7 @@
         <j:invoke var="buildClass" on="${currentThread.contextClassLoader}" method="loadClass">
             <j:arg value="hudson.model.AbstractBuild"/>
         </j:invoke>
-        <j:set var="build" value="${request.findAncestorObject(buildClass)}"/>
+        <j:set var="build" value="${request2.findAncestorObject(buildClass)}"/>
         <st:include page="sidepanel.jelly" it="${build}"/>
         <l:main-panel>
             <h1>${%build} #${build.number}</h1>
