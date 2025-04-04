@@ -1,41 +1,49 @@
 package org.jenkinsci.plugins.envinject;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests of {@link EnvInjectJobPropertyInfo}.
  * @author Oleg Nenashev
  */
-public class EnvInjectJobPropertyInfoTest {
-    
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-    
+@WithJenkins
+class EnvInjectJobPropertyInfoTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
     @Issue("SECURITY-256")
-    public void shouldCreateSandboxedScriptWithOldAPI() throws Exception {
+    void shouldCreateSandboxedScriptWithOldAPI() {
         final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, "System.exit(0)", false);
         // According to the decisions, it is true by default.
         // So the migrated scripts will require a bulk approval instead of sandboxing.
-        Assert.assertFalse("Groovy sandbox must be disabled by default", info.getSecureGroovyScript().isSandbox());
+        assertFalse(info.getSecureGroovyScript().isSandbox(), "Groovy sandbox must be disabled by default");
     }
-    
+
     @Test
     @Issue("SECURITY-256")
-    public void shouldNotCreateSecureGroovyScriptForNullScriptWithOldAPI() throws Exception {
+    void shouldNotCreateSecureGroovyScriptForNullScriptWithOldAPI() {
         final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, false, null);
-        Assert.assertNull("Groovy script must be null", info.getSecureGroovyScript());
+        assertNull(info.getSecureGroovyScript(), "Groovy script must be null");
     }
-    
+
     @Test
     @Issue("SECURITY-256")
-    public void shouldNotCreateSecureGroovyScriptForBlankScriptWithOldAPI() throws Exception {
+    void shouldNotCreateSecureGroovyScriptForBlankScriptWithOldAPI() {
         final EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, null, null, null, "   ", false);
-        Assert.assertNull("Groovy script must be null if the script is blank", info.getSecureGroovyScript());
+        assertNull(info.getSecureGroovyScript(), "Groovy script must be null if the script is blank");
     }
-    
+
 }

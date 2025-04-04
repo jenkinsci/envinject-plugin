@@ -1,28 +1,39 @@
 package org.jenkinsci.plugins.envinject;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
-import java.util.Map;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for {@link EnvInjectVarList}.
+ *
  * @author Oleg Nenashev
  */
-public class EnvInjectVarListTest {
+@WithJenkins
+class EnvInjectVarListTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-44263")
-    public void envVarsShouldBeCachedProperlyAfterReload() throws Exception {
+    void envVarsShouldBeCachedProperlyAfterReload() throws Exception {
         final FreeStyleProject p = j.jenkins.createProject(FreeStyleProject.class, "project");
         p.getBuildersList().add(new EnvInjectBuilder(null, "TEXT_VAR=tvalue"));
         final FreeStyleBuild build = j.buildAndAssertSuccess(p);
@@ -31,8 +42,8 @@ public class EnvInjectVarListTest {
         {
             EnvInjectVarList varList = getVarListOrFail(build);
             Map<String, String> envMap = varList.getEnvMap();
-            Assert.assertNotNull("EnvInject vars list is null for the run before reload", envMap);
-            Assert.assertTrue("TEXT_VAR is not present in the list", envMap.containsKey("TEXT_VAR"));
+            assertNotNull(envMap, "EnvInject vars list is null for the run before reload");
+            assertTrue(envMap.containsKey("TEXT_VAR"), "TEXT_VAR is not present in the list");
         }
 
         // Reload and check vars
@@ -41,21 +52,21 @@ public class EnvInjectVarListTest {
         final Run<?, ?> reloadedBuild = p.getBuildByNumber(build.getNumber());
         {
             EnvInjectVarList varList = getVarListOrFail(reloadedBuild);
-            Assert.assertNotNull("EnvInject varList is null for the run after the reload", varList);
+            assertNotNull(varList, "EnvInject varList is null for the run after the reload");
 
             Map<String, String> envMap = varList.getEnvMap();
-            Assert.assertNotNull("EnvInject envMap from varList is null for the run after the reload", envMap);
-            Assert.assertTrue("TEXT_VAR is not present in the list", envMap.containsKey("TEXT_VAR"));
-            Assert.assertEquals("TEXT_VAR has wrong value", "tvalue", envMap.get("TEXT_VAR"));
+            assertNotNull(envMap, "EnvInject envMap from varList is null for the run after the reload");
+            assertTrue(envMap.containsKey("TEXT_VAR"), "TEXT_VAR is not present in the list");
+            assertEquals("tvalue", envMap.get("TEXT_VAR"), "TEXT_VAR has wrong value");
         }
     }
 
     @NonNull
     private EnvInjectVarList getVarListOrFail(@NonNull Run<?, ?> run) throws AssertionError {
         EnvInjectPluginAction action = run.getAction(EnvInjectPluginAction.class);
-        Assert.assertNotNull("EnvInject action is not set for the run " + run, action);
-        EnvInjectVarList list = (EnvInjectVarList)action.getTarget();
-        Assert.assertNotNull("Unexpected state. EnvInject Var List is null for the run " + run, list);
+        assertNotNull(action, "EnvInject action is not set for the run " + run);
+        EnvInjectVarList list = (EnvInjectVarList) action.getTarget();
+        assertNotNull(list, "Unexpected state. EnvInject Var List is null for the run " + run);
         return list;
     }
 }
