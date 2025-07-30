@@ -5,7 +5,6 @@ import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -73,7 +72,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
         
         // If the groovy script is specified, it should become the SecureGroovyScript
         this(propertiesFilePath, propertiesContent, scriptFilePath, scriptContent, loadFilesFromMaster,
-                StringUtils.isNotBlank(groovyScriptContent) ? newSecureGroovyScript(groovyScriptContent) : null);
+                groovyScriptContent != null && !groovyScriptContent.isBlank() ? newSecureGroovyScript(groovyScriptContent) : null);
     }
 
     private static SecureGroovyScript newSecureGroovyScript(String groovyScriptContent) {
@@ -124,7 +123,7 @@ public class EnvInjectJobPropertyInfo extends EnvInjectInfo implements Describab
     private transient String groovyScriptContent;
 
     protected Object readResolve() {
-        if (secureGroovyScript == null && !StringUtils.isBlank(groovyScriptContent)) {
+        if (secureGroovyScript == null && groovyScriptContent != null && !groovyScriptContent.isBlank()) {
             secureGroovyScript = newSecureGroovyScript(groovyScriptContent);
             groovyScriptContent = null;
         }

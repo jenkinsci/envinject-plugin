@@ -19,7 +19,6 @@ import hudson.model.Run;
 import java.util.Locale;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import org.jenkinsci.plugins.envinjectapi.util.EnvVarsResolver;
 
 
@@ -93,7 +92,7 @@ public class BuildCauseRetriever {
         Map<String, String> triggerVars = new HashMap<String, String>();
         List<String> nonEmptyNames = new ArrayList<String>();
         for (String name : causeNames) {
-            if (isNotBlank(name)) {
+            if (name != null && !name.isBlank()) {
                 triggerVars.put(on("_").join(envBase, name), "true");
                 nonEmptyNames.add(name);
             }
