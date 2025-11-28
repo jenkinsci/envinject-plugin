@@ -6,26 +6,32 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.util.DescribableList;
-import org.junit.Rule;
-import org.junit.Test;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.util.Map;
-import jenkins.model.Jenkins;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Gregory Boissinot
  */
-public class GlobalPropertiesTest {
+@WithJenkins
+class GlobalPropertiesTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
 
     @Test
-    public void testGlobalPropertiesWithWORKSPACE() throws Exception {
+    void testGlobalPropertiesWithWORKSPACE() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
         final String testWorkspaceVariableName = "TEST_WORKSPACE";
@@ -60,7 +66,7 @@ public class GlobalPropertiesTest {
      * Specific use case: We set a global workspace at job level
      */
     @Test
-    public void testGlobalPropertiesSetWORKSPACE() throws Exception {
+    void testGlobalPropertiesSetWORKSPACE() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
         final String testGlobalVariableName = "WORKSPACE";
@@ -71,9 +77,8 @@ public class GlobalPropertiesTest {
         DescribableList<NodeProperty<?>, NodePropertyDescriptor> globalNodeProperties = Jenkins.get().getGlobalNodeProperties();
         globalNodeProperties.add(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry(testGlobalVariableName, testGlobalVariableValue)));
 
-        StringBuffer propertiesContent = new StringBuffer();
-        propertiesContent.append(testJobVariableName).append("=").append(testJobVariableExprValue);
-        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, true, null);
+        EnvInjectJobPropertyInfo info = new EnvInjectJobPropertyInfo(null,
+                testJobVariableName + "=" + testJobVariableExprValue, null, null, true, null);
         EnvInjectBuildWrapper envInjectBuildWrapper = new EnvInjectBuildWrapper(info);
         project.getBuildWrappersList().add(envInjectBuildWrapper);
 

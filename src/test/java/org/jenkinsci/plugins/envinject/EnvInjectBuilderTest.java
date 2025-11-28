@@ -23,36 +23,41 @@
  */
 package org.jenkinsci.plugins.envinject;
 
-import static org.junit.Assert.assertEquals;
 import hudson.EnvVars;
 import hudson.model.FreeStyleProject;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class EnvInjectBuilderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class EnvInjectBuilderTest {
+
+    private JenkinsRule j;
 
     private FreeStyleProject p;
 
-    @Before public void setUp() throws Exception {
+    @BeforeEach
+    void setUp(JenkinsRule rule) throws Exception {
+        j = rule;
         p = j.jenkins.createProject(FreeStyleProject.class, "project");
     }
 
-    @Test public void setVarsInBuildStep() throws Exception {
+    @Test
+    void setVarsInBuildStep() throws Exception {
         p.setScm(new SingleFileSCM("vars.properties", "FILE_VAR=fvalue"));
         p.getBuildersList().add(new EnvInjectBuilder("vars.properties", "TEXT_VAR=tvalue"));
 
         assertEquals("tvalue", buildEnvVars().get("TEXT_VAR"));
         assertEquals("fvalue", buildEnvVars().get("FILE_VAR"));
     }
-    
-    @Test public void override() throws Exception {
+
+    @Test
+    void override() throws Exception {
         p.getBuildersList().add(new EnvInjectBuilder(null, "VAR=old"));
         p.getBuildersList().add(new EnvInjectBuilder(null, "VAR=new"));
 

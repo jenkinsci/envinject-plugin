@@ -1,21 +1,31 @@
 package org.jenkinsci.plugins.envinject;
 
-import org.htmlunit.HttpMethod;
-import org.htmlunit.WebRequest;
 import hudson.EnvVars;
-import hudson.model.*;
-
+import hudson.model.Cause;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Result;
+import hudson.model.StringParameterDefinition;
+import hudson.model.StringParameterValue;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.jenkinsci.plugins.envinject.util.TestUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -24,46 +34,51 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import static org.hamcrest.Matchers.containsString;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import org.jenkinsci.plugins.envinject.util.TestUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEvaluatedGroovyScriptTest {
+@WithJenkins
+class EnvInjectEvaluatedGroovyScriptTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
 
     @Test
-    public void testMapGroovyScript() throws Exception {
+    void testMapGroovyScript() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
         hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
 
-        StringBuilder groovyScriptContent = new StringBuilder();
-        groovyScriptContent.append(
-                "            if (CASE==null){\n" +
-                        "            return null; \n" +
-                        "            } \n" +
-                        "\n" +
-                        "            def stringValue=\"StRinG\"; \n" +
-                        "\n" +
-                        "            if (\"upper\".equals(CASE)){ \n" +
-                        "            def map = [COMPUTE_VAR: stringValue.toUpperCase()]\n" +
-                        "            return map \n" +
-                        "            } \n" +
-                        "            \n" +
-                        "            if (\"lower\".equals(CASE)){ \n" +
-                        "            def map = [COMPUTE_VAR: stringValue.toLowerCase()] \n" +
-                        "            return map \n" +
-                        "            } ");
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
+        String groovyScriptContent = """
+                if (CASE==null) {
+                  return null;
+                }
+                
+                def stringValue="StRinG";
+                
+                if ("upper".equals(CASE)) {
+                  def map = [COMPUTE_VAR: stringValue.toUpperCase()]
+                  return map
+                }
+                
+                if ("lower".equals(CASE)) {
+                  def map = [COMPUTE_VAR: stringValue.toLowerCase()]
+                  return map
+                }
+                """;
+
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent, false);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);
         envInjectJobProperty.setKeepBuildVariables(true);
@@ -71,7 +86,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         project.addProperty(envInjectJobProperty);
 
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("CASE", "")));
-        List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();
+        List<ParameterValue> parameterValueList = new ArrayList<>();
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
         ParametersAction parametersAction = new ParametersAction(parameterValueList);
 
@@ -90,32 +105,32 @@ public class EnvInjectEvaluatedGroovyScriptTest {
     }
 
     @Test
-    public void testBuildInVars() throws Exception {
+    void testBuildInVars() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("jobTest");
         hudson.EnvVars.masterEnvVars.remove("JOB_NAME");
         hudson.EnvVars.masterEnvVars.remove("BUILD_NUMBER");
 
-        StringBuilder groovyScriptContent = new StringBuilder();
-        groovyScriptContent.append(
-                "def env = currentJob.getLastBuild().getEnvironment()\n" +
-                        "def buildNumber1 = env['BUILD_NUMBER']\n" +
-                        "def buildNumber2 = currentBuild.getNumber()\n" +
-                        "def map = [COMPUTE_VAR1: buildNumber1, COMPUTE_VAR2: buildNumber2]\n" +
-                        "assert currentListener instanceof hudson.model.TaskListener;\n" +
-                        "return map");
+        String groovyScriptContent = """
+                def env = currentJob.getLastBuild().getEnvironment()
+                def buildNumber1 = env['BUILD_NUMBER']
+                def buildNumber2 = currentBuild.getNumber()
+                def map = [COMPUTE_VAR1: buildNumber1, COMPUTE_VAR2: buildNumber2]
+                assert currentListener instanceof hudson.model.TaskListener;
+                return map
+                """;
 
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent.toString(), false);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, null, null, null, groovyScriptContent, false);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setKeepJenkinsSystemVariables(true);
         envInjectJobProperty.setKeepBuildVariables(true);
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);
 
-        List<ParameterValue> parameterValueList = new ArrayList<ParameterValue>();
+        List<ParameterValue> parameterValueList = new ArrayList<>();
         parameterValueList.add(new StringParameterValue("CASE", "lower"));
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        
+
         org.jenkinsci.lib.envinject.EnvInjectAction envInjectAction = build.getAction(org.jenkinsci.lib.envinject.EnvInjectAction.class);
         assertNotNull(envInjectAction);
         Map<String, String> envVars = envInjectAction.getEnvMap();
@@ -130,7 +145,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
     @Test
     @Issue("SECURITY-256")
-    public void testGroovyScriptInJobPropertyUnderSecureJenkins() throws Exception {
+    void testGroovyScriptInJobPropertyUnderSecureJenkins() throws Exception {
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE).everywhere().to("bob");
@@ -166,7 +181,7 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
     @Test
     @Issue("SECURITY-256")
-    public void testWorkaroundSecurity86() throws Exception {
+    void testWorkaroundSecurity86() throws Exception {
         jenkins.jenkins.setCrumbIssuer(null);
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
@@ -210,33 +225,34 @@ public class EnvInjectEvaluatedGroovyScriptTest {
         jenkins.assertBuildStatus(Result.FAILURE, future);
 
         //Reset
-        job.updateByXml((Source)new StreamSource(new StringInputStream(originalXml)));
+        job.updateByXml((Source) new StreamSource(new StringInputStream(originalXml)));
         //Should work again
         jenkins.buildAndAssertSuccess(job);
 
         String hackXml = originalXml.replace("return [IT_IS_GROOVY: &quot;Indeed&quot;]", "echo &quot;m0r3 1337 h4x0r&quot;\n");
         assertThat(hackXml, containsString("m0r3 1337 h4x0r")); //Just to test myself
-        JenkinsRule.WebClient wc = jenkins.createWebClient().login("user");
-        WebRequest request = new WebRequest(new URL(job.getAbsoluteUrl() + "config.xml"), HttpMethod.POST);
-        request.setRequestBody(hackXml);
-        //wc.addCrumb(request); can't set body and crumb in the same request
-        wc.getPage(request);
-        //Verify it took effect
-        job = jenkins.jenkins.getItemByFullName(job.getFullName(), FreeStyleProject.class);
-        property = job.getProperty(EnvInjectJobProperty.class);
-        assertThat(property.getInfo().getSecureGroovyScript().getScript(), containsString("m0r3 1337 h4x0r"));
+        try (JenkinsRule.WebClient wc = jenkins.createWebClient().login("user")) {
+            WebRequest request = new WebRequest(new URL(job.getAbsoluteUrl() + "config.xml"), HttpMethod.POST);
+            request.setRequestBody(hackXml);
+            //wc.addCrumb(request); can't set body and crumb in the same request
+            wc.getPage(request);
+            //Verify it took effect
+            job = jenkins.jenkins.getItemByFullName(job.getFullName(), FreeStyleProject.class);
+            property = job.getProperty(EnvInjectJobProperty.class);
+            assertThat(property.getInfo().getSecureGroovyScript().getScript(), containsString("m0r3 1337 h4x0r"));
 
-        //should also fail
-        future = job.scheduleBuild2(0);
-        build = jenkins.assertBuildStatus(Result.FAILURE, future);
-        //Check that it failed for the correct reason
-        jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", build);
+            //should also fail
+            future = job.scheduleBuild2(0);
+            build = jenkins.assertBuildStatus(Result.FAILURE, future);
+            //Check that it failed for the correct reason
+            jenkins.assertLogContains("org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException", build);
+        }
     }
 
 
     @Test
     @Issue("JENKINS-49154")
-    public void testLargeBuildNumberEnvVarValueDoesntCrashThePlugin() throws Exception {
+    void testLargeBuildNumberEnvVarValueDoesntCrashThePlugin() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("job1");
         EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
         EnvVars envVars = prop.getEnvVars();
@@ -254,7 +270,6 @@ public class EnvInjectEvaluatedGroovyScriptTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         assertEquals(Result.SUCCESS, build.getResult());
-
     }
-    
+
 }

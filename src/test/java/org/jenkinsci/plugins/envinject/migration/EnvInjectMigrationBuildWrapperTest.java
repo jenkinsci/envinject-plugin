@@ -31,29 +31,26 @@ import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
 import org.jenkinsci.plugins.envinject.EnvInjectJobProperty;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 
 /**
  * Tests the migrations.
- *
  */
-public class EnvInjectMigrationBuildWrapperTest {
+@WithJenkins
+class EnvInjectMigrationBuildWrapperTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-    
     /**
      * Tests that an old project containing both a set-env setting and a envInject wrapper
      * doesn't get overwritten in the migration.
@@ -61,7 +58,7 @@ public class EnvInjectMigrationBuildWrapperTest {
     @Test
     @LocalData
     @Issue("JENKINS-22169")
-    public void testSetEnvAndEnvInject() {
+    void testSetEnvAndEnvInject(JenkinsRule j) {
         FreeStyleProject project = (FreeStyleProject) j.jenkins.getItem("Experimental_SetEnvMigration");
         assertThat("Project has not been properly loaded from the local data", project, notNullValue());
         EnvInjectBuildWrapper wrapper = project.getBuildWrappersList().get(EnvInjectBuildWrapper.class);
@@ -75,10 +72,12 @@ public class EnvInjectMigrationBuildWrapperTest {
         assertThat(property.getInfo().getPropertiesContent(), containsString("ZERO=0"));
     }
 
-    @Test @Issue("SECURITY-256")
+    @Test
+    @Issue("SECURITY-256")
     @LocalData
-    public void testMigratePreSandboxJob() throws Exception {
-        Assume.assumeThat(Functions.isWindows(), not(true));
+    void testMigratePreSandboxJob(JenkinsRule j) throws Exception {
+        assumeFalse(Functions.isWindows());
+
         FreeStyleProject old = j.jenkins.getItemByFullName("Old", FreeStyleProject.class);
         FreeStyleBuild build = j.buildAndAssertSuccess(old);
         for (int i = 0; i < 20; i++) {
@@ -86,10 +85,11 @@ public class EnvInjectMigrationBuildWrapperTest {
         }
     }
 
-    @Test @Issue("SECURITY-256")
+    @Test
+    @Issue("SECURITY-256")
     @LocalData
-    public void testMigratePreSandboxJobInSecuredJenkins() throws Exception {
-        Assume.assumeThat(Functions.isWindows(), not(true));
+    void testMigratePreSandboxJobInSecuredJenkins(JenkinsRule j) throws Exception {
+        assumeFalse(Functions.isWindows());
 
         //First build should fail
         FreeStyleProject project = j.jenkins.getItemByFullName("Old", FreeStyleProject.class);

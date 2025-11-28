@@ -1,48 +1,55 @@
 package org.jenkinsci.plugins.envinject;
 
+import hudson.EnvVars;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Result;
+import hudson.model.queue.QueueTaskFuture;
+import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.envinject.util.TestUtils;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SingleFileSCM;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import java.io.File;
+import java.io.IOException;
+
 import static com.google.common.collect.ImmutableMap.of;
 import static hudson.Util.replaceMacro;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.map;
 import static org.jenkinsci.plugins.envinject.matchers.WithEnvInjectActionMatchers.withEnvInjectAction;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import hudson.EnvVars;
-import hudson.model.FreeStyleBuild;
-import hudson.model.Result;
-import hudson.model.FreeStyleProject;
-import hudson.model.Item;
-import hudson.model.queue.QueueTaskFuture;
+@WithJenkins
+class EnvInjectBuildWrapperTest {
 
-import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+    private JenkinsRule j;
 
-import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.envinject.util.TestUtils;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
-import static org.junit.Assert.assertThat;
-import org.jvnet.hudson.test.MockAuthorizationStrategy;
+    @TempDir
+    private File tmp;
 
-public class EnvInjectBuildWrapperTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void injectText() throws Exception {
+    void injectText() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "FILE_VAR=fvalue"));
@@ -60,7 +67,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextPropsFileReferenceInPropsContent() throws Exception {
+    void injectTextPropsFileReferenceInPropsContent() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "BASE_PATH=/tmp"));
@@ -79,7 +86,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextPropsFileReferenceAndCrossReferenceInPropsContent() throws Exception {
+    void injectTextPropsFileReferenceAndCrossReferenceInPropsContent() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "INIT_PATH=/tmp/foo"));
@@ -98,7 +105,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextPropsContentSelfReferenceWithInitialValueFromPropsFile() throws Exception {
+    void injectTextPropsContentSelfReferenceWithInitialValueFromPropsFile() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
@@ -115,7 +122,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextPropsContentOverwritesPropsFile() throws Exception {
+    void injectTextPropsContentOverwritesPropsFile() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.properties", "MY_PATH=/tmp/foo"));
@@ -132,7 +139,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectTextExtendSysEnvVar() throws Exception {
+    void injectTextExtendSysEnvVar() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
@@ -163,7 +170,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void injectFromScript() throws Exception {
+    void injectFromScript() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setScm(new SingleFileSCM("vars.groovy", "return ['FILE_VAR': 'fvalue']"));
@@ -180,44 +187,44 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void exceptionMessageMustBeLogged() throws Exception {
-    	FreeStyleProject p = j.createFreeStyleProject();
-    	
-        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': FOOVAR]", false));
-    	p.getBuildWrappersList().add(wrapper);
-    	
-    	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
-    	p.getBuildersList().add(capture);
-    	FreeStyleBuild build = p.scheduleBuild2(0).get();
+    void exceptionMessageMustBeLogged() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
 
-    	assertEquals(Result.FAILURE, build.getResult());
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': FOOVAR]", false));
+        p.getBuildWrappersList().add(wrapper);
+
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(capture);
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+
+        assertEquals(Result.FAILURE, build.getResult());
         j.assertLogContains("No such property: FOOVAR", build);
     }
 
     @Test
     @Issue("JENKINS-36545")
-    public void shouldPopulateVariableWithWorkspace() throws Exception {
-        final String customWorkspaceValue = tmp.newFolder().getAbsolutePath();
+    void shouldPopulateVariableWithWorkspace() throws Exception {
+        final String customWorkspaceValue = newFolder(tmp, "junit").getAbsolutePath();
 
         FreeStyleProject project = j.createFreeStyleProject();
         project.setCustomWorkspace(customWorkspaceValue);
 
-    	EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
-    	
-    	EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': WORKSPACE]", false));
-    	project.getBuildWrappersList().add(wrapper);
+        EnvVars.masterEnvVars.remove("WORKSPACE"); // ensure build node don't have such var already
 
-    	CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
-    	project.getBuildersList().add(capture);
-    	FreeStyleBuild build = project.scheduleBuild2(0).get();
+        EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(null, null, null, null, "return ['GROOVY_VAR': WORKSPACE]", false));
+        project.getBuildWrappersList().add(wrapper);
 
-    	assertEquals(Result.SUCCESS, build.getResult());
-    	assertEquals(customWorkspaceValue, capture.getEnvVars().get("GROOVY_VAR"));
+        CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
+        project.getBuildersList().add(capture);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+
+        assertEquals(Result.SUCCESS, build.getResult());
+        assertEquals(customWorkspaceValue, capture.getEnvVars().get("GROOVY_VAR"));
     }
 
     @Test
-    public void shouldPopulatePropertiesContentWithCustomWorkspace() throws Exception {
-        final String customWorkspaceValue = tmp.newFolder().getAbsolutePath();
+    void shouldPopulatePropertiesContentWithCustomWorkspace() throws Exception {
+        final String customWorkspaceValue = newFolder(tmp, "junit").getAbsolutePath();
         String customEnvVarName = "materialize_workspace_path";
         String customEnvVarValue = "${WORKSPACE}/materialize_workspace";
 
@@ -244,7 +251,7 @@ public class EnvInjectBuildWrapperTest {
     }
 
     @Test
-    public void configRoundTrip() throws Exception {
+    void configRoundTrip() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         final String propertiesFilePath = "filepath.properties";
         final String propertiesContent = "PROPERTIES=CONTENT";
@@ -265,21 +272,21 @@ public class EnvInjectBuildWrapperTest {
         project = j.configRoundtrip(project);
         project = j.jenkins.getItemByFullName(project.getFullName(), FreeStyleProject.class);
 
-        wrapper = (EnvInjectBuildWrapper)project.getBuildWrappers().get(wrapper.getDescriptor());
-        assertNotNull("There should be a build wrapper", wrapper);
+        wrapper = (EnvInjectBuildWrapper) project.getBuildWrappers().get(wrapper.getDescriptor());
+        assertNotNull(wrapper, "There should be a build wrapper");
         EnvInjectJobPropertyInfo info = wrapper.getInfo();
-        assertNotNull("There should be a EnvInjectJobPropertyInfo", info);
+        assertNotNull(info, "There should be a EnvInjectJobPropertyInfo");
         assertEquals(propertiesFilePath, info.getPropertiesFilePath());
         assertEquals(propertiesContent, info.getPropertiesContent());
         assertEquals(scriptFilePath, info.getScriptFilePath());
         assertEquals(scriptContent, info.getScriptContent());
         assertEquals(groovyScriptContent, info.getSecureGroovyScript().getScript());
-        assertFalse("loadFilesFromMaster should be false", info.isLoadFilesFromMaster());
+        assertFalse(info.isLoadFilesFromMaster(), "loadFilesFromMaster should be false");
     }
-    
+
     @Test
     @Issue("SECURITY-256")
-    public void testGroovyScriptInBuildWrapper() throws Exception {
+    void testGroovyScriptInBuildWrapper() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
                 .grant(Jenkins.READ, Item.READ, Item.CREATE, Item.CONFIGURE).everywhere().to("bob");
@@ -312,6 +319,15 @@ public class EnvInjectBuildWrapperTest {
 
     private EnvInjectJobPropertyInfo withPropContent(String propertiesContent) {
         return new EnvInjectJobPropertyInfo(null, propertiesContent, null, null, false, null);
+    }
+
+    private static File newFolder(File root, String... subDirs) throws IOException {
+        String subFolder = String.join("/", subDirs);
+        File result = new File(root, subFolder);
+        if (!result.mkdirs()) {
+            throw new IOException("Couldn't create folders " + root);
+        }
+        return result;
     }
 
 }

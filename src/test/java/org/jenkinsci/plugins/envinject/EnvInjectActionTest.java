@@ -23,42 +23,46 @@
  */
 package org.jenkinsci.plugins.envinject;
 
-import static org.junit.Assert.assertEquals;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.InvisibleAction;
-import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.EnvironmentContributor;
 import hudson.model.FreeStyleProject;
+import hudson.model.InvisibleAction;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BuildWrapper;
-
-import java.io.IOException;
-import java.util.Map;
-
 import jenkins.model.RunAction2;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class EnvInjectActionTest {
+import java.util.Map;
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@WithJenkins
+class EnvInjectActionTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
     @Issue("JENKINS-26583")
-    public void doNotOverrideWrapperEnvVar() throws Exception {
+    void doNotOverrideWrapperEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildWrappersList().add(new ContributingWrapper("DISPLAY", "BUILD_VAL"));
@@ -66,10 +70,9 @@ public class EnvInjectActionTest {
         assertValueInjected(p);
     }
 
-    //TODO: Fails, create a follow-up issue for that
     @Test
-    @Ignore
-    public void doNotOverrideContributorEnvVar() throws Exception {
+    @Disabled("TODO: Fails, create a follow-up issue for that")
+    void doNotOverrideContributorEnvVar() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
 
         p.getBuildersList().add(new ContributingBuilder("DISPLAY", "BUILD_VAL"));
@@ -77,10 +80,9 @@ public class EnvInjectActionTest {
         assertValueInjected(p);
     }
 
-    //TODO: Fails, create a follow-up issue for that
     @Test
-    @Ignore
-    public void doNotOverrideWithBuildStep() throws Exception {
+    @Disabled("TODO: Fails, create a follow-up issue for that")
+    void doNotOverrideWithBuildStep() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         p.getBuildersList().add(new EnvInjectBuilder(null, "IRRELEVANT_VAR=true"));
 
@@ -90,7 +92,7 @@ public class EnvInjectActionTest {
     }
 
     @Test
-    public void doNotOverrideWithBuildWrapper() throws Exception {
+    void doNotOverrideWithBuildWrapper() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         final EnvInjectBuildWrapper wrapper = new EnvInjectBuildWrapper(new EnvInjectJobPropertyInfo(
                 null, "IRRELEVANT_VAR=true", null, null, false, null));
@@ -102,10 +104,10 @@ public class EnvInjectActionTest {
     }
 
     @Test
-    public void doNotOverrideWithPasswordWrapper() throws Exception {
+    void doNotOverrideWithPasswordWrapper() throws Exception {
         FreeStyleProject p = setupProjectWithDefaultEnvValue();
         final EnvInjectPasswordWrapper wrapper = new EnvInjectPasswordWrapper();
-        wrapper.setPasswordEntries(new EnvInjectPasswordEntry[] {
+        wrapper.setPasswordEntries(new EnvInjectPasswordEntry[]{
                 new EnvInjectPasswordEntry("IRRELEVANT", "value")
         });
         p.getBuildWrappersList().add(wrapper);
@@ -123,7 +125,7 @@ public class EnvInjectActionTest {
         assertEquals("BUILD_VAL", capture.getEnvVars().get("DISPLAY"));
     }
 
-    private FreeStyleProject setupProjectWithDefaultEnvValue()throws Exception, IOException {
+    private FreeStyleProject setupProjectWithDefaultEnvValue() throws Exception {
         DumbSlave agent = slaveContributing("DISPLAY", "SLAVE_VAL");
         FreeStyleProject p = j.jenkins.createProject(FreeStyleProject.class, "project");
         p.setAssignedNode(agent);
@@ -146,7 +148,7 @@ public class EnvInjectActionTest {
         @Override
         public Environment setUp(
                 AbstractBuild build, Launcher launcher, BuildListener listener
-        ) throws IOException, InterruptedException {
+        ) {
             return new Environment() {
                 @Override
                 public void buildEnvVars(Map<String, String> env) {
@@ -176,7 +178,7 @@ public class EnvInjectActionTest {
         @Override
         public boolean perform(
                 AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener
-        ) throws InterruptedException, IOException {
+        ) {
             // Start serving envvar from EnvironmentContributor
             build.addAction(new ContributorAction(key, value));
             return true;
@@ -206,9 +208,8 @@ public class EnvInjectActionTest {
     @TestExtension
     public static class Contributor extends EnvironmentContributor {
 
-        @SuppressWarnings("rawtypes")
         @Override
-        public void buildEnvironmentFor(Run r, EnvVars envs, TaskListener listener) throws IOException, InterruptedException {
+        public void buildEnvironmentFor(Run r, EnvVars envs, TaskListener listener) {
             ContributorAction a = r.getAction(ContributorAction.class);
             if (a != null) {
                 envs.put(a.key, a.value);
