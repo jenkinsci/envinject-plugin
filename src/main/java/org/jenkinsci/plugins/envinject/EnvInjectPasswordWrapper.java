@@ -16,7 +16,6 @@ import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.service.EnvInjectGlobalPasswordRetriever;
@@ -215,7 +214,7 @@ public class EnvInjectPasswordWrapper extends BuildWrapper {
 
                 int nbMaskedPasswords = 0;
                 for (String password : passwords) {
-                    if (StringUtils.isNotEmpty(password)) { // we must not handle empty passwords
+                    if (password != null && !password.isEmpty()) { // we must not handle empty passwords
                         regex.append(Pattern.quote(password));
                         regex.append('|');
                         nbMaskedPasswords++;
