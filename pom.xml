@@ -102,7 +102,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>ivy</artifactId>
-            <version>2.9</version>
+            <version>582.v35fb_da_0312f7</version>
             <optional>true</optional>
         </dependency>
 
