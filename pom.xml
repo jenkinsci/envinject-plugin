@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>envinject-api</artifactId>
-            <version>1.235.va_14c74f8f487</version>
+            <version>1.236.v35fd4d7eb_515</version>
         </dependency>
 
         <dependency>
