@@ -10,7 +10,7 @@ import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static com.google.common.base.Joiner.on;
@@ -123,7 +123,7 @@ public class BuildCauseRetrieverTest {
     }
 
     @Test
-    @Bug(28188)
+    @Issue("28188")
     public void shouldWriteInfoAboutAnonymousClassCause() throws Exception {
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause() {
             @Override

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -73,7 +72,7 @@ public class EnvInjectPasswordTest {
     }
 
     @Test
-    @Bug(28409)
+    @Issue("28409")
     public void testFileHandlesLeak() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
