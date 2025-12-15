@@ -1,34 +1,34 @@
-package org.jenkinsci.plugins.envinject.sevice;
+package org.jenkinsci.plugins.envinject.service;
 
 import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
-import org.junit.Before;
-import org.junit.Test;
+import org.jenkinsci.plugins.envinject.util.RunHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jenkinsci.plugins.envinject.util.RunHelper;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectVariableGetterTest {
+class EnvInjectVariableGetterTest {
 
     private AbstractBuild build;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         build = mock(AbstractBuild.class);
     }
 
-    private static Map<String, String> envVarsSample1 = new HashMap<String, String>();
-    private static Map<String, String> buildEnvVarsSample1 = new HashMap<String, String>();
+    private static final Map<String, String> envVarsSample1 = new HashMap<>();
+    private static final Map<String, String> buildEnvVarsSample1 = new HashMap<>();
 
     static {
         envVarsSample1.put("KEY_ENV1", "VAL1");
@@ -42,7 +42,7 @@ public class EnvInjectVariableGetterTest {
     }
 
     @Test
-    public void getEnvVarsPreviousStepsWithEnvInjectAction() throws Exception {
+    void getEnvVarsPreviousStepsWithEnvInjectAction() throws Exception {
         EnvInjectPluginAction envInjectPluginAction = new EnvInjectPluginAction(build, envVarsSample1);
         when(build.getAction(EnvInjectPluginAction.class)).thenReturn(envInjectPluginAction);
         Map<String, String> envVars = RunHelper.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
@@ -50,13 +50,13 @@ public class EnvInjectVariableGetterTest {
     }
 
     @Test
-    public void getEnvVarsPreviousStepsWithEnvInjectActionMatrixRun() throws Exception {
+    void getEnvVarsPreviousStepsWithEnvInjectActionMatrixRun() throws Exception {
         build = mock(MatrixRun.class);
         EnvInjectPluginAction envInjectPluginAction = new EnvInjectPluginAction(build, envVarsSample1);
         when(build.getAction(EnvInjectPluginAction.class)).thenReturn(envInjectPluginAction);
         when(build.getBuildVariables()).thenReturn(buildEnvVarsSample1);
         Map<String, String> resultEnvVars = RunHelper.getEnvVarsPreviousSteps(build, mock(EnvInjectLogger.class));
-        Map<String, String> expectedEnvVars = new HashMap<String, String>();
+        Map<String, String> expectedEnvVars = new HashMap<>();
         expectedEnvVars.putAll(envVarsSample1);
         expectedEnvVars.putAll(buildEnvVarsSample1);
         assertTrue(sameMap(expectedEnvVars, resultEnvVars));

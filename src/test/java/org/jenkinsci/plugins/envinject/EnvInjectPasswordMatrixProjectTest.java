@@ -4,27 +4,33 @@ import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.model.Result;
 import hudson.util.Secret;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectPasswordMatrixProjectTest {
-
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+@WithJenkins
+class EnvInjectPasswordMatrixProjectTest {
 
     private static final String PWD_KEY = "PASS_KEY";
     private static final String PWD_VALUE = "PASS_VALUE";
 
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
+
     @Test
-    public void testEnvInjectPasswordWrapper() throws Exception {
+    void testEnvInjectPasswordWrapper() throws Exception {
         MatrixProject project = jenkins.createProject(MatrixProject.class);
         EnvInjectPasswordWrapper passwordWrapper = new EnvInjectPasswordWrapper();
         passwordWrapper.setPasswordEntries(new EnvInjectPasswordEntry[]{

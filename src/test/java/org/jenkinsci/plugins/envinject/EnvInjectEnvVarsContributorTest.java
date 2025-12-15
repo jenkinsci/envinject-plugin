@@ -3,21 +3,27 @@ package org.jenkinsci.plugins.envinject;
 import hudson.EnvVars;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SuppressWarnings("rawtypes")
-public class EnvInjectEnvVarsContributorTest {
+@WithJenkins
+class EnvInjectEnvVarsContributorTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
 
     @Test
-    public void envVarsJob() throws Exception {
+    void envVarsJob() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
 
         EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, "REPO=trivial-maven", null, null, false, null);

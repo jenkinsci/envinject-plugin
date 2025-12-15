@@ -3,31 +3,34 @@ package org.jenkinsci.plugins.envinject;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Gregory Boissinot
  */
-public class EnvInjectEnvVarsEmptyTest {
+@WithJenkins
+class EnvInjectEnvVarsEmptyTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
 
     @Test
-    public void testEmptyVars1() throws Exception {
-
+    void testEmptyVars1() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        StringBuffer propertiesContent = new StringBuffer("EMPTYVAR1=\n");
-        propertiesContent.append("VAR2=VAL2");
-        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null, propertiesContent.toString(), null, null, false, null);
+        EnvInjectJobPropertyInfo jobPropertyInfo = new EnvInjectJobPropertyInfo(null,
+                "EMPTYVAR1=\n" + "VAR2=VAL2", null, null, false, null);
         EnvInjectJobProperty envInjectJobProperty = new EnvInjectJobProperty(jobPropertyInfo);
         envInjectJobProperty.setOn(true);
         project.addProperty(envInjectJobProperty);
