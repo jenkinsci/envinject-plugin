@@ -128,7 +128,7 @@ class BuildCauseRetrieverTest {
     }
 
     @Test
-    @Issue("28188")
+    @Issue("JENKINS-28188")
     void shouldWriteInfoAboutAnonymousClassCause() throws Exception {
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause() {
             @Override
