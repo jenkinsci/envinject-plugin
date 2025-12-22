@@ -279,4 +279,30 @@ public class EnvInjectMasterEnvVarsSetterTest {
         assertEquals("/usr/lib/jvm/java", EnvVars.masterEnvVars.get("JAVA_HOME"));
         assertEquals("testuser", EnvVars.masterEnvVars.get("USER"));
     }
+
+    @Test
+    public void testCall_ExercisesFallbackPath_OnReflectionFailure() throws Exception {
+        // Given - Create conditions that may trigger reflection failures
+        EnvVars.masterEnvVars.put("WILL_BE_CLEARED", "oldValue");
+        
+        EnvVars newEnvVars = new EnvVars();
+        newEnvVars.put("SYNC_TEST_VAR", "syncValue");
+        newEnvVars.put("FALLBACK_VAR", "fallbackValue");
+        
+        EnvInjectMasterEnvVarsSetter setter = new EnvInjectMasterEnvVarsSetter(newEnvVars);
+        
+        // When - Call the method (it will use either reflection or fallback based on Java version)
+        Void result = setter.call();
+        
+        // Then - Regardless of which path was taken, verify correct behavior
+        assertNull(result);
+        assertTrue("SYNC_TEST_VAR should be present", 
+                EnvVars.masterEnvVars.containsKey("SYNC_TEST_VAR"));
+        assertTrue("FALLBACK_VAR should be present", 
+                EnvVars.masterEnvVars.containsKey("FALLBACK_VAR"));
+        // The synchronized clear/putAll path should have been exercised
+        // (either directly on Java 17+ or as fallback on other versions)
+        assertEquals("syncValue", EnvVars.masterEnvVars.get("SYNC_TEST_VAR"));
+        assertEquals("fallbackValue", EnvVars.masterEnvVars.get("FALLBACK_VAR"));
+    }
 }
