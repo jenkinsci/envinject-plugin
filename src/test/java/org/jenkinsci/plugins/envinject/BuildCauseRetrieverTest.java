@@ -9,7 +9,7 @@ import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -128,7 +128,7 @@ class BuildCauseRetrieverTest {
     }
 
     @Test
-    @Bug(28188)
+    @Issue("JENKINS-28188")
     void shouldWriteInfoAboutAnonymousClassCause() throws Exception {
         FreeStyleBuild build = jenkins.createFreeStyleProject().scheduleBuild2(0, new Cause() {
             @Override
