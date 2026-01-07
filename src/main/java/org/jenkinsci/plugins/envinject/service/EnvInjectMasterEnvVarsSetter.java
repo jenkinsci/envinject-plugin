@@ -33,6 +33,7 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
            /*
             * Per the Javadoc, merely changing the value associated with an existing key is not a structural
             * modification and thus does not require synchronization.
+            * We update the values while preserving the keyset structure.
             */
            EnvInjectGlobalStorage.updateInjectedVars(enVars);
            return null;

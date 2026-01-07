@@ -35,11 +35,12 @@ public class EnvInjectGlobalStorage {
     /**
      * Set injected environment variables for the current JVM process.
      * This method is called via MasterToSlaveCallable on the target node.
+     * Replaces all existing injected variables atomically.
      * 
      * @param vars New set of environment variables to inject
      */
-    public static void setInjectedVars(Map<String, String> vars) {
-        // Create a copy to ensure thread safety during clear+putAll
+    public static synchronized void setInjectedVars(Map<String, String> vars) {
+        // Create a copy to ensure thread safety and perform atomic clear+putAll
         Map<String, String> newVars = (vars != null) ? new HashMap<>(vars) : new HashMap<>();
         INJECTED_VARS.clear();
         INJECTED_VARS.putAll(newVars);
