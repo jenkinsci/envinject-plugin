@@ -69,7 +69,7 @@ public class EnvInjectActionSetter implements Serializable {
         @Override
         public Map<String, String> call() throws EnvInjectException {
             HashMap<String, String> result = new HashMap<String, String>();
-            result.putAll(EnvVars.masterEnvVars);
+            result.putAll(org.jenkinsci.plugins.envinject.EnvInjectGlobalStorage.getMergedVars(EnvVars.masterEnvVars));
             return result;
         }
     }

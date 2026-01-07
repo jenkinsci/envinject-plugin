@@ -5,11 +5,9 @@ import hudson.Main;
 import hudson.Platform;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.EnvInjectGlobalStorage;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -24,54 +22,34 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
         this.enVars = enVars;
     }
 
-    private Field getModifiers() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
-        getDeclaredFields0.setAccessible(true);
-        Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
-        Field modifiers = null;
-        for (Field each : fields) {
-            if ("modifiers".equals(each.getName())) {
-                modifiers = each;
-                break;
-            }
-        }
-        if (modifiers == null) {
-            throw new NoSuchFieldException();
-        }
-        return modifiers;
-    }
-
     @Override
     public Void call() throws EnvInjectException {
-        if (EnvVars.masterEnvVars.equals(enVars)) {
+        // Check if there's nothing to update
+        EnvVars currentMerged = EnvInjectGlobalStorage.getMergedVars(EnvVars.masterEnvVars);
+        if (currentMerged.equals(enVars)) {
             // Nothing to update
             return null;
-        } else if (EnvVars.masterEnvVars.keySet().equals(enVars.keySet())) {
+        } else if (currentMerged.keySet().equals(enVars.keySet())) {
            /*
             * Per the Javadoc, merely changing the value associated with an existing key is not a structural
             * modification and thus does not require synchronization.
             */
-           EnvVars.masterEnvVars.putAll(enVars);
+           EnvInjectGlobalStorage.updateInjectedVars(enVars);
            return null;
         }
 
         try {
+            // Set platform field on the enVars object
             Field platformField = EnvVars.class.getDeclaredField("platform");
             platformField.setAccessible(true);
             platformField.set(enVars, Platform.current());
             if (Main.isUnitTest || Main.isDevelopmentMode) {
                 enVars.remove("MAVEN_OPTS");
             }
-            Field masterEnvVarsFiled = EnvVars.class.getDeclaredField("masterEnvVars");
-            masterEnvVarsFiled.setAccessible(true);
-            Field modifiersField = getModifiers();
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
-            masterEnvVarsFiled.set(null, enVars);
+            // Store in global storage instead of using reflection to modify masterEnvVars
+            EnvInjectGlobalStorage.setInjectedVars(enVars);
         } catch (IllegalAccessException | NoSuchFieldException iae) {
             throw new EnvInjectException(iae);
-        } catch (InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
         }
 
         return null;
