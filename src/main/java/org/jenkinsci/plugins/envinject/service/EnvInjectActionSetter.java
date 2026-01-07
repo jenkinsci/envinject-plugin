@@ -6,6 +6,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.lib.envinject.EnvInjectException;
+import org.jenkinsci.plugins.envinject.EnvInjectGlobalStorage;
 import org.jenkinsci.plugins.envinject.EnvInjectPluginAction;
 
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class EnvInjectActionSetter implements Serializable {
         @Override
         public Map<String, String> call() throws EnvInjectException {
             HashMap<String, String> result = new HashMap<String, String>();
-            result.putAll(EnvVars.masterEnvVars);
+            result.putAll(EnvInjectGlobalStorage.getMergedVars(EnvVars.masterEnvVars));
             return result;
         }
     }
