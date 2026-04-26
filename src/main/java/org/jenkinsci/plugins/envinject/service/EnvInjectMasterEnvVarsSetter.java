@@ -24,21 +24,16 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
         this.enVars = enVars;
     }
 
-    private Field getModifiers() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
-        getDeclaredFields0.setAccessible(true);
-        Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
-        Field modifiers = null;
-        for (Field each : fields) {
-            if ("modifiers".equals(each.getName())) {
-                modifiers = each;
-                break;
-            }
+    private Field getModifiers() throws NoSuchFieldException {
+        try {
+            // Try the direct approach first (works in Java 8-16)
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            return modifiersField;
+        } catch (NoSuchFieldException e) {
+            // In Java 17+, the modifiers field might not be accessible
+            // We'll handle this gracefully in the calling code
+            throw new NoSuchFieldException("Unable to access modifiers field - may be running on Java 17+");
         }
-        if (modifiers == null) {
-            throw new NoSuchFieldException();
-        }
-        return modifiers;
     }
 
     @Override
@@ -64,14 +59,23 @@ public class EnvInjectMasterEnvVarsSetter extends MasterToSlaveCallable<Void, En
             }
             Field masterEnvVarsFiled = EnvVars.class.getDeclaredField("masterEnvVars");
             masterEnvVarsFiled.setAccessible(true);
-            Field modifiersField = getModifiers();
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
-            masterEnvVarsFiled.set(null, enVars);
+            
+            try {
+                Field modifiersField = getModifiers();
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(masterEnvVarsFiled, masterEnvVarsFiled.getModifiers() & ~Modifier.FINAL);
+                masterEnvVarsFiled.set(null, enVars);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                // In Java 17+, modifying final fields via reflection is restricted
+                // Try alternative approach: use putAll to update the existing EnvVars instance
+                // instead of replacing the static field entirely
+                synchronized (EnvVars.masterEnvVars) {
+                    EnvVars.masterEnvVars.clear();
+                    EnvVars.masterEnvVars.putAll(enVars);
+                }
+            }
         } catch (IllegalAccessException | NoSuchFieldException iae) {
             throw new EnvInjectException(iae);
-        } catch (InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
         }
 
         return null;
